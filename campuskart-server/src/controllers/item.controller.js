@@ -1,4 +1,5 @@
-import { getSequelize, getItemModel } from '../db/postgres.js';
+import mongoose from 'mongoose';
+import Item from '../models/item.mongo.model.js';
 import imgbbUploader from 'imgbb-uploader';
 
 // Create a new item
@@ -6,19 +7,11 @@ export const createItem = async (req, res) => {
   try {
     const { title, description, price, category, userId, userName, userPhone, userHostel, userEmail } = req.body;
 
-    // Check if PostgreSQL is connected
-    try {
-      const sequelize = getSequelize();
-      if (!sequelize) {
-        return res.status(503).json({
-          success: false,
-          message: 'Database not available. Please configure PostgreSQL connection.',
-        });
-      }
-    } catch (dbError) {
+    // Ensure MongoDB connection is available
+    if (!mongoose.connection || mongoose.connection.readyState !== 1) {
       return res.status(503).json({
         success: false,
-        message: 'Database not available. Please configure PostgreSQL connection.',
+        message: 'Database not available. Please configure MongoDB connection.',
       });
     }
 
@@ -71,10 +64,7 @@ export const createItem = async (req, res) => {
       }
     }
 
-    // Get Item model
-    const Item = getItemModel();
-
-    // Create new item
+    // Create new item (MongoDB)
     const newItem = await Item.create({
       title,
       description,
@@ -118,13 +108,8 @@ export const getAllItems = async (req, res) => {
       });
     }
 
-    const Item = getItemModel();
-    const items = await Item.findAll({
-      where: {
-        emailDomain: emailDomain,
-      },
-      order: [['createdAt', 'DESC']],
-    });
+    // Query MongoDB for items matching the domain
+    const items = await Item.find({ emailDomain }).sort({ createdAt: -1 }).lean();
 
     res.status(200).json({
       success: true,
@@ -145,9 +130,7 @@ export const getAllItems = async (req, res) => {
 export const getItemById = async (req, res) => {
   try {
     const { id } = req.params;
-    const Item = getItemModel();
-    
-    const item = await Item.findByPk(id);
+    const item = await Item.findById(id).lean();
 
     if (!item) {
       return res.status(404).json({
@@ -175,9 +158,7 @@ export const updateItem = async (req, res) => {
   try {
     const { id } = req.params;
     const { title, description, price, category, available } = req.body;
-    
-    const Item = getItemModel();
-    const item = await Item.findByPk(id);
+    const item = await Item.findById(id);
 
     if (!item) {
       return res.status(404).json({
@@ -194,7 +175,8 @@ export const updateItem = async (req, res) => {
     if (category !== undefined) updates.category = category;
     if (available !== undefined) updates.available = available;
 
-    await item.update(updates);
+  Object.assign(item, updates);
+  await item.save();
 
     res.status(200).json({
       success: true,
@@ -215,9 +197,7 @@ export const updateItem = async (req, res) => {
 export const deleteItem = async (req, res) => {
   try {
     const { id } = req.params;
-    
-    const Item = getItemModel();
-    const item = await Item.findByPk(id);
+    const item = await Item.findById(id);
 
     if (!item) {
       return res.status(404).json({
@@ -226,7 +206,7 @@ export const deleteItem = async (req, res) => {
       });
     }
 
-    await item.destroy();
+    await item.remove();
 
     res.status(200).json({
       success: true,

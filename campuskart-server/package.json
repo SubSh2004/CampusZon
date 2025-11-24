@@ -6,7 +6,11 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "check-items-mongo": "node scripts/checkItemsMongo.js",
+    "clear-items-mongo": "node scripts/clearItemsMongo.js",
+    "migrate-items-to-mongo": "node scripts/migrateItemsToMongo.js",
+    "setup-mongo": "node scripts/setupMongoOnly.js"
   },
   "keywords": [
     "campuszon",
@@ -29,8 +33,6 @@
     "nodemailer": "^7.0.10",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
-    "pg": "^8.11.0",
-    "sequelize": "^6.35.0",
     "socket.io": "^4.6.0",
     "validator": "^13.11.0"
   },

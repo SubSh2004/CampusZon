@@ -9,7 +9,6 @@ import cors from 'cors';
 import session from 'express-session';
 import passport, { configurePassport } from './config/passport.js';
 import { connectMongoDB } from './db/mongo.js';
-import { connectPostgresDB } from './db/postgres.js';
 import userRoutes from './routes/user.routes.js';
 import itemRoutes from './routes/item.routes.js';
 import authRoutes from './routes/auth.routes.js';
@@ -86,7 +85,6 @@ setupSocketManager(io);
 // Database Connections - Initialize databases before starting server
 const initializeServer = async () => {
   await connectMongoDB();
-  await connectPostgresDB();
   
   // Start server after databases are initialized
   const PORT = process.env.PORT || 5000;
