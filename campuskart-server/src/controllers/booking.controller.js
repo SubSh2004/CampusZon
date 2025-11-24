@@ -17,12 +17,17 @@ export const createBooking = async (req, res) => {
     console.log('User data:', { buyerId, buyerName, buyerEmail });
 
     // Validate required fields
-    if (!itemId) {
-      console.error('Missing itemId in booking request');
+    if (!itemId || itemId === 'undefined' || itemId === 'null') {
+      console.error('Missing or invalid itemId in booking request:', itemId);
+      console.error('Full request body:', JSON.stringify(req.body, null, 2));
       return res.status(400).json({
         success: false,
-        message: 'Item ID is required for booking',
-        debug: { receivedBody: req.body }
+        message: 'Item ID is required for booking. Please provide a valid item ID.',
+        debug: { 
+          receivedItemId: itemId,
+          receivedBody: req.body,
+          expectedFormat: 'MongoDB ObjectId (24-character hex string)'
+        }
       });
     }
 

@@ -84,7 +84,11 @@ export const createItem = async (req, res) => {
     res.status(201).json({
       success: true,
       message: 'Item created successfully',
-      item: newItem,
+      item: {
+        ...newItem.toObject(),
+        id: newItem._id.toString(),
+        _id: undefined
+      },
     });
   } catch (error) {
     console.error('Create item error:', error);
@@ -111,10 +115,17 @@ export const getAllItems = async (req, res) => {
     // Query MongoDB for items matching the domain
     const items = await Item.find({ emailDomain }).sort({ createdAt: -1 }).lean();
 
+    // Convert _id to id for frontend compatibility
+    const itemsWithId = items.map(item => ({
+      ...item,
+      id: item._id.toString(), // Convert ObjectId to string and add as 'id'
+      _id: undefined // Remove the original _id field
+    }));
+
     res.status(200).json({
       success: true,
-      count: items.length,
-      items,
+      count: itemsWithId.length,
+      items: itemsWithId,
     });
   } catch (error) {
     console.error('Get items error:', error);
@@ -156,9 +167,16 @@ export const getItemById = async (req, res) => {
       });
     }
 
+    // Convert _id to id for frontend compatibility
+    const itemWithId = {
+      ...item,
+      id: item._id.toString(),
+      _id: undefined
+    };
+
     res.status(200).json({
       success: true,
-      item,
+      item: itemWithId,
     });
   } catch (error) {
     console.error('Get item error:', error);
@@ -207,7 +225,11 @@ export const updateItem = async (req, res) => {
     res.status(200).json({
       success: true,
       message: 'Item updated successfully',
-      item,
+      item: {
+        ...item.toObject(),
+        id: item._id.toString(),
+        _id: undefined
+      },
     });
   } catch (error) {
     console.error('Update item error:', error);
@@ -240,17 +262,8 @@ export const deleteItem = async (req, res) => {
         message: 'Item not found',
       });
     }
-    
-    const item = await Item.findById(id).lean();
 
-    if (!item) {
-      return res.status(404).json({
-        success: false,
-        message: 'Item not found',
-      });
-    }
-
-    await item.remove();
+    await Item.findByIdAndDelete(id);
 
     res.status(200).json({
       success: true,
