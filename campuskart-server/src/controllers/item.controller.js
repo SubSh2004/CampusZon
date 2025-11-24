@@ -130,6 +130,23 @@ export const getAllItems = async (req, res) => {
 export const getItemById = async (req, res) => {
   try {
     const { id } = req.params;
+    
+    // Validate MongoDB ObjectId format
+    if (!id || id === 'undefined' || id === 'null') {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid item ID is required',
+      });
+    }
+
+    // Check if it's a valid MongoDB ObjectId
+    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid item ID format',
+      });
+    }
+
     const item = await Item.findById(id).lean();
 
     if (!item) {
@@ -158,6 +175,15 @@ export const updateItem = async (req, res) => {
   try {
     const { id } = req.params;
     const { title, description, price, category, available } = req.body;
+    
+    // Validate ObjectId format
+    if (!id || id === 'undefined' || !id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid item ID format',
+      });
+    }
+    
     const item = await Item.findById(id);
 
     if (!item) {
@@ -197,7 +223,25 @@ export const updateItem = async (req, res) => {
 export const deleteItem = async (req, res) => {
   try {
     const { id } = req.params;
+    
+    // Validate ObjectId format
+    if (!id || id === 'undefined' || !id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid item ID format',
+      });
+    }
+    
     const item = await Item.findById(id);
+
+    if (!item) {
+      return res.status(404).json({
+        success: false,
+        message: 'Item not found',
+      });
+    }
+    
+    const item = await Item.findById(id).lean();
 
     if (!item) {
       return res.status(404).json({

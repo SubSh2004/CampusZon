@@ -12,6 +12,43 @@ export const createBooking = async (req, res) => {
     const buyerEmail = req.user.email;
     const buyerPhone = req.user.phoneNumber;
 
+    // Enhanced validation with debugging
+    console.log('Booking request body:', req.body);
+    console.log('User data:', { buyerId, buyerName, buyerEmail });
+
+    // Validate required fields
+    if (!itemId) {
+      console.error('Missing itemId in booking request');
+      return res.status(400).json({
+        success: false,
+        message: 'Item ID is required for booking',
+        debug: { receivedBody: req.body }
+      });
+    }
+
+    if (!itemTitle || !itemPrice || !sellerId || !sellerName) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required booking information',
+        debug: { 
+          itemId: !!itemId, 
+          itemTitle: !!itemTitle, 
+          itemPrice: !!itemPrice, 
+          sellerId: !!sellerId, 
+          sellerName: !!sellerName 
+        }
+      });
+    }
+
+    // Validate MongoDB ObjectId format for itemId (24-character hex string)
+    if (!itemId || !itemId.match || !itemId.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid item ID format',
+        debug: { itemId, expected: '24-character hex string (MongoDB ObjectId)' }
+      });
+    }
+
     // Check if user already has a pending booking for this item
     const existingBooking = await Booking.findOne({
       itemId,
