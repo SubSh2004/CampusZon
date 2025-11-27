@@ -5,7 +5,7 @@ import { userAtom } from '../store/user.atom';
 import ProductCard from './ProductCard';
 
 interface Item {
-  id: number;
+  id: string; // Changed from number to string for MongoDB ObjectId compatibility
   title: string;
   description: string;
   price: number;

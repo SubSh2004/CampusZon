@@ -5,7 +5,7 @@ import axios from 'axios';
 import { userAtom } from '../store/user.atom';
 
 interface Item {
-  id: number;
+  id: string; // Changed from number to string for MongoDB ObjectId compatibility
   title: string;
   description: string;
   price: number;
@@ -116,7 +116,7 @@ export default function Profile() {
     }
   };
 
-  const handleDeleteItem = async (itemId: number) => {
+  const handleDeleteItem = async (itemId: string) => {
     if (!window.confirm('Are you sure you want to delete this item?')) {
       return;
     }

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import axios from 'axios';
 
 interface Item {
-  id: number;
+  id: string; // Changed from number to string for MongoDB ObjectId compatibility
   title: string;
   description: string;
   price: number;

@@ -7,7 +7,7 @@ import { API_URL, SOCKET_URL } from '../config/api';
 import { io, Socket } from 'socket.io-client';
 
 interface Item {
-  id: number;
+  id: string; // MongoDB ObjectId as string
   title: string;
   description: string;
   price: number;
