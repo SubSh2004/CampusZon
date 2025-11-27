@@ -15,10 +15,10 @@ interface Item {
   imageUrl: string;
   available: boolean;
   createdAt: string;
-  userId?: string;
-  userName?: string;
-  userEmail?: string;
-  userPhone?: string;
+  userId: string; // Required for booking
+  userName: string; // Required for booking
+  userEmail: string;
+  userPhone: string;
 }
 
 interface ProductCardProps {
@@ -111,7 +111,8 @@ export default function ProductCard({ item }: ProductCardProps) {
 
   const handleBookingSubmit = async () => {
     if (!item.userId || !item.userName) {
-      alert('Seller information is missing');
+      console.error('Missing seller info:', { userId: item.userId, userName: item.userName });
+      alert('Seller information is missing. Please refresh the page and try again.');
       return;
     }
 

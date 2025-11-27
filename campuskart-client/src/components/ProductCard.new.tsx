@@ -11,10 +11,10 @@ interface Item {
   imageUrl: string;
   available: boolean;
   createdAt: string;
-  userId?: string;
-  userName?: string;
-  userEmail?: string;
-  userPhone?: string;
+  userId: string; // Required for booking
+  userName: string; // Required for booking
+  userEmail: string;
+  userPhone: string;
 }
 
 interface ProductCardProps {

@@ -13,12 +13,12 @@ export const createBooking = async (req, res) => {
     const buyerPhone = req.user.phoneNumber;
 
     // Enhanced validation with debugging
-    console.log('Booking request body:', req.body);
-    console.log('User data:', { buyerId, buyerName, buyerEmail });
+    console.log('Booking request body:', JSON.stringify(req.body, null, 2));
+    console.log('User data:', { buyerId, buyerName, buyerEmail, buyerPhone });
 
     // Validate required fields
     if (!itemId || itemId === 'undefined' || itemId === 'null') {
-      console.error('Missing or invalid itemId in booking request:', itemId);
+      console.error('❌ Missing or invalid itemId in booking request:', itemId);
       console.error('Full request body:', JSON.stringify(req.body, null, 2));
       return res.status(400).json({
         success: false,
@@ -32,15 +32,24 @@ export const createBooking = async (req, res) => {
     }
 
     if (!itemTitle || !itemPrice || !sellerId || !sellerName) {
+      console.error('❌ Missing required booking fields:', { 
+        itemId: !!itemId, 
+        itemTitle: !!itemTitle, 
+        itemPrice: !!itemPrice, 
+        sellerId: !!sellerId, 
+        sellerName: !!sellerName 
+      });
+      console.error('Received values:', { itemTitle, itemPrice, sellerId, sellerName });
       return res.status(400).json({
         success: false,
         message: 'Missing required booking information',
         debug: { 
-          itemId: !!itemId, 
-          itemTitle: !!itemTitle, 
-          itemPrice: !!itemPrice, 
-          sellerId: !!sellerId, 
-          sellerName: !!sellerName 
+          hasItemId: !!itemId, 
+          hasItemTitle: !!itemTitle, 
+          hasItemPrice: !!itemPrice, 
+          hasSellerId: !!sellerId, 
+          hasSellerName: !!sellerName,
+          received: { itemTitle, itemPrice, sellerId, sellerName }
         }
       });
     }
