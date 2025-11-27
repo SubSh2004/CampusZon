@@ -31,11 +31,11 @@ export const createBooking = async (req, res) => {
       });
     }
 
-    if (!itemTitle || !itemPrice || !sellerId || !sellerName) {
+    if (!itemTitle || itemPrice === undefined || itemPrice === null || !sellerId || !sellerName) {
       console.error('❌ Missing required booking fields:', { 
         itemId: !!itemId, 
         itemTitle: !!itemTitle, 
-        itemPrice: !!itemPrice, 
+        itemPrice: itemPrice !== undefined && itemPrice !== null, 
         sellerId: !!sellerId, 
         sellerName: !!sellerName 
       });
@@ -46,7 +46,7 @@ export const createBooking = async (req, res) => {
         debug: { 
           hasItemId: !!itemId, 
           hasItemTitle: !!itemTitle, 
-          hasItemPrice: !!itemPrice, 
+          hasItemPrice: itemPrice !== undefined && itemPrice !== null, 
           hasSellerId: !!sellerId, 
           hasSellerName: !!sellerName,
           received: { itemTitle, itemPrice, sellerId, sellerName }
