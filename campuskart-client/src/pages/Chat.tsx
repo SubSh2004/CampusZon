@@ -229,16 +229,23 @@ export default function Chat() {
   const fetchChats = async () => {
     try {
       const response = await axios.get('/api/chat/chats');
-      if (response.data.success) {
-        setChats(response.data.chats);
+      if (response.data.success && Array.isArray(response.data.chats)) {
+        // Filter out chats with missing otherUser to prevent crashes
+        const validChats = response.data.chats.filter(chat => chat && chat.otherUser && chat.otherUser._id);
+        setChats(validChats);
       }
     } catch (error) {
       console.error('Error fetching chats:', error);
+      setChats([]); // Set empty array on error
     }
   };
 
   const startChat = async (user: User) => {
     try {
+      if (!user || !user._id) {
+        console.error('Invalid user:', user);
+        return;
+      }
       // Get or create chat
       const response = await axios.get(`/api/chat/chat/${user._id}`);
       if (response.data.success) {
@@ -253,6 +260,10 @@ export default function Chat() {
   };
 
   const fetchMessages = async (chatId: string) => {
+    if (!chatId) {
+      console.error('Invalid chatId');
+      return;
+    }
     try {
       const response = await axios.get(`/api/chat/messages/${chatId}`);
       if (response.data.success) {
@@ -260,6 +271,7 @@ export default function Chat() {
       }
     } catch (error) {
       console.error('Error fetching messages:', error);
+      setMessages([]); // Set empty array on error to prevent crashes
     }
   };
 
@@ -306,6 +318,11 @@ export default function Chat() {
   };
 
   const openChat = (chat: Chat) => {
+    if (!chat || !chat.otherUser) {
+      console.error('Invalid chat or missing otherUser:', chat);
+      alert('Unable to open chat. Please try again.');
+      return;
+    }
     setSelectedChat(chat);
     setSelectedUser(chat.otherUser);
     fetchMessages(chat._id);
@@ -468,10 +485,10 @@ export default function Chat() {
               {/* List */}
               <div className="flex-1 overflow-y-auto">
                 {chats.filter(chat => 
-                  chat.otherUser?.username.toLowerCase().includes(chatSearchQuery.toLowerCase())
+                  chat?.otherUser?.username?.toLowerCase().includes(chatSearchQuery.toLowerCase())
                 ).length > 0 ? (
                   chats.filter(chat => 
-                    chat.otherUser?.username.toLowerCase().includes(chatSearchQuery.toLowerCase())
+                    chat?.otherUser?.username?.toLowerCase().includes(chatSearchQuery.toLowerCase())
                   ).map(chat => (
                     <button
                       key={chat._id}
@@ -514,7 +531,7 @@ export default function Chat() {
 
             {/* Chat Area */}
             <div className="flex-1 flex flex-col">
-              {selectedUser ? (
+              {selectedUser && selectedChat ? (
                 <>
                   {/* Chat Header */}
                   <div className={`p-4 ${theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'} border-b transition-colors duration-300 flex items-center justify-between`}>
