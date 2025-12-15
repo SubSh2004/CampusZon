@@ -47,12 +47,14 @@ export default function Chat() {
   const [isConnected, setIsConnected] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string>('');
   const [isSending, setIsSending] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; messageId: string; message: Message } | null>(null);
   const [showDeleteChatModal, setShowDeleteChatModal] = useState(false);
   const [showUnsendModal, setShowUnsendModal] = useState(false);
   const [messageToDelete, setMessageToDelete] = useState<Message | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageIdRef = useRef(0);
+  const sellerChatProcessed = useRef(false);
 
   // Auto-scroll to bottom
   const scrollToBottom = () => {
@@ -76,12 +78,15 @@ export default function Chat() {
     setCurrentUserId(userId);
 
     // Check if sellerId is passed via navigation state
-    if (location.state?.sellerId) {
+    if (location.state?.sellerId && !isLoading && !sellerChatProcessed.current) {
       console.log('🔍 sellerId detected:', location.state.sellerId);
       console.log('🔍 itemId detected:', location.state.itemId);
       
+      sellerChatProcessed.current = true;
+      
       // Fetch seller details and start chat
       const startChatWithSeller = async () => {
+        setIsLoading(true);
         try {
           console.log('📞 Fetching seller details...');
           const sellerResponse = await axios.get(`/api/user/${location.state.sellerId}`);
@@ -102,13 +107,15 @@ export default function Chat() {
               
               setSelectedChat({ ...chat, otherUser: seller, unreadCount: 0 });
               setSelectedUser(seller);
-              fetchMessages(chat._id);
+              await fetchMessages(chat._id);
             }
           }
         } catch (error: any) {
           console.error('❌ Error starting chat with seller:', error);
           console.error('Error details:', error.response?.data || error.message);
           alert('Failed to open chat. Please try again.');
+        } finally {
+          setIsLoading(false);
         }
       };
       startChatWithSeller();
@@ -238,7 +245,7 @@ export default function Chat() {
         const chat = response.data.chat;
         setSelectedChat({ ...chat, otherUser: user, unreadCount: 0 });
         setSelectedUser(user);
-        fetchMessages(chat._id);
+        await fetchMessages(chat._id);
       }
     } catch (error) {
       console.error('Error starting chat:', error);
