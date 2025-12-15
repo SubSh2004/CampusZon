@@ -43,6 +43,19 @@ export default function Chat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [messageInput, setMessageInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Add componentDidCatch equivalent
+  useEffect(() => {
+    const handleError = (event: ErrorEvent) => {
+      console.error('🚨 Global error caught:', event.error);
+      setHasError(true);
+      setErrorMessage(event.error?.message || 'An unexpected error occurred');
+    };
+    
+    window.addEventListener('error', handleError);
+    return () => window.removeEventListener('error', handleError);
+  }, []);
+
   const [chatSearchQuery, setChatSearchQuery] = useState('');
   const [isConnected, setIsConnected] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string>('');
@@ -55,6 +68,10 @@ export default function Chat() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageIdRef = useRef(0);
   const sellerChatProcessed = useRef(false);
+
+  // Add error boundary state
+  const [hasError, setHasError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   // Auto-scroll to bottom
   const scrollToBottom = () => {
@@ -298,12 +315,20 @@ export default function Chat() {
       return;
     }
     try {
+      console.log('📨 Fetching messages for chatId:', chatId);
       const response = await axios.get(`/api/chat/messages/${chatId}`);
+      console.log('📬 Messages response:', response.data);
+      
       if (response.data.success) {
-        setMessages(response.data.messages);
+        const msgs = Array.isArray(response.data.messages) ? response.data.messages : [];
+        console.log('✅ Setting', msgs.length, 'messages');
+        setMessages(msgs);
+      } else {
+        console.warn('⚠️ Messages fetch unsuccessful');
+        setMessages([]);
       }
     } catch (error) {
-      console.error('Error fetching messages:', error);
+      console.error('❌ Error fetching messages:', error);
       setMessages([]); // Set empty array on error to prevent crashes
     }
   };
@@ -376,26 +401,44 @@ export default function Chat() {
   };
 
   const openChat = (chat: Chat) => {
-    console.log('🔓 Opening chat:', chat);
-    console.log('📋 Chat details:', {
-      id: chat?._id,
-      hasOtherUser: !!chat?.otherUser,
-      otherUserName: chat?.otherUser?.username,
-      otherUserId: chat?.otherUser?._id
-    });
-    
-    if (!chat || !chat.otherUser) {
-      console.error('❌ Invalid chat or missing otherUser:', chat);
-      alert('Unable to open chat. Please try again.');
-      return;
+    try {
+      console.log('🔓 Opening chat:', chat);
+      console.log('📋 Chat details:', {
+        id: chat?._id,
+        hasOtherUser: !!chat?.otherUser,
+        otherUserName: chat?.otherUser?.username,
+        otherUserId: chat?.otherUser?._id
+      });
+      
+      if (!chat || !chat._id) {
+        console.error('❌ Invalid chat: missing chat or chat ID');
+        alert('Invalid chat data. Please refresh the page.');
+        return;
+      }
+      
+      if (!chat.otherUser || !chat.otherUser._id) {
+        console.error('❌ Invalid chat: missing otherUser data');
+        alert('Chat user data is incomplete. Please try again.');
+        return;
+      }
+      
+      console.log('✅ Setting selected chat and user');
+      setHasError(false);
+      setMessages([]); // Clear previous messages first
+      setSelectedChat(chat);
+      setSelectedUser(chat.otherUser);
+      
+      console.log('📨 Fetching messages for chat:', chat._id);
+      fetchMessages(chat._id).catch(err => {
+        console.error('❌ Error fetching messages:', err);
+        setHasError(true);
+        setErrorMessage('Failed to load messages');
+      });
+    } catch (error) {
+      console.error('❌ Error in openChat:', error);
+      setHasError(true);
+      setErrorMessage('Failed to open chat: ' + (error as Error).message);
     }
-    
-    console.log('✅ Setting selected chat and user');
-    setSelectedChat(chat);
-    setSelectedUser(chat.otherUser);
-    
-    console.log('📨 Fetching messages for chat:', chat._id);
-    fetchMessages(chat._id);
   };
 
   const handleDeleteMessage = async (messageId: string, receiverId: string) => {
@@ -601,7 +644,25 @@ export default function Chat() {
 
             {/* Chat Area */}
             <div className="flex-1 flex flex-col">
-              {selectedUser && selectedChat ? (
+              {hasError ? (
+                <div className="flex-1 flex items-center justify-center p-8">
+                  <div className="text-center">
+                    <p className="text-red-500 text-lg font-semibold mb-2">Something went wrong</p>
+                    <p className="text-gray-500 text-sm mb-4">{errorMessage || 'Failed to load chat'}</p>
+                    <button
+                      onClick={() => {
+                        setHasError(false);
+                        setSelectedChat(null);
+                        setSelectedUser(null);
+                        setMessages([]);
+                      }}
+                      className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                    >
+                      Go Back
+                    </button>
+                  </div>
+                </div>
+              ) : selectedUser && selectedChat ? (
                 <>
                   {/* Chat Header */}
                   <div className={`p-4 ${theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'} border-b transition-colors duration-300 flex items-center justify-between`}>
@@ -648,7 +709,8 @@ export default function Chat() {
                         <p className="text-sm">No messages yet. Start the conversation!</p>
                       </div>
                     ) : (
-                      messages.map((msg, index) => {
+                      Array.isArray(messages) && messages.length > 0 ? (
+                        messages.map((msg, index) => {
                         const isOwnMessage = msg.senderId === currentUserId;
                         const isPending = msg._id?.toString().startsWith('temp-');
                         return (
@@ -682,6 +744,11 @@ export default function Chat() {
                           </div>
                         );
                       })
+                    ) : (
+                      <div className={`text-center ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} mt-8`}>
+                        <p className="text-sm">No messages yet. Start the conversation!</p>
+                      </div>
+                    )
                     )}
                     <div ref={messagesEndRef} />
                   </div>
