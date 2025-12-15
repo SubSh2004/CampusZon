@@ -86,7 +86,7 @@ export default function Chat() {
       const startChatWithSeller = async () => {
         try {
           console.log('📞 Fetching seller details...');
-          const sellerResponse = await axios.get(`/api/users/${location.state.sellerId}`);
+          const sellerResponse = await axios.get(`/api/user/${location.state.sellerId}`);
           console.log('✅ Seller response:', sellerResponse.data);
           
           if (sellerResponse.data.success) {
