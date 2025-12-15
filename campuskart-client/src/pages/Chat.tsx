@@ -169,8 +169,8 @@ export default function Chat() {
       });
       // Update chat list
       fetchChats();
-      // Increment message count if itemId exists
-      if (location.state?.itemId && messageLimit !== null) {
+      // Increment message count if tracking limits
+      if (messageLimit !== null) {
         setMessageCount(prev => prev + 1);
       }
     });
@@ -277,6 +277,27 @@ export default function Chat() {
       if (response.data.success) {
         setMessages(response.data.messages);
       }
+      
+      // Check if there's an unlock between current user and the other user
+      if (selectedUser) {
+        try {
+          const unlockCheckResponse = await axios.get('/api/unlock/check-limits', {
+            params: { otherUserId: selectedUser._id }
+          });
+          
+          if (unlockCheckResponse.data.hasUnlock && unlockCheckResponse.data.tier === 'basic') {
+            setMessageCount(unlockCheckResponse.data.messageCount || 0);
+            setMessageLimit(unlockCheckResponse.data.messageLimit || 10);
+            console.log('📊 Limits found:', unlockCheckResponse.data.messageCount, '/', unlockCheckResponse.data.messageLimit);
+          } else {
+            setMessageLimit(null); // Premium or no unlock
+            console.log('✨ No basic unlock - unlimited messages');
+          }
+        } catch (err) {
+          console.log('No unlock found for this conversation');
+          setMessageLimit(null);
+        }
+      }
     } catch (error) {
       console.error('Error fetching messages:', error);
     }
@@ -313,15 +334,14 @@ export default function Chat() {
       receiverId: selectedUser._id,
       senderId: currentUserId,
       senderName: 'You',
-      message: messageText,
-      itemId: location.state?.itemId || null // Pass itemId if available for limit tracking
+      message: messageText
     };
 
     try {
       // Only emit via socket - let server handle database save
       socket?.emit('sendPrivateMessage', messageData);
       // Increment local count if tracking limits
-      if (location.state?.itemId && messageLimit !== null) {
+      if (messageLimit !== null) {
         setMessageCount(prev => prev + 1);
       }
     } catch (error) {

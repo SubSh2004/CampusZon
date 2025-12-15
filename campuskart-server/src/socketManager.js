@@ -41,57 +41,53 @@ export const setupSocketManager = (io) => {
     // Private message between two users
     socket.on('sendPrivateMessage', async (data) => {
       try {
-        const { chatId, receiverId, message, senderId, senderName, itemId } = data;
+        const { chatId, receiverId, message, senderId, senderName } = data;
+        console.log('💬 Message received - sender:', senderId, 'receiver:', receiverId);
 
-        // Check message limits if itemId is provided
-        if (itemId) {
-          const Unlock = (await import('./models/unlock.model.js')).default;
-          const Item = (await import('./models/item.mongo.model.js')).default;
-          
-          // Get the item to find seller
-          const item = await Item.findById(itemId);
-          if (!item) {
-            socket.emit('messageError', { message: 'Item not found' });
-            return;
-          }
+        // Find unlock between these two users (check both directions)
+        const Unlock = (await import('./models/unlock.model.js')).default;
+        
+        let unlock = await Unlock.findOne({
+          userId: senderId,
+          active: true
+        }).populate({
+          path: 'itemId',
+          match: { sellerId: receiverId }
+        });
 
-          // Find unlocks for BOTH buyer and seller
-          // The unlock is always created for the buyer
-          const buyerId = item.userId === senderId ? receiverId : senderId;
-          const sellerId = item.userId;
-          
-          const unlock = await Unlock.findOne({
-            userId: buyerId,
-            itemId,
+        // If not found, check if receiver unlocked sender's item
+        if (!unlock || !unlock.itemId) {
+          unlock = await Unlock.findOne({
+            userId: receiverId,
             active: true
+          }).populate({
+            path: 'itemId',
+            match: { sellerId: senderId }
           });
+        }
 
-          if (!unlock) {
-            socket.emit('messageError', { 
-              message: 'You must unlock this item to send messages',
-              requiresUnlock: true
+        // Check COMBINED message limit for basic tier
+        if (unlock && unlock.itemId && unlock.tier === 'basic') {
+          console.log('🔍 Checking limits - Count:', unlock.messageCount, '/', unlock.messageLimit);
+          
+          const totalMessages = unlock.messageCount;
+          
+          if (totalMessages >= unlock.messageLimit) {
+            console.log('❌ Limit reached!');
+            socket.emit('messageError', {
+              message: `Combined message limit reached (${unlock.messageLimit} total). Upgrade to Premium for unlimited messages.`,
+              requiresUpgrade: true,
+              messageLimit: unlock.messageLimit
             });
             return;
           }
 
-          // Check COMBINED message limit for basic tier
-          // Count ALL messages in this chat (sent by both users)
-          if (unlock.tier === 'basic') {
-            const totalMessages = unlock.messageCount;
-            
-            if (totalMessages >= unlock.messageLimit) {
-              socket.emit('messageError', {
-                message: `Combined message limit reached (${unlock.messageLimit} total). Upgrade to Premium for unlimited messages.`,
-                requiresUpgrade: true,
-                messageLimit: unlock.messageLimit
-              });
-              return;
-            }
-
-            // Increment combined message count
-            unlock.messageCount += 1;
-            await unlock.save();
-          }
+          // Increment combined message count
+          unlock.messageCount += 1;
+          await unlock.save();
+          console.log(`📊 Updated count: ${unlock.messageCount}/${unlock.messageLimit}`);
+        } else {
+          console.log('✨ No basic unlock found - unlimited messages');
         }
 
         // Save message to database
