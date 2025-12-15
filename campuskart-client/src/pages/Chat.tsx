@@ -401,51 +401,12 @@ export default function Chat() {
   };
 
   const openChat = (chat: Chat) => {
-    try {
-      console.log('🔓 Opening chat:', chat);
-      console.log('📋 Chat details:', {
-        id: chat?._id,
-        hasOtherUser: !!chat?.otherUser,
-        otherUserName: chat?.otherUser?.username,
-        otherUserId: chat?.otherUser?._id
-      });
-      
-      console.log('🎯 DIAGNOSTIC: About to set state');
-      console.log('  - Current selectedUser:', selectedUser);
-      console.log('  - Current selectedChat:', selectedChat);
-      
-      if (!chat || !chat._id) {
-        console.error('❌ Invalid chat: missing chat or chat ID');
-        alert('Invalid chat data. Please refresh the page.');
-        return;
-      }
-      
-      if (!chat.otherUser || !chat.otherUser._id) {
-        console.error('❌ Invalid chat: missing otherUser data');
-        alert('Chat user data is incomplete. Please try again.');
-        return;
-      }
-      
-      console.log('✅ Validation passed, setting state...');
-      setHasError(false);
-      setMessages([]); // Clear previous messages first
-      setSelectedChat(chat);
-      setSelectedUser(chat.otherUser);
-      
-      console.log('✅ State set! New values:');
-      console.log('  - selectedUser:', chat.otherUser);
-      console.log('  - selectedChat:', chat);
-      
-      console.log('📨 Fetching messages for chat:', chat._id);
-      fetchMessages(chat._id).catch(err => {
-        console.error('❌ Error fetching messages:', err);
-        setHasError(true);
-        setErrorMessage('Failed to load messages');
-      });
-    } catch (error) {
-      console.error('❌ Error in openChat:', error);
-      setHasError(true);
-      setErrorMessage('Failed to open chat: ' + (error as Error).message);
+    console.log('🔓 Opening chat:', chat);
+    setMessages([]);
+    setSelectedChat(chat);
+    setSelectedUser(chat.otherUser);
+    if (chat._id) {
+      fetchMessages(chat._id);
     }
   };
 
@@ -652,25 +613,7 @@ export default function Chat() {
 
             {/* Chat Area */}
             <div className="flex-1 flex flex-col">
-              {hasError ? (
-                <div className="flex-1 flex items-center justify-center p-8">
-                  <div className="text-center">
-                    <p className="text-red-500 text-lg font-semibold mb-2">Something went wrong</p>
-                    <p className="text-gray-500 text-sm mb-4">{errorMessage || 'Failed to load chat'}</p>
-                    <button
-                      onClick={() => {
-                        setHasError(false);
-                        setSelectedChat(null);
-                        setSelectedUser(null);
-                        setMessages([]);
-                      }}
-                      className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-                    >
-                      Go Back
-                    </button>
-                  </div>
-                </div>
-              ) : selectedUser ? (
+              {selectedUser ? (
                 <>
                   {/* Chat Header */}
                   <div className={`p-4 ${theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'} border-b transition-colors duration-300 flex items-center justify-between`}>
