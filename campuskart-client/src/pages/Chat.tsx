@@ -65,6 +65,17 @@ export default function Chat() {
     scrollToBottom();
   }, [messages]);
 
+  // Debug: Log when selected chat/user changes
+  useEffect(() => {
+    console.log('🔄 Selected chat changed:', {
+      hasChat: !!selectedChat,
+      chatId: selectedChat?._id,
+      hasUser: !!selectedUser,
+      userId: selectedUser?._id,
+      username: selectedUser?.username
+    });
+  }, [selectedChat, selectedUser]);
+
   // Initialize socket and fetch data
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -239,14 +250,25 @@ export default function Chat() {
 
   const fetchChats = async () => {
     try {
+      console.log('📥 Fetching chats...');
       const response = await axios.get('/api/chat/chats');
+      console.log('📦 Chats response:', response.data);
+      
       if (response.data.success && Array.isArray(response.data.chats)) {
         // Filter out chats with missing otherUser to prevent crashes
-        const validChats = response.data.chats.filter(chat => chat && chat.otherUser && chat.otherUser._id);
+        const validChats = response.data.chats.filter(chat => {
+          const isValid = chat && chat.otherUser && chat.otherUser._id;
+          if (!isValid) {
+            console.warn('⚠️ Filtering out invalid chat:', chat);
+          }
+          return isValid;
+        });
+        
+        console.log('✅ Valid chats:', validChats.length, 'out of', response.data.chats.length);
         setChats(validChats);
       }
     } catch (error) {
-      console.error('Error fetching chats:', error);
+      console.error('❌ Error fetching chats:', error);
       setChats([]); // Set empty array on error
     }
   };
@@ -354,13 +376,25 @@ export default function Chat() {
   };
 
   const openChat = (chat: Chat) => {
+    console.log('🔓 Opening chat:', chat);
+    console.log('📋 Chat details:', {
+      id: chat?._id,
+      hasOtherUser: !!chat?.otherUser,
+      otherUserName: chat?.otherUser?.username,
+      otherUserId: chat?.otherUser?._id
+    });
+    
     if (!chat || !chat.otherUser) {
-      console.error('Invalid chat or missing otherUser:', chat);
+      console.error('❌ Invalid chat or missing otherUser:', chat);
       alert('Unable to open chat. Please try again.');
       return;
     }
+    
+    console.log('✅ Setting selected chat and user');
     setSelectedChat(chat);
     setSelectedUser(chat.otherUser);
+    
+    console.log('📨 Fetching messages for chat:', chat._id);
     fetchMessages(chat._id);
   };
 
