@@ -46,7 +46,6 @@ export default function Chat() {
   const [chatSearchQuery, setChatSearchQuery] = useState('');
   const [isConnected, setIsConnected] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string>('');
-  const [view, setView] = useState<'chats' | 'users'>('chats');
   const [isSending, setIsSending] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; messageId: string; message: Message } | null>(null);
   const [showDeleteChatModal, setShowDeleteChatModal] = useState(false);
@@ -202,14 +201,8 @@ export default function Chat() {
 
   // Search users when search query changes
   useEffect(() => {
-    if (view === 'users') {
-      const timer = setTimeout(() => {
-        fetchUsers(searchQuery);
-      }, 300); // Debounce 300ms
-      
-      return () => clearTimeout(timer);
-    }
-  }, [searchQuery, view]);
+    fetchChats();
+  }, []);
 
   const fetchChats = async () => {
     try {
@@ -230,7 +223,6 @@ export default function Chat() {
         const chat = response.data.chat;
         setSelectedChat({ ...chat, otherUser: user, unreadCount: 0 });
         setSelectedUser(user);
-        setView('chats');
         fetchMessages(chat._id);
       }
     } catch (error) {
@@ -421,28 +413,15 @@ export default function Chat() {
                   Your Chats
                 </div>
               </div>
-              <div className={`hidden flex border-b ${
-                    view === 'users'
-                      ? theme === 'dark'
-                        ? 'bg-gray-800 text-indigo-400 border-b-2 border-indigo-400'
-                        : 'bg-white text-indigo-600 border-b-2 border-indigo-600'
-                      : theme === 'dark'
-                      ? 'text-gray-400'
-                      : 'text-gray-500'
-                  } transition-colors duration-300`}
-                >
-                  Users
-                </button>
-              </div>
 
               {/* Search Input */}
               <div className={`p-3 border-b ${theme === 'dark' ? 'border-gray-600 bg-gray-700' : 'border-gray-200 bg-white'}`}>
                 <div className="relative">
                   <input
                     type="text"
-                    value={view === 'chats' ? chatSearchQuery : searchQuery}
-                    onChange={(e) => view === 'chats' ? setChatSearchQuery(e.target.value) : setSearchQuery(e.target.value)}
-                    placeholder={view === 'chats' ? "Search chats..." : "Search users..."}
+                    value={chatSearchQuery}
+                    onChange={(e) => setChatSearchQuery(e.target.value)}
+                    placeholder="Search chats..."
                     className={`w-full px-4 py-2 pl-10 rounded-lg ${
                       theme === 'dark'
                         ? 'bg-gray-600 text-white placeholder-gray-400 border-gray-500'
@@ -467,68 +446,47 @@ export default function Chat() {
 
               {/* List */}
               <div className="flex-1 overflow-y-auto">
-                {view === 'chats' ? (
+                {chats.filter(chat => 
+                  chat.otherUser?.username.toLowerCase().includes(chatSearchQuery.toLowerCase())
+                ).length > 0 ? (
                   chats.filter(chat => 
                     chat.otherUser?.username.toLowerCase().includes(chatSearchQuery.toLowerCase())
-                  ).length > 0 ? (
-                    chats.filter(chat => 
-                      chat.otherUser?.username.toLowerCase().includes(chatSearchQuery.toLowerCase())
-                    ).map(chat => (
-                      <button
-                        key={chat._id}
-                        onClick={() => openChat(chat)}
-                        className={`w-full p-4 text-left ${
-                          selectedChat?._id === chat._id
-                            ? theme === 'dark'
-                              ? 'bg-gray-800'
-                              : 'bg-white'
-                            : theme === 'dark'
-                            ? 'hover:bg-gray-600'
-                            : 'hover:bg-gray-100'
-                        } border-b ${theme === 'dark' ? 'border-gray-600' : 'border-gray-200'} transition-colors duration-200`}
-                      >
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1 min-w-0">
-                            <h3 className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                              {chat.otherUser?.username || 'Unknown'}
-                            </h3>
-                            <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} truncate`}>
-                              {chat.lastMessage || 'No messages yet'}
-                            </p>
-                          </div>
-                          {chat.unreadCount > 0 && (
-                            <span className="bg-indigo-600 text-white text-xs rounded-full px-2 py-1">
-                              {chat.unreadCount}
-                            </span>
-                          )}
-                        </div>
-                      </button>
-                    ))
-                  ) : (
-                    <div className={`p-8 text-center ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                      <p>{chatSearchQuery ? 'No chats found' : 'No conversations yet'}</p>
-                      <p className="text-sm mt-2">{chatSearchQuery ? 'Try a different search' : 'Start chatting with users!'}</p>
-                    </div>
-                  )
-                ) : (
-                  users.map(user => (
+                  ).map(chat => (
                     <button
-                      key={user._id}
-                      onClick={() => startChat(user)}
+                      key={chat._id}
+                      onClick={() => openChat(chat)}
                       className={`w-full p-4 text-left ${
-                        theme === 'dark'
-                          ? 'hover:bg-gray-600 border-gray-600'
-                          : 'hover:bg-gray-100 border-gray-200'
-                      } border-b transition-colors duration-200`}
+                        selectedChat?._id === chat._id
+                          ? theme === 'dark'
+                            ? 'bg-gray-800'
+                            : 'bg-white'
+                          : theme === 'dark'
+                          ? 'hover:bg-gray-600'
+                          : 'hover:bg-gray-100'
+                      } border-b ${theme === 'dark' ? 'border-gray-600' : 'border-gray-200'} transition-colors duration-200`}
                     >
-                      <h3 className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                        {user.username}
-                      </h3>
-                      <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                        {user.hostel}
-                      </p>
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1 min-w-0">
+                          <h3 className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                            {chat.otherUser?.username || 'Unknown'}
+                          </h3>
+                          <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} truncate`}>
+                            {chat.lastMessage || 'No messages yet'}
+                          </p>
+                        </div>
+                        {chat.unreadCount > 0 && (
+                          <span className="bg-indigo-600 text-white text-xs rounded-full px-2 py-1">
+                            {chat.unreadCount}
+                          </span>
+                        )}
+                      </div>
                     </button>
                   ))
+                ) : (
+                  <div className={`p-8 text-center ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                    <p>{chatSearchQuery ? 'No chats found' : 'No conversations yet'}</p>
+                    <p className="text-sm mt-2">{chatSearchQuery ? 'Try a different search' : 'Unlock items and chat with sellers!'}</p>
+                  </div>
                 )}
               </div>
             </div>
