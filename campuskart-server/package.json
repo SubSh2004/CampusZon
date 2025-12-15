@@ -10,7 +10,8 @@
     "check-items-mongo": "node scripts/checkItemsMongo.js",
     "clear-items-mongo": "node scripts/clearItemsMongo.js",
     "migrate-items-to-mongo": "node scripts/migrateItemsToMongo.js",
-    "setup-mongo": "node scripts/setupMongoOnly.js"
+    "setup-mongo": "node scripts/setupMongoOnly.js",
+    "add-indices": "node scripts/addIndices.js"
   },
   "keywords": [
     "campuszon",

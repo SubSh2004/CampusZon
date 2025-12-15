@@ -105,5 +105,20 @@ app.get('/', (req, res) => {
   res.json({ message: 'Welcome to CampusZon Server' });
 });
 
+// Health check endpoint (keeps Render awake, prevents cold starts)
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    message: 'Server is healthy and running'
+  });
+});
+
+// Ping endpoint (alternative health check)
+app.get('/ping', (req, res) => {
+  res.status(200).send('pong');
+});
+
 // Initialize and start server
 initializeServer();
