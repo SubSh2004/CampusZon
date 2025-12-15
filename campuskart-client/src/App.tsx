@@ -88,7 +88,6 @@ export default function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/add-item" element={<AddItem />} />
         <Route path="/item/:id" element={<ItemDetail />} />
-        <Route path="/chat" element={<Chat />} />
         <Route path="/oauth-callback" element={<OAuthCallback />} />
       </Routes>
     </div>
