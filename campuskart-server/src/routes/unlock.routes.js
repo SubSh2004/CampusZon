@@ -1,5 +1,5 @@
 import express from 'express';
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticate } from '../middleware/auth.js';
 import {
   expressInterest,
   checkUnlockStatus,
@@ -14,7 +14,7 @@ import {
 const router = express.Router();
 
 // All routes require authentication
-router.use(authenticateToken);
+router.use(authenticate);
 
 // Express anonymous interest in an item (FREE)
 router.post('/items/:itemId/interest', expressInterest);
