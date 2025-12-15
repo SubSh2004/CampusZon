@@ -4,6 +4,8 @@ import axios from 'axios';
 import { useTheme } from '../context/ThemeContext';
 import { io, Socket } from 'socket.io-client';
 import { SOCKET_URL } from '../config/api';
+import UnlockModal from '../components/UnlockModal';
+import FreeCreditsIndicator from '../components/FreeCreditsIndicator';
 
 interface Item {
   id: string; // MongoDB ObjectId as string
@@ -32,6 +34,12 @@ export default function ItemDetail() {
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [bookingStatus, setBookingStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [socket, setSocket] = useState<Socket | null>(null);
+  
+  // Unlock system state
+  const [showUnlockModal, setShowUnlockModal] = useState(false);
+  const [unlocked, setUnlocked] = useState(false);
+  const [sellerInfo, setSellerInfo] = useState<any>(null);
+  const [unlockTier, setUnlockTier] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchItem = async () => {
@@ -49,6 +57,9 @@ export default function ItemDetail() {
 
     fetchItem();
 
+    // Check unlock status
+    checkUnlockStatus();
+
     // Initialize socket
     const newSocket = io(SOCKET_URL);
     setSocket(newSocket);
@@ -57,6 +68,31 @@ export default function ItemDetail() {
       newSocket.close();
     };
   }, [id]);
+
+  const checkUnlockStatus = async () => {
+    const token = localStorage.getItem('token');
+    if (!token || !id) return;
+
+    try {
+      const response = await axios.get(`/api/unlock/items/${id}/status`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data.unlocked) {
+        setUnlocked(true);
+        setUnlockTier(response.data.tier);
+        // Seller info is already in item, just mark as unlocked
+      }
+    } catch (error) {
+      console.error('Error checking unlock status:', error);
+    }
+  };
+
+  const handleUnlockSuccess = (seller: any, tier: string) => {
+    setSellerInfo(seller);
+    setUnlockTier(tier);
+    setUnlocked(true);
+  };
 
   const handleBookItem = async () => {
     const token = localStorage.getItem('token');
@@ -132,6 +168,9 @@ export default function ItemDetail() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+      {/* Free Credits Indicator */}
+      <FreeCreditsIndicator />
+      
       {/* Header */}
       <header className="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700 transition-colors duration-300">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -211,66 +250,135 @@ export default function ItemDetail() {
               {/* Seller Information */}
               <div className="border-t dark:border-gray-700 pt-6 transition-colors duration-300">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Seller Information</h2>
-                <div className="space-y-3">
-                  <div className="flex items-center">
-                    <svg className="w-5 h-5 text-gray-400 dark:text-gray-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                    <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Name</p>
-                      <p className="font-medium text-gray-900 dark:text-white">{item.userName}</p>
+                
+                {!unlocked ? (
+                  /* LOCKED STATE - Show limited info */
+                  <div className="space-y-4">
+                    <div className="flex items-center">
+                      <svg className="w-5 h-5 text-gray-400 dark:text-gray-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                      <div>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Hostel</p>
+                        <p className="font-medium text-gray-900 dark:text-white">{item.userHostel}</p>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="flex items-center">
-                    <svg className="w-5 h-5 text-gray-400 dark:text-gray-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                    </svg>
-                    <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Phone</p>
-                      <a href={`tel:${item.userPhone}`} className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
-                        {item.userPhone}
-                      </a>
+                    <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-700 dark:to-gray-600 p-4 rounded-lg border-2 border-dashed border-blue-200 dark:border-gray-500">
+                      <div className="text-center mb-3">
+                        <svg className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        <p className="text-gray-600 dark:text-gray-300 font-medium">🔒 Contact details hidden</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Unlock to see name, phone, email & chat</p>
+                      </div>
+                      
+                      <button
+                        onClick={() => setShowUnlockModal(true)}
+                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition-all transform hover:scale-105 shadow-lg"
+                      >
+                        🔓 Unlock Contact Details
+                      </button>
+                      
+                      <p className="text-center text-sm text-green-600 dark:text-green-400 font-semibold mt-3">
+                        🎁 First 3 unlocks FREE!
+                      </p>
                     </div>
                   </div>
+                ) : (
+                  /* UNLOCKED STATE - Show full info */
+                  <div className="space-y-3">
+                    <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg mb-4 border border-green-200 dark:border-green-800">
+                      <p className="text-green-700 dark:text-green-400 text-sm font-medium text-center">
+                        ✅ Contact Unlocked - {unlockTier === 'premium' ? '⭐ Premium' : 'Basic'} Tier
+                      </p>
+                    </div>
 
-                  <div className="flex items-center">
-                    <svg className="w-5 h-5 text-gray-400 dark:text-gray-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
-                      <a href={`mailto:${item.userEmail}`} className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
-                        {item.userEmail}
-                      </a>
+                    <div className="flex items-center">
+                      <svg className="w-5 h-5 text-gray-400 dark:text-gray-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      <div>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Name</p>
+                        <p className="font-medium text-gray-900 dark:text-white">{sellerInfo?.name || item.userName}</p>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="flex items-center">
-                    <svg className="w-5 h-5 text-gray-400 dark:text-gray-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                    </svg>
-                    <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Hostel</p>
-                      <p className="font-medium text-gray-900 dark:text-white">{item.userHostel}</p>
+                    <div className="flex items-center">
+                      <svg className="w-5 h-5 text-gray-400 dark:text-gray-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                      <div>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Hostel</p>
+                        <p className="font-medium text-gray-900 dark:text-white">{sellerInfo?.hostel || item.userHostel}</p>
+                      </div>
                     </div>
+
+                    {unlockTier === 'premium' && (
+                      <>
+                        <div className="flex items-center">
+                          <svg className="w-5 h-5 text-gray-400 dark:text-gray-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                          </svg>
+                          <div>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Phone</p>
+                            <a href={`tel:${sellerInfo?.phone || item.userPhone}`} className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
+                              {sellerInfo?.phone || item.userPhone}
+                            </a>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center">
+                          <svg className="w-5 h-5 text-gray-400 dark:text-gray-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          </svg>
+                          <div>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
+                            <a href={`mailto:${sellerInfo?.email || item.userEmail}`} className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
+                              {sellerInfo?.email || item.userEmail}
+                            </a>
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    {unlockTier === 'basic' && (
+                      <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                        <p className="text-yellow-700 dark:text-yellow-400 text-sm">
+                          💡 <strong>Upgrade to Premium</strong> for phone & email access
+                        </p>
+                      </div>
+                    )}
                   </div>
-                </div>
+                )}
 
                 {/* Action Buttons */}
                 <div className="mt-6 space-y-3">
-                  <button
-                    onClick={() => setShowBookingModal(true)}
-                    className="w-full block text-center bg-indigo-600 dark:bg-indigo-500 text-white py-3 px-6 rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600 transition font-medium"
-                  >
-                    📦 Book This Item
-                  </button>
-                  <a
-                    href={`tel:${item.userPhone}`}
-                    className="w-full block text-center bg-gray-600 dark:bg-gray-700 text-white py-3 px-6 rounded-md hover:bg-gray-700 dark:hover:bg-gray-600 transition font-medium"
-                  >
-                    📞 Contact Seller
-                  </a>
+                  {unlocked ? (
+                    <>
+                      <button
+                        onClick={() => setShowBookingModal(true)}
+                        className="w-full block text-center bg-indigo-600 dark:bg-indigo-500 text-white py-3 px-6 rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600 transition font-medium"
+                      >
+                        💬 Chat with Seller {unlockTier === 'basic' && '(20 messages)'}
+                      </button>
+                      {unlockTier === 'premium' && (
+                        <a
+                          href={`tel:${sellerInfo?.phone || item.userPhone}`}
+                          className="w-full block text-center bg-gray-600 dark:bg-gray-700 text-white py-3 px-6 rounded-md hover:bg-gray-700 dark:hover:bg-gray-600 transition font-medium"
+                        >
+                          📞 Call Seller
+                        </a>
+                      )}
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => setShowUnlockModal(true)}
+                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 px-6 rounded-md transition font-semibold"
+                    >
+                      🔓 Unlock to Contact Seller
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -340,6 +448,17 @@ export default function ItemDetail() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Unlock Modal */}
+      {item && (
+        <UnlockModal
+          isOpen={showUnlockModal}
+          onClose={() => setShowUnlockModal(false)}
+          itemId={item.id}
+          itemTitle={item.title}
+          onUnlockSuccess={handleUnlockSuccess}
+        />
       )}
     </div>
   );
