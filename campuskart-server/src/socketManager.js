@@ -46,8 +46,22 @@ export const setupSocketManager = (io) => {
         // Check message limits if itemId is provided
         if (itemId) {
           const Unlock = (await import('./models/unlock.model.js')).default;
+          const Item = (await import('./models/item.mongo.model.js')).default;
+          
+          // Get the item to find seller
+          const item = await Item.findById(itemId);
+          if (!item) {
+            socket.emit('messageError', { message: 'Item not found' });
+            return;
+          }
+
+          // Find unlocks for BOTH buyer and seller
+          // The unlock is always created for the buyer
+          const buyerId = item.userId === senderId ? receiverId : senderId;
+          const sellerId = item.userId;
+          
           const unlock = await Unlock.findOne({
-            userId: senderId,
+            userId: buyerId,
             itemId,
             active: true
           });
@@ -60,18 +74,21 @@ export const setupSocketManager = (io) => {
             return;
           }
 
-          // Check message limit for basic tier
-          if (unlock.tier === 'basic' && unlock.messageCount >= unlock.messageLimit) {
-            socket.emit('messageError', {
-              message: `Message limit reached (${unlock.messageLimit}). Upgrade to Premium for unlimited messages.`,
-              requiresUpgrade: true,
-              messageLimit: unlock.messageLimit
-            });
-            return;
-          }
-
-          // Increment message count for basic tier
+          // Check COMBINED message limit for basic tier
+          // Count ALL messages in this chat (sent by both users)
           if (unlock.tier === 'basic') {
+            const totalMessages = unlock.messageCount;
+            
+            if (totalMessages >= unlock.messageLimit) {
+              socket.emit('messageError', {
+                message: `Combined message limit reached (${unlock.messageLimit} total). Upgrade to Premium for unlimited messages.`,
+                requiresUpgrade: true,
+                messageLimit: unlock.messageLimit
+              });
+              return;
+            }
+
+            // Increment combined message count
             unlock.messageCount += 1;
             await unlock.save();
           }

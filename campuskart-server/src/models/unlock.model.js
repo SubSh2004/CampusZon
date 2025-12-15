@@ -40,7 +40,7 @@ const unlockSchema = new mongoose.Schema({
   },
   messageLimit: {
     type: Number,
-    default: 20 // Basic tier limit
+    default: 20 // Basic tier limit - COMBINED total for both users
   },
   active: {
     type: Boolean,

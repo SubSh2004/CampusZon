@@ -502,7 +502,7 @@ export default function Chat() {
                         {selectedUser.username}
                       </h2>
                       <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                        {selectedUser.email}
+                        {selectedUser.hostel}
                       </p>
                     </div>
                     <button

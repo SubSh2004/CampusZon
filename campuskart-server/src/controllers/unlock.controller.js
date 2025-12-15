@@ -2,6 +2,8 @@ import Unlock from '../models/unlock.model.js';
 import Payment from '../models/payment.model.js';
 import Item from '../models/item.mongo.model.js';
 import User from '../models/user.model.js';
+import Chat from '../models/chat.model.js';
+import Message from '../models/message.model.js';
 import crypto from 'crypto';
 
 // Express interest in an item (FREE, anonymous)
@@ -113,6 +115,42 @@ export const unlockBasic = async (req, res) => {
       // Update item analytics
       item.unlockCount += 1;
       await item.save();
+
+      // Auto-send purchase interest message to seller
+      try {
+        // Find or create chat between buyer and seller
+        let chat = await Chat.findOne({
+          participants: { $all: [userId, item.userId] }
+        });
+
+        if (!chat) {
+          chat = await Chat.create({
+            participants: [userId, item.userId],
+            unreadCount: { [userId]: 0, [item.userId]: 0 }
+          });
+        }
+
+        // Send auto-message
+        const autoMessage = `Hi! I'm interested in buying your "${item.title}" listed for ₹${item.price}. Please let me know if it's still available.`;
+        
+        await Message.create({
+          chatId: chat._id,
+          senderId: userId,
+          senderName: user.username,
+          receiverId: item.userId,
+          message: autoMessage
+        });
+
+        // Update chat with last message
+        await Chat.findByIdAndUpdate(chat._id, {
+          lastMessage: autoMessage,
+          lastMessageTime: new Date(),
+          $inc: { [`unreadCount.${item.userId}`]: 1 }
+        });
+      } catch (msgError) {
+        console.error('Error sending auto-message:', msgError);
+        // Don't fail the unlock if message fails
+      }
 
       return res.json({
         success: true,
