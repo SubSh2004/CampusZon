@@ -356,18 +356,12 @@ export default function ItemDetail() {
                 <div className="mt-6 space-y-3">
                   {unlocked ? (
                     <>
-                      <button
-                        onClick={() => navigate('/chat', { state: { sellerId: item.userId, itemId: item.id } })}
-                        className="w-full block text-center bg-indigo-600 dark:bg-indigo-500 text-white py-3 px-6 rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600 transition font-medium"
-                      >
-                        💬 Chat with Seller {unlockTier === 'basic' && '(10 messages total)'}
-                      </button>
                       {unlockTier === 'basic' && (
                         <button
                           onClick={() => setShowUnlockModal(true)}
                           className="w-full block text-center bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 px-6 rounded-md transition font-semibold"
                         >
-                          ⬆️ Upgrade to Premium for ₹15 📥 (Get phone & email + unlimited messages)
+                          ⬆️ Upgrade to Premium for ₹15 📥 (Get phone & email)
                         </button>
                       )}
                       {unlockTier === 'premium' && (

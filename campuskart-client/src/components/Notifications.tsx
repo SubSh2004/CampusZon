@@ -108,11 +108,6 @@ export default function Notifications() {
     }
   };
 
-  const handleChatClick = () => {
-    setShowDropdown(false);
-    navigate('/chat');
-  };
-
   const handleBookingClick = async (booking: Booking) => {
     setShowDropdown(false);
     try {
@@ -142,13 +137,9 @@ export default function Notifications() {
       );
       
       if (response.data.success) {
-        // Navigate to chat page with the selected chat
-        navigate('/chat', { state: { selectedChatId: response.data.chat._id } });
       }
     } catch (error) {
-      console.error('Error opening chat:', error);
-      // Fallback to chat page
-      navigate('/chat');
+      console.error('Error handling booking:', error);
     }
   };
 

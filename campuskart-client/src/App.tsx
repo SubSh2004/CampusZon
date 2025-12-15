@@ -8,7 +8,7 @@ import Login from './pages/Login'
 import Signup from './pages/Signup'
 import AddItem from './pages/AddItem'
 import ItemDetail from './pages/ItemDetail'
-import Chat from './pages/Chat'
+
 import Profile from './pages/Profile'
 import OAuthCallback from './pages/OAuthCallback'
 
