@@ -410,6 +410,10 @@ export default function Chat() {
         otherUserId: chat?.otherUser?._id
       });
       
+      console.log('🎯 DIAGNOSTIC: About to set state');
+      console.log('  - Current selectedUser:', selectedUser);
+      console.log('  - Current selectedChat:', selectedChat);
+      
       if (!chat || !chat._id) {
         console.error('❌ Invalid chat: missing chat or chat ID');
         alert('Invalid chat data. Please refresh the page.');
@@ -422,11 +426,15 @@ export default function Chat() {
         return;
       }
       
-      console.log('✅ Setting selected chat and user');
+      console.log('✅ Validation passed, setting state...');
       setHasError(false);
       setMessages([]); // Clear previous messages first
       setSelectedChat(chat);
       setSelectedUser(chat.otherUser);
+      
+      console.log('✅ State set! New values:');
+      console.log('  - selectedUser:', chat.otherUser);
+      console.log('  - selectedChat:', chat);
       
       console.log('📨 Fetching messages for chat:', chat._id);
       fetchMessages(chat._id).catch(err => {
@@ -662,7 +670,7 @@ export default function Chat() {
                     </button>
                   </div>
                 </div>
-              ) : selectedUser && selectedChat ? (
+              ) : selectedUser ? (
                 <>
                   {/* Chat Header */}
                   <div className={`p-4 ${theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'} border-b transition-colors duration-300 flex items-center justify-between`}>
