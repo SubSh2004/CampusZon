@@ -79,16 +79,29 @@ export default function Chat() {
 
     // Check if sellerId is passed via navigation state
     if (location.state?.sellerId) {
+      console.log('🔍 sellerId detected:', location.state.sellerId);
+      console.log('🔍 itemId detected:', location.state.itemId);
+      
       // Fetch seller details and start chat
       const startChatWithSeller = async () => {
         try {
+          console.log('📞 Fetching seller details...');
           const sellerResponse = await axios.get(`/api/users/${location.state.sellerId}`);
+          console.log('✅ Seller response:', sellerResponse.data);
+          
           if (sellerResponse.data.success) {
             const seller = sellerResponse.data.user;
+            console.log('👤 Seller:', seller);
+            
             // Start chat with seller - use correct endpoint
+            console.log('💬 Creating/getting chat...');
             const chatResponse = await axios.get(`/api/chat/chat/${seller._id}`);
+            console.log('✅ Chat response:', chatResponse.data);
+            
             if (chatResponse.data.success) {
               const chat = chatResponse.data.chat;
+              console.log('💬 Chat:', chat);
+              
               setSelectedChat({ ...chat, otherUser: seller, unreadCount: 0 });
               setSelectedUser(seller);
               fetchMessages(chat._id);
@@ -96,21 +109,28 @@ export default function Chat() {
               // If itemId is provided, fetch message limits
               if (location.state?.itemId) {
                 try {
+                  console.log('📊 Fetching unlock status...');
                   const unlockResponse = await axios.get(`/api/unlock/items/${location.state.itemId}/status`);
+                  console.log('✅ Unlock response:', unlockResponse.data);
+                  
                   if (unlockResponse.data.unlocked && unlockResponse.data.tier === 'basic') {
                     setMessageCount(unlockResponse.data.messagesUsed || 0);
                     setMessageLimit(unlockResponse.data.messageLimit || 10);
+                    console.log('📊 Message limits set:', unlockResponse.data.messagesUsed, '/', unlockResponse.data.messageLimit);
                   } else {
                     setMessageLimit(null); // Premium or no unlock
+                    console.log('✨ Premium tier or no unlock - unlimited messages');
                   }
                 } catch (err) {
-                  console.error('Error fetching unlock status:', err);
+                  console.error('❌ Error fetching unlock status:', err);
                 }
               }
             }
           }
-        } catch (error) {
-          console.error('Error starting chat with seller:', error);
+        } catch (error: any) {
+          console.error('❌ Error starting chat with seller:', error);
+          console.error('Error details:', error.response?.data || error.message);
+          alert('Failed to open chat. Please try again.');
         }
       };
       startChatWithSeller();
