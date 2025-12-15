@@ -44,53 +44,6 @@ export const setupSocketManager = (io) => {
         const { chatId, receiverId, message, senderId, senderName } = data;
         console.log('💬 Message received - sender:', senderId, 'receiver:', receiverId);
 
-        // Find unlock between these two users (check both directions)
-        const Unlock = (await import('./models/unlock.model.js')).default;
-        
-        let unlock = await Unlock.findOne({
-          userId: senderId,
-          active: true
-        }).populate({
-          path: 'itemId',
-          match: { sellerId: receiverId }
-        });
-
-        // If not found, check if receiver unlocked sender's item
-        if (!unlock || !unlock.itemId) {
-          unlock = await Unlock.findOne({
-            userId: receiverId,
-            active: true
-          }).populate({
-            path: 'itemId',
-            match: { sellerId: senderId }
-          });
-        }
-
-        // Only check message limits if there's an unlock with basic tier
-        // If no unlock exists, allow unlimited messages (free chat)
-        if (unlock && unlock.itemId && unlock.tier === 'basic') {
-          console.log('🔍 Checking limits - Count:', unlock.messageCount, '/', unlock.messageLimit);
-          
-          const totalMessages = unlock.messageCount;
-          
-          if (totalMessages >= unlock.messageLimit) {
-            console.log('❌ Limit reached!');
-            socket.emit('messageError', {
-              message: `Combined message limit reached (${unlock.messageLimit} total). Upgrade to Premium for unlimited messages.`,
-              requiresUpgrade: true,
-              messageLimit: unlock.messageLimit
-            });
-            return;
-          }
-
-          // Increment combined message count
-          unlock.messageCount += 1;
-          await unlock.save();
-          console.log(`📊 Updated count: ${unlock.messageCount}/${unlock.messageLimit}`);
-        } else {
-          console.log('✨ No unlock found or Premium tier - unlimited messages');
-        }
-
         // Save message to database
         const newMessage = await Message.create({
           chatId,

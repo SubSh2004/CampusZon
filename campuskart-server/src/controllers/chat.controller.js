@@ -118,39 +118,6 @@ export const sendMessage = async (req, res) => {
     const senderId = req.user._id.toString();
     const senderName = req.user.username;
 
-    // Check if sender has unlock permission and message limit for basic tier
-    if (itemId) {
-      const unlock = await Unlock.findOne({
-        userId: senderId,
-        itemId,
-        active: true
-      });
-
-      if (!unlock) {
-        return res.status(403).json({ 
-          success: false, 
-          message: 'You must unlock this item to send messages',
-          requiresUnlock: true
-        });
-      }
-
-      // Check message limit for basic tier
-      if (unlock.tier === 'basic' && unlock.messageCount >= unlock.messageLimit) {
-        return res.status(403).json({
-          success: false,
-          message: `Message limit reached (${unlock.messageLimit}). Upgrade to Premium for unlimited messages.`,
-          requiresUpgrade: true,
-          messageLimit: unlock.messageLimit
-        });
-      }
-
-      // Increment message count for basic tier
-      if (unlock.tier === 'basic') {
-        unlock.messageCount += 1;
-        await unlock.save();
-      }
-    }
-
     const newMessage = await Message.create({
       chatId,
       senderId,
