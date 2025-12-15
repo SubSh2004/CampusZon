@@ -140,8 +140,17 @@ export default function Chat() {
 
     // Listen for message errors
     newSocket.on('messageError', (error: any) => {
+      console.error('❌ Message error:', error);
       alert(error.message);
       setIsSending(false);
+      // Remove the last optimistic message if it failed
+      setMessages(prev => {
+        const lastMsg = prev[prev.length - 1];
+        if (lastMsg?._id?.toString().startsWith('temp-')) {
+          return prev.slice(0, -1);
+        }
+        return prev;
+      });
     });
 
     // Listen for new messages
@@ -158,6 +167,7 @@ export default function Chat() {
 
     // Listen for message sent confirmation (from server)
     newSocket.on('messageSent', (message: Message) => {
+      console.log('✅ Message sent confirmation received:', message);
       // Update the temporary message with the server response
       setMessages(prev => 
         prev.map(m => 
@@ -166,6 +176,7 @@ export default function Chat() {
             : m
         )
       );
+      setIsSending(false); // Reset sending state
     });
 
     // Listen for message deletion
@@ -276,10 +287,26 @@ export default function Chat() {
   };
 
   const sendMessage = async () => {
-    if (!messageInput.trim() || !selectedChat || !selectedUser || isSending) return;
+    if (!messageInput.trim() || !selectedChat || !selectedUser || isSending) {
+      console.log('⚠️ Cannot send message:', { 
+        hasInput: !!messageInput.trim(), 
+        hasChat: !!selectedChat, 
+        hasUser: !!selectedUser, 
+        isSending 
+      });
+      return;
+    }
+    
+    if (!socket || !socket.connected) {
+      console.error('❌ Socket not connected!');
+      alert('Not connected to server. Please refresh the page.');
+      return;
+    }
 
     const tempId = `temp-${Date.now()}-${messageIdRef.current++}`;
     const messageText = messageInput.trim();
+    
+    console.log('📤 Sending message:', messageText);
     
     // Optimistically add message to UI immediately
     const optimisticMessage: Message = {
@@ -303,16 +330,25 @@ export default function Chat() {
       message: messageText
     };
 
+    console.log('📡 Emitting via socket:', messageData);
+    
     try {
-      // Only emit via socket - let server handle database save
-      socket?.emit('sendPrivateMessage', messageData);
+      // Emit via socket - server will handle database save
+      socket.emit('sendPrivateMessage', messageData);
+      
+      // Set a timeout to reset isSending if we don't get confirmation
+      setTimeout(() => {
+        if (isSending) {
+          console.log('⏱️ Message send timeout - resetting state');
+          setIsSending(false);
+        }
+      }, 5000);
     } catch (error) {
       console.error('Error sending message:', error);
       // Remove optimistic message on error
       setMessages(prev => prev.filter(m => m._id !== tempId));
       setMessageInput(messageText); // Restore message
       alert('Failed to send message. Please try again.');
-    } finally {
       setIsSending(false);
     }
   };

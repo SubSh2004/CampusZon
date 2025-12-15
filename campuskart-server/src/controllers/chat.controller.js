@@ -185,8 +185,18 @@ export const getUserChats = async (req, res) => {
     // Get other participant details for each chat
     const chatsWithUsers = await Promise.all(
       chats.map(async (chat) => {
-        const otherUserId = chat.participants.find(id => id !== userId);
-        const otherUser = await User.findById(otherUserId).select('username email');
+        const otherUserId = chat.participants.find(id => id.toString() !== userId);
+        if (!otherUserId) {
+          console.error('No other user found for chat:', chat._id);
+          return null;
+        }
+        
+        const otherUser = await User.findById(otherUserId).select('username email hostel phoneNumber');
+        
+        if (!otherUser) {
+          console.error('Other user not found:', otherUserId);
+          return null;
+        }
         
         return {
           ...chat.toObject(),
@@ -196,7 +206,10 @@ export const getUserChats = async (req, res) => {
       })
     );
 
-    res.json({ success: true, chats: chatsWithUsers });
+    // Filter out null chats
+    const validChats = chatsWithUsers.filter(chat => chat !== null);
+
+    res.json({ success: true, chats: validChats });
   } catch (error) {
     console.error('Error fetching user chats:', error);
     res.status(500).json({ success: false, message: 'Failed to fetch chats' });

@@ -66,7 +66,8 @@ export const setupSocketManager = (io) => {
           });
         }
 
-        // Check COMBINED message limit for basic tier
+        // Only check message limits if there's an unlock with basic tier
+        // If no unlock exists, allow unlimited messages (free chat)
         if (unlock && unlock.itemId && unlock.tier === 'basic') {
           console.log('🔍 Checking limits - Count:', unlock.messageCount, '/', unlock.messageLimit);
           
@@ -87,7 +88,7 @@ export const setupSocketManager = (io) => {
           await unlock.save();
           console.log(`📊 Updated count: ${unlock.messageCount}/${unlock.messageLimit}`);
         } else {
-          console.log('✨ No basic unlock found - unlimited messages');
+          console.log('✨ No unlock found or Premium tier - unlimited messages');
         }
 
         // Save message to database
