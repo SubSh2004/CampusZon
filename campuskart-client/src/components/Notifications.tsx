@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { io } from 'socket.io-client';
 import { useTheme } from '../context/ThemeContext';
-import { API_URL, SOCKET_URL } from '../config/api';
+import { API_URL } from '../config/api';
 
 interface Booking {
   _id: string;
@@ -17,24 +16,12 @@ interface Booking {
   createdAt: string;
 }
 
-interface Chat {
-  _id: string;
-  lastMessage: string;
-  lastMessageTime: string;
-  unreadCount: number;
-  otherUser: {
-    username: string;
-  };
-}
-
 export default function Notifications() {
   const { theme } = useTheme();
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
-  const [recentChats, setRecentChats] = useState<Chat[]>([]);
-  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
   const [unreadBookingsCount, setUnreadBookingsCount] = useState(0);
 
   useEffect(() => {
@@ -46,56 +33,28 @@ export default function Notifications() {
     // Set axios auth header
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-    // Initialize socket
-    const newSocket = io(SOCKET_URL);
-    
-    newSocket.on('connect', () => {
-      newSocket.emit('userJoin', userId);
-    });
-
-    // Listen for new messages
-    newSocket.on('newPrivateMessage', () => {
-      fetchNotifications();
-    });
-
-    // Listen for booking notifications
-    newSocket.on('newBookingRequest', () => {
-      fetchNotifications();
-    });
-
-    newSocket.on('bookingStatusChanged', () => {
-      fetchNotifications();
-    });
-
     // Fetch initial data
     fetchNotifications();
 
+    // Poll for updates every 30 seconds
+    const interval = setInterval(fetchNotifications, 30000);
+
     return () => {
-      newSocket.close();
+      clearInterval(interval);
     };
   }, []);
 
   const fetchNotifications = async () => {
     try {
-      const [messageResponse, bookingResponse, chatsResponse, sellerBookingsResponse] = await Promise.all([
-        axios.get('/api/chat/unread-count'),
+      const [bookingResponse, sellerBookingsResponse] = await Promise.all([
         axios.get('/api/booking/unread-count'),
-        axios.get('/api/chat/chats'),
         axios.get('/api/booking/seller')
       ]);
 
-      const msgCount = messageResponse.data.unreadCount || 0;
       const bookCount = bookingResponse.data.unreadCount || 0;
       
-      setUnreadMessagesCount(msgCount);
       setUnreadBookingsCount(bookCount);
-      setUnreadCount(msgCount + bookCount);
-      
-      // Get recent chats with unread messages
-      const chatsWithUnread = (chatsResponse.data.chats || [])
-        .filter((chat: Chat) => chat.unreadCount > 0)
-        .slice(0, 3);
-      setRecentChats(chatsWithUnread);
+      setUnreadCount(bookCount);
       
       // Get recent unread bookings
       const unreadBookings = (sellerBookingsResponse.data.bookings || [])
@@ -128,16 +87,6 @@ export default function Notifications() {
       // Update unread counts
       setUnreadBookingsCount(prev => Math.max(0, prev - 1));
       setUnreadCount(prev => Math.max(0, prev - 1));
-      
-      // Create or get chat with the buyer
-      const response = await axios.post(
-        `${API_URL}/api/chat/chat`,
-        { otherUserId: booking.buyerId },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      
-      if (response.data.success) {
-      }
     } catch (error) {
       console.error('Error handling booking:', error);
     }
@@ -192,54 +141,6 @@ export default function Notifications() {
 
             {/* Notification List */}
             <div className="divide-y dark:divide-gray-700">
-              {/* Messages Section */}
-              <div className={`p-4 ${theme === 'dark' ? 'bg-gray-750' : 'bg-gray-50'}`}>
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className={`text-sm font-semibold ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                    💬 Messages
-                    {unreadMessagesCount > 0 && (
-                      <span className="ml-2 bg-indigo-600 text-white text-xs px-2 py-0.5 rounded-full">
-                        {unreadMessagesCount}
-                      </span>
-                    )}
-                  </h4>
-                  <Link
-                    to="/chat"
-                    onClick={() => setShowDropdown(false)}
-                    className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
-                  >
-                    View All
-                  </Link>
-                </div>
-                {recentChats.length > 0 ? (
-                  recentChats.map(chat => (
-                    <button
-                      key={chat._id}
-                      onClick={() => handleChatClick()}
-                      className={`w-full text-left p-2 rounded ${
-                        theme === 'dark' 
-                          ? 'hover:bg-gray-700' 
-                          : 'hover:bg-white'
-                      } transition-colors mb-1`}
-                    >
-                      <p className={`font-medium text-sm ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                        {chat.otherUser?.username || 'Unknown User'}
-                      </p>
-                      <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} truncate`}>
-                        {chat.lastMessage || 'New message'}
-                      </p>
-                      <p className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-                        {new Date(chat.lastMessageTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </p>
-                    </button>
-                  ))
-                ) : (
-                  <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} py-2`}>
-                    No new messages
-                  </p>
-                )}
-              </div>
-
               {/* Bookings Section */}
               <div className={`p-4 ${theme === 'dark' ? 'bg-gray-750' : 'bg-gray-50'}`}>
                 <div className="flex items-center justify-between mb-2">
@@ -299,7 +200,7 @@ export default function Notifications() {
               </div>
 
               {/* Empty State */}
-              {recentChats.length === 0 && recentBookings.length === 0 && (
+              {recentBookings.length === 0 && (
                 <div className="p-8 text-center">
                   <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                     No notifications
