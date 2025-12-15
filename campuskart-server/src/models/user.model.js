@@ -28,6 +28,32 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Hostel name is required'],
     trim: true,
   },
+  freeUnlockCredits: {
+    type: Number,
+    default: 3, // Every new user gets 3 free ₹10 unlocks
+  },
+  totalUnlocks: {
+    type: Number,
+    default: 0,
+  },
+  totalSpent: {
+    type: Number,
+    default: 0,
+  },
+  rating: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 5,
+  },
+  reviewCount: {
+    type: Number,
+    default: 0,
+  },
+  verifiedSeller: {
+    type: Boolean,
+    default: false,
+  },
 }, {
   timestamps: true,
 });

@@ -14,6 +14,7 @@ import itemRoutes from './routes/item.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import chatRoutes from './routes/chat.routes.js';
 import bookingRoutes from './routes/booking.routes.js';
+import unlockRoutes from './routes/unlock.routes.js';
 import { setupSocketManager } from './socketManager.js';
 
 // Initialize Express app
@@ -99,6 +100,7 @@ app.use('/api/items', itemRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/booking', bookingRoutes);
+app.use('/api/unlock', unlockRoutes);
 
 // Basic route
 app.get('/', (req, res) => {

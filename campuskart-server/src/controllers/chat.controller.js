@@ -1,6 +1,7 @@
 import Chat from '../models/chat.model.js';
 import Message from '../models/message.model.js';
 import User from '../models/user.model.js';
+import Unlock from '../models/unlock.model.js';
 
 // Get all users for chat list (excluding current user, same domain only)
 export const getUsers = async (req, res) => {
@@ -113,9 +114,42 @@ export const getMessages = async (req, res) => {
 // Send a message
 export const sendMessage = async (req, res) => {
   try {
-    const { chatId, receiverId, message } = req.body;
+    const { chatId, receiverId, message, itemId } = req.body;
     const senderId = req.user._id.toString();
     const senderName = req.user.username;
+
+    // Check if sender has unlock permission and message limit for basic tier
+    if (itemId) {
+      const unlock = await Unlock.findOne({
+        userId: senderId,
+        itemId,
+        active: true
+      });
+
+      if (!unlock) {
+        return res.status(403).json({ 
+          success: false, 
+          message: 'You must unlock this item to send messages',
+          requiresUnlock: true
+        });
+      }
+
+      // Check message limit for basic tier
+      if (unlock.tier === 'basic' && unlock.messageCount >= unlock.messageLimit) {
+        return res.status(403).json({
+          success: false,
+          message: `Message limit reached (${unlock.messageLimit}). Upgrade to Premium for unlimited messages.`,
+          requiresUpgrade: true,
+          messageLimit: unlock.messageLimit
+        });
+      }
+
+      // Increment message count for basic tier
+      if (unlock.tier === 'basic') {
+        unlock.messageCount += 1;
+        await unlock.save();
+      }
+    }
 
     const newMessage = await Message.create({
       chatId,
