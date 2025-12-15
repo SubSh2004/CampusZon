@@ -131,7 +131,9 @@ export const unlockBasic = async (req, res) => {
         }
 
         // Send auto-message
-        const autoMessage = `Hi! I'm interested in buying your "${item.title}" listed for ₹${item.price}. Please let me know if it's still available.`;
+        const itemCategory = item.category ? item.category.toLowerCase() : '';
+        const action = itemCategory.includes('rent') ? 'rent' : 'buy';
+        const autoMessage = `Hi! I ${user.username} want to ${action} your "${item.title}" of price ₹${item.price}. Please let me know if it's still available.`;
         
         await Message.create({
           chatId: chat._id,
