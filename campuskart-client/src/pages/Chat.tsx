@@ -85,8 +85,8 @@ export default function Chat() {
           const sellerResponse = await axios.get(`/api/users/${location.state.sellerId}`);
           if (sellerResponse.data.success) {
             const seller = sellerResponse.data.user;
-            // Start chat with seller
-            const chatResponse = await axios.get(`/api/chat/user/${seller._id}`);
+            // Start chat with seller - use correct endpoint
+            const chatResponse = await axios.get(`/api/chat/chat/${seller._id}`);
             if (chatResponse.data.success) {
               const chat = chatResponse.data.chat;
               setSelectedChat({ ...chat, otherUser: seller, unreadCount: 0 });
