@@ -357,7 +357,7 @@ export default function ItemDetail() {
                   {unlocked ? (
                     <>
                       <button
-                        onClick={() => setShowBookingModal(true)}
+                        onClick={() => navigate('/chat', { state: { sellerId: item.userId } })}
                         className="w-full block text-center bg-indigo-600 dark:bg-indigo-500 text-white py-3 px-6 rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600 transition font-medium"
                       >
                         💬 Chat with Seller {unlockTier === 'basic' && '(20 messages)'}

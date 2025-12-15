@@ -76,6 +76,30 @@ export default function Chat() {
 
     setCurrentUserId(userId);
 
+    // Check if sellerId is passed via navigation state
+    if (location.state?.sellerId) {
+      // Fetch seller details and start chat
+      const startChatWithSeller = async () => {
+        try {
+          const sellerResponse = await axios.get(`/api/users/${location.state.sellerId}`);
+          if (sellerResponse.data.success) {
+            const seller = sellerResponse.data.user;
+            // Start chat with seller
+            const chatResponse = await axios.get(`/api/chat/user/${seller._id}`);
+            if (chatResponse.data.success) {
+              const chat = chatResponse.data.chat;
+              setSelectedChat({ ...chat, otherUser: seller, unreadCount: 0 });
+              setSelectedUser(seller);
+              fetchMessages(chat._id);
+            }
+          }
+        } catch (error) {
+          console.error('Error starting chat with seller:', error);
+        }
+      };
+      startChatWithSeller();
+    }
+
     // Set axios default header
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
@@ -91,6 +115,12 @@ export default function Chat() {
     newSocket.on('disconnect', () => {
       console.log('Disconnected');
       setIsConnected(false);
+    });
+
+    // Listen for message errors
+    newSocket.on('messageError', (error: any) => {
+      alert(error.message);
+      setIsSending(false);
     });
 
     // Listen for new messages
@@ -244,7 +274,8 @@ export default function Chat() {
       receiverId: selectedUser._id,
       senderId: currentUserId,
       senderName: 'You',
-      message: messageText
+      message: messageText,
+      itemId: location.state?.itemId || null // Pass itemId if available for limit tracking
     };
 
     try {
@@ -379,25 +410,18 @@ export default function Chat() {
           <div className="flex h-full">
             {/* Sidebar */}
             <div className={`w-80 ${theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'} border-r flex flex-col transition-colors duration-300`}>
-              {/* View Toggle */}
+              {/* Header */}
               <div className="flex border-b">
-                <button
-                  onClick={() => setView('chats')}
-                  className={`flex-1 py-3 text-sm font-medium ${
-                    view === 'chats'
-                      ? theme === 'dark'
-                        ? 'bg-gray-800 text-indigo-400 border-b-2 border-indigo-400'
-                        : 'bg-white text-indigo-600 border-b-2 border-indigo-600'
-                      : theme === 'dark'
-                      ? 'text-gray-400'
-                      : 'text-gray-500'
+                <div className={`flex-1 py-3 text-sm font-medium text-center ${
+                    theme === 'dark'
+                      ? 'bg-gray-800 text-indigo-400'
+                      : 'bg-white text-indigo-600'
                   } transition-colors duration-300`}
                 >
-                  Chats
-                </button>
-                <button
-                  onClick={() => setView('users')}
-                  className={`flex-1 py-3 text-sm font-medium ${
+                  Your Chats
+                </div>
+              </div>
+              <div className={`hidden flex border-b ${
                     view === 'users'
                       ? theme === 'dark'
                         ? 'bg-gray-800 text-indigo-400 border-b-2 border-indigo-400'

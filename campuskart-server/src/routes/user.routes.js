@@ -1,5 +1,5 @@
 import express from 'express';
-import { signupUser, loginUser, sendOTP, verifyOTP, getProfile, updateProfile } from '../controllers/user.controller.js';
+import { signupUser, loginUser, sendOTP, verifyOTP, getProfile, updateProfile, getUserById } from '../controllers/user.controller.js';
 import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -18,6 +18,9 @@ router.post('/login', loginUser);
 
 // GET /api/user/profile - Get user profile (protected)
 router.get('/profile', authenticate, getProfile);
+
+// GET /api/users/:userId - Get user by ID (protected)
+router.get('/:userId', authenticate, getUserById);
 
 // PUT /api/user/profile - Update user profile (protected)
 router.put('/profile', authenticate, updateProfile);

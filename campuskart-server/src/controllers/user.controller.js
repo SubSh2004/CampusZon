@@ -335,3 +335,37 @@ export const updateProfile = async (req, res) => {
     });
   }
 };
+
+// Get user by ID
+export const getUserById = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    const user = await User.findById(userId).select('username email hostelName phoneNumber');
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+    
+    res.json({
+      success: true,
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        hostelName: user.hostelName,
+        phoneNumber: user.phoneNumber
+      }
+    });
+  } catch (error) {
+    console.error('Get user error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching user',
+      error: error.message
+    });
+  }
+};

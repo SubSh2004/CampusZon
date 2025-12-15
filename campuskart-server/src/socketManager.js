@@ -41,7 +41,41 @@ export const setupSocketManager = (io) => {
     // Private message between two users
     socket.on('sendPrivateMessage', async (data) => {
       try {
-        const { chatId, receiverId, message, senderId, senderName } = data;
+        const { chatId, receiverId, message, senderId, senderName, itemId } = data;
+
+        // Check message limits if itemId is provided
+        if (itemId) {
+          const Unlock = (await import('./models/unlock.model.js')).default;
+          const unlock = await Unlock.findOne({
+            userId: senderId,
+            itemId,
+            active: true
+          });
+
+          if (!unlock) {
+            socket.emit('messageError', { 
+              message: 'You must unlock this item to send messages',
+              requiresUnlock: true
+            });
+            return;
+          }
+
+          // Check message limit for basic tier
+          if (unlock.tier === 'basic' && unlock.messageCount >= unlock.messageLimit) {
+            socket.emit('messageError', {
+              message: `Message limit reached (${unlock.messageLimit}). Upgrade to Premium for unlimited messages.`,
+              requiresUpgrade: true,
+              messageLimit: unlock.messageLimit
+            });
+            return;
+          }
+
+          // Increment message count for basic tier
+          if (unlock.tier === 'basic') {
+            unlock.messageCount += 1;
+            await unlock.save();
+          }
+        }
 
         // Save message to database
         const newMessage = await Message.create({
