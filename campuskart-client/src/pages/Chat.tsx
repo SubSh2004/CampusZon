@@ -51,8 +51,6 @@ export default function Chat() {
   const [showDeleteChatModal, setShowDeleteChatModal] = useState(false);
   const [showUnsendModal, setShowUnsendModal] = useState(false);
   const [messageToDelete, setMessageToDelete] = useState<Message | null>(null);
-  const [messageCount, setMessageCount] = useState<number>(0);
-  const [messageLimit, setMessageLimit] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageIdRef = useRef(0);
 
@@ -105,26 +103,6 @@ export default function Chat() {
               setSelectedChat({ ...chat, otherUser: seller, unreadCount: 0 });
               setSelectedUser(seller);
               fetchMessages(chat._id);
-              
-              // If itemId is provided, fetch message limits
-              if (location.state?.itemId) {
-                try {
-                  console.log('📊 Fetching unlock status...');
-                  const unlockResponse = await axios.get(`/api/unlock/items/${location.state.itemId}/status`);
-                  console.log('✅ Unlock response:', unlockResponse.data);
-                  
-                  if (unlockResponse.data.unlocked && unlockResponse.data.tier === 'basic') {
-                    setMessageCount(unlockResponse.data.messagesUsed || 0);
-                    setMessageLimit(unlockResponse.data.messageLimit || 10);
-                    console.log('📊 Message limits set:', unlockResponse.data.messagesUsed, '/', unlockResponse.data.messageLimit);
-                  } else {
-                    setMessageLimit(null); // Premium or no unlock
-                    console.log('✨ Premium tier or no unlock - unlimited messages');
-                  }
-                } catch (err) {
-                  console.error('❌ Error fetching unlock status:', err);
-                }
-              }
             }
           }
         } catch (error: any) {
@@ -169,10 +147,6 @@ export default function Chat() {
       });
       // Update chat list
       fetchChats();
-      // Increment message count if tracking limits
-      if (messageLimit !== null) {
-        setMessageCount(prev => prev + 1);
-      }
     });
 
     // Listen for message sent confirmation (from server)
@@ -277,27 +251,6 @@ export default function Chat() {
       if (response.data.success) {
         setMessages(response.data.messages);
       }
-      
-      // Check if there's an unlock between current user and the other user
-      if (selectedUser) {
-        try {
-          const unlockCheckResponse = await axios.get('/api/unlock/check-limits', {
-            params: { otherUserId: selectedUser._id }
-          });
-          
-          if (unlockCheckResponse.data.hasUnlock && unlockCheckResponse.data.tier === 'basic') {
-            setMessageCount(unlockCheckResponse.data.messageCount || 0);
-            setMessageLimit(unlockCheckResponse.data.messageLimit || 10);
-            console.log('📊 Limits found:', unlockCheckResponse.data.messageCount, '/', unlockCheckResponse.data.messageLimit);
-          } else {
-            setMessageLimit(null); // Premium or no unlock
-            console.log('✨ No basic unlock - unlimited messages');
-          }
-        } catch (err) {
-          console.log('No unlock found for this conversation');
-          setMessageLimit(null);
-        }
-      }
     } catch (error) {
       console.error('Error fetching messages:', error);
     }
@@ -305,12 +258,6 @@ export default function Chat() {
 
   const sendMessage = async () => {
     if (!messageInput.trim() || !selectedChat || !selectedUser || isSending) return;
-
-    // Check if message limit reached for basic tier
-    if (messageLimit !== null && messageCount >= messageLimit) {
-      alert(`Message limit reached (${messageLimit} total). Upgrade to Premium for unlimited messages.`);
-      return;
-    }
 
     const tempId = `temp-${Date.now()}-${messageIdRef.current++}`;
     const messageText = messageInput.trim();
@@ -340,10 +287,6 @@ export default function Chat() {
     try {
       // Only emit via socket - let server handle database save
       socket?.emit('sendPrivateMessage', messageData);
-      // Increment local count if tracking limits
-      if (messageLimit !== null) {
-        setMessageCount(prev => prev + 1);
-      }
     } catch (error) {
       console.error('Error sending message:', error);
       // Remove optimistic message on error
@@ -577,17 +520,6 @@ export default function Chat() {
                       </p>
                     </div>
                     <div className="flex items-center gap-3">
-                      {messageLimit !== null && (
-                        <div className={`px-3 py-1.5 rounded-full text-sm font-semibold ${
-                          messageCount >= messageLimit
-                            ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-                            : messageCount >= messageLimit * 0.8
-                            ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
-                            : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                        }`}>
-                          📊 {messageCount}/{messageLimit} messages
-                        </div>
-                      )}
                       <button
                         onClick={() => setShowDeleteChatModal(true)}
                         className={`p-2 rounded-lg ${theme === 'dark' ? 'hover:bg-gray-600 text-red-400' : 'hover:bg-gray-200 text-red-600'} transition-colors`}
