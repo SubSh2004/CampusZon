@@ -14,8 +14,8 @@ export default function AddItem() {
     price: '',
     category: '',
   });
-  const [image, setImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>('');
+  const [images, setImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
@@ -29,17 +29,31 @@ export default function AddItem() {
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImage(file);
+    const files = e.target.files;
+    if (files) {
+      const fileArray = Array.from(files).slice(0, 5); // Limit to 5 images
       
-      // Create preview URL
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      if (fileArray.length + images.length > 5) {
+        setError('Maximum 5 images allowed');
+        return;
+      }
+      
+      setImages(prev => [...prev, ...fileArray].slice(0, 5));
+      
+      // Create preview URLs
+      fileArray.forEach(file => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setImagePreviews(prev => [...prev, reader.result as string].slice(0, 5));
+        };
+        reader.readAsDataURL(file);
+      });
     }
+  };
+
+  const removeImage = (index: number) => {
+    setImages(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -65,8 +79,8 @@ export default function AddItem() {
       return;
     }
 
-    if (!image) {
-      setError('Please select an image');
+    if (images.length === 0) {
+      setError('Please select at least one image');
       return;
     }
 
@@ -79,7 +93,12 @@ export default function AddItem() {
       data.append('description', formData.description);
       data.append('price', formData.price);
       data.append('category', formData.category);
-      data.append('image', image);
+      
+      // Append all images
+      images.forEach((img) => {
+        data.append('images', img);
+      });
+      
       data.append('userId', user.userId || '');
       data.append('userName', user.username || '');
       data.append('userPhone', user.phoneNumber || '');
@@ -220,25 +239,48 @@ export default function AddItem() {
 
           <div>
             <label htmlFor="image" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Image
+              Images (Maximum 5)
             </label>
             <input
               id="image"
               name="image"
               type="file"
               accept="image/*"
-              required
+              multiple
               onChange={handleImageChange}
-              className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-50 dark:file:bg-green-900/30 file:text-green-700 dark:file:text-green-400 hover:file:bg-green-100 dark:hover:file:bg-green-900/50"
+              disabled={images.length >= 5}
+              className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-50 dark:file:bg-green-900/30 file:text-green-700 dark:file:text-green-400 hover:file:bg-green-100 dark:hover:file:bg-green-900/50 disabled:opacity-50 disabled:cursor-not-allowed"
             />
-            {imagePreview && (
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              {images.length}/5 images selected
+            </p>
+            {imagePreviews.length > 0 && (
               <div className="mt-4">
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Preview:</p>
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  className="w-full h-48 object-cover rounded-md border border-gray-300 dark:border-gray-600"
-                />
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Previews:</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {imagePreviews.map((preview, index) => (
+                    <div key={index} className="relative group">
+                      <img
+                        src={preview}
+                        alt={`Preview ${index + 1}`}
+                        className="w-full h-32 object-cover rounded-md border border-gray-300 dark:border-gray-600"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                        title="Remove image"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                      <div className="absolute bottom-1 left-1 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded">
+                        {index + 1}/{imagePreviews.length}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>

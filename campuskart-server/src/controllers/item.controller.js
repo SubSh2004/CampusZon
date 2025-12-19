@@ -40,26 +40,33 @@ export const createItem = async (req, res) => {
       });
     }
 
-    // Upload image to ImgBB if present
-    let imageUrl = null;
-    if (req.file) {
+    // Upload images to ImgBB if present (up to 5)
+    let imageUrls = [];
+    let imageUrl = null; // Keep first image as imageUrl for backward compatibility
+    
+    if (req.files && req.files.length > 0) {
       try {
-        // Convert buffer to base64
-        const base64Image = req.file.buffer.toString('base64');
+        // Limit to 5 images
+        const filesToUpload = req.files.slice(0, 5);
         
-        // Upload to ImgBB
-        const response = await imgbbUploader({
-          apiKey: process.env.IMGBB_API_KEY,
-          base64string: base64Image,
-          name: `${Date.now()}-${req.file.originalname}`,
+        // Upload all images to ImgBB
+        const uploadPromises = filesToUpload.map(async (file) => {
+          const base64Image = file.buffer.toString('base64');
+          const response = await imgbbUploader({
+            apiKey: process.env.IMGBB_API_KEY,
+            base64string: base64Image,
+            name: `${Date.now()}-${file.originalname}`,
+          });
+          return response.url;
         });
         
-        imageUrl = response.url; // Get the permanent cloud URL
+        imageUrls = await Promise.all(uploadPromises);
+        imageUrl = imageUrls[0]; // Set first image as main image for backward compatibility
       } catch (uploadError) {
         console.error('ImgBB upload error:', uploadError);
         return res.status(500).json({
           success: false,
-          message: 'Failed to upload image',
+          message: 'Failed to upload images',
         });
       }
     }
@@ -71,6 +78,7 @@ export const createItem = async (req, res) => {
       price: parseFloat(price),
       category,
       imageUrl,
+      imageUrls,
       available: true,
       userId,
       userName,

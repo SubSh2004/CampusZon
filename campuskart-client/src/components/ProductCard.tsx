@@ -13,6 +13,7 @@ interface Item {
   price: number;
   category: string;
   imageUrl: string;
+  imageUrls?: string[]; // Multiple images support
   available: boolean;
   createdAt: string;
   userId: string; // Required for booking
@@ -34,7 +35,8 @@ export default function ProductCard({ item }: ProductCardProps) {
   const [socket, setSocket] = useState<Socket | null>(null);
 
   // Use imageUrl directly (it's either a full ImgBB URL or null)
-  const imageUrl = item.imageUrl || '/placeholder.jpg';
+  const imageUrl = (item.imageUrls && item.imageUrls.length > 0 ? item.imageUrls[0] : item.imageUrl) || '/placeholder.jpg';
+  const imageCount = item.imageUrls && item.imageUrls.length > 0 ? item.imageUrls.length : (item.imageUrl ? 1 : 0);
   
   // Check if current user uploaded this item
   const isOwnItem = currentUser?.email === item.userEmail;
@@ -177,6 +179,18 @@ export default function ProductCard({ item }: ProductCardProps) {
                 (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x300?text=No+Image';
               }}
             />
+            
+            {/* Image Count Indicator */}
+            {imageCount > 1 && (
+              <div className="absolute bottom-3 right-3 z-20">
+                <span className="backdrop-blur-md bg-black/70 text-white text-xs font-semibold px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1">
+                  <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                  </svg>
+                  {imageCount}
+                </span>
+              </div>
+            )}
             
             {/* Availability Badge */}
             <div className="absolute top-3 right-3 z-20">

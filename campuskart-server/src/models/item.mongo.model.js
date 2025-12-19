@@ -5,7 +5,8 @@ const itemSchema = new mongoose.Schema({
   description: { type: String, required: true },
   price: { type: Number, required: true },
   category: { type: String, required: true },
-  imageUrl: { type: String, default: null },
+  imageUrl: { type: String, default: null }, // Keep for backward compatibility
+  imageUrls: { type: [String], default: [] }, // Support multiple images (up to 5)
   available: { type: Boolean, default: true },
   userId: { type: String, required: true },
   userName: { type: String, required: true },

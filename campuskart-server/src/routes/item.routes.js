@@ -4,8 +4,8 @@ import upload from '../middleware/multer.js';
 
 const router = express.Router();
 
-// POST /api/items/add - Create a new item with image upload
-router.post('/add', upload.single('image'), createItem);
+// POST /api/items/add - Create a new item with image upload (up to 5 images)
+router.post('/add', upload.array('images', 5), createItem);
 
 // GET /api/items - Get all items
 router.get('/', getAllItems);

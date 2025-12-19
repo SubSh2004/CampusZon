@@ -14,6 +14,7 @@ interface Item {
   price: number;
   category: string;
   imageUrl: string;
+  imageUrls?: string[]; // Multiple images support
   available: boolean;
   userName: string;
   userPhone: string;
@@ -34,6 +35,7 @@ export default function ItemDetail() {
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [bookingStatus, setBookingStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
   // Unlock system state
   const [showUnlockModal, setShowUnlockModal] = useState(false);
@@ -197,20 +199,85 @@ export default function ItemDetail() {
           <div className="md:flex">
             {/* Image Section */}
             <div className="md:w-1/2 bg-gray-100 dark:bg-gray-700 flex items-center justify-center p-8">
-              {item.imageUrl ? (
-                <img
-                  src={item.imageUrl}
-                  alt={item.title}
-                  className="w-full h-auto max-h-96 object-contain rounded-lg"
-                />
-              ) : (
-                <div className="text-gray-400 dark:text-gray-500 text-center">
-                  <svg className="w-24 h-24 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <p>No image available</p>
-                </div>
-              )}
+              {(() => {
+                const images = item.imageUrls && item.imageUrls.length > 0 ? item.imageUrls : (item.imageUrl ? [item.imageUrl] : []);
+                
+                if (images.length === 0) {
+                  return (
+                    <div className="text-gray-400 dark:text-gray-500 text-center">
+                      <svg className="w-24 h-24 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <p>No image available</p>
+                    </div>
+                  );
+                }
+                
+                return (
+                  <div className="relative w-full">
+                    {/* Main Image */}
+                    <img
+                      src={images[currentImageIndex]}
+                      alt={`${item.title} - Image ${currentImageIndex + 1}`}
+                      className="w-full h-auto max-h-96 object-contain rounded-lg"
+                    />
+                    
+                    {/* Image Counter */}
+                    {images.length > 1 && (
+                      <div className="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-sm px-3 py-1 rounded-full">
+                        {currentImageIndex + 1} / {images.length}
+                      </div>
+                    )}
+                    
+                    {/* Navigation Arrows */}
+                    {images.length > 1 && (
+                      <>
+                        <button
+                          onClick={() => setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1))}
+                          className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-2 rounded-full transition"
+                          aria-label="Previous image"
+                        >
+                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1))}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-2 rounded-full transition"
+                          aria-label="Next image"
+                        >
+                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
+                      </>
+                    )}
+                    
+                    {/* Thumbnail Navigation */}
+                    {images.length > 1 && (
+                      <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
+                        {images.map((img, index) => (
+                          <button
+                            key={index}
+                            onClick={() => setCurrentImageIndex(index)}
+                            className={`flex-shrink-0 w-20 h-20 rounded-md overflow-hidden border-2 transition ${
+                              index === currentImageIndex
+                                ? 'border-indigo-600 dark:border-indigo-400'
+                                : 'border-gray-300 dark:border-gray-600 hover:border-indigo-400 dark:hover:border-indigo-500'
+                            }`}
+                          >
+                            <img
+                              src={img}
+                              alt={`Thumbnail ${index + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Details Section */}
