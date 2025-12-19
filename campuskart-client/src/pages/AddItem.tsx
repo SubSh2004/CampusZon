@@ -14,6 +14,7 @@ export default function AddItem() {
     price: '',
     category: '',
   });
+  const [listingType, setListingType] = useState<'For Sale' | 'For Rent' | ''>('');
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [error, setError] = useState('');
@@ -74,6 +75,11 @@ export default function AddItem() {
       return;
     }
 
+    if (!listingType) {
+      setError('Please select a listing type (For Sale or For Rent)');
+      return;
+    }
+
     if (parseFloat(formData.price) < 0) {
       setError('Price cannot be negative');
       return;
@@ -92,7 +98,8 @@ export default function AddItem() {
       data.append('title', formData.title);
       data.append('description', formData.description);
       data.append('price', formData.price);
-      data.append('category', formData.category);
+      // Combine listing type with category (e.g., "For Sale - Electronics")
+      data.append('category', `${listingType} - ${formData.category}`);
       
       // Append all images
       images.forEach((img) => {
@@ -214,6 +221,42 @@ export default function AddItem() {
           </div>
 
           <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Listing Type
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setListingType('For Sale')}
+                className={`px-4 py-3 rounded-md font-semibold transition-all ${
+                  listingType === 'For Sale'
+                    ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg transform scale-105'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <span className="text-xl">💰</span>
+                  <span>For Sale</span>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setListingType('For Rent')}
+                className={`px-4 py-3 rounded-md font-semibold transition-all ${
+                  listingType === 'For Rent'
+                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg transform scale-105'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <span className="text-xl">🏠</span>
+                  <span>For Rent</span>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <div>
             <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Category
             </label>
@@ -226,8 +269,6 @@ export default function AddItem() {
               className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
             >
               <option value="">Select a category</option>
-              <option value="For Sale">For Sale</option>
-              <option value="For Rent">For Rent</option>
               <option value="Electronics">Electronics</option>
               <option value="Books">Books</option>
               <option value="Clothing">Clothing</option>
