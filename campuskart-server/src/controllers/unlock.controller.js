@@ -185,7 +185,7 @@ export const unlockBasic = async (req, res) => {
     const order = await razorpay.orders.create({
       amount: 1000, // ₹10 in paise
       currency: 'INR',
-      receipt: `unlock_basic_${itemId}_${userId}_${Date.now()}`,
+      receipt: `ub_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       notes: {
         itemId: itemId.toString(),
         userId,
@@ -276,7 +276,7 @@ export const unlockPremium = async (req, res) => {
     const order = await razorpay.orders.create({
       amount, // in paise
       currency: 'INR',
-      receipt: `unlock_premium_${itemId}_${userId}_${Date.now()}`,
+      receipt: `up_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       notes: {
         itemId: itemId.toString(),
         userId,
