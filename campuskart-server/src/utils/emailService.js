@@ -10,7 +10,7 @@ const sendWithResendAPI = async (to, subject, html) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        from: process.env.EMAIL_FROM || 'onboarding@resend.dev',
+        from: `CampusZon <${process.env.EMAIL_FROM || 'onboarding@resend.dev'}>`,
         to: [to],
         subject: subject,
         html: html,
