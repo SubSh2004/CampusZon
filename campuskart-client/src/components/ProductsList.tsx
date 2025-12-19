@@ -22,10 +22,11 @@ interface Item {
 interface ProductsListProps {
   searchQuery?: string;
   selectedCategory?: string;
+  listingTypeFilter?: string;
   availabilityFilter?: string;
 }
 
-export default function ProductsList({ searchQuery = '', selectedCategory = 'All', availabilityFilter = 'All' }: ProductsListProps) {
+export default function ProductsList({ searchQuery = '', selectedCategory = 'All', listingTypeFilter = 'All', availabilityFilter = 'All' }: ProductsListProps) {
   const user = useRecoilValue(userAtom);
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
@@ -99,7 +100,13 @@ export default function ProductsList({ searchQuery = '', selectedCategory = 'All
     // Filter by category
     let matchesCategory = true;
     if (selectedCategory && selectedCategory !== 'All') {
-      matchesCategory = item.category === selectedCategory;
+      matchesCategory = item.category.includes(selectedCategory);
+    }
+    
+    // Filter by listing type
+    let matchesListingType = true;
+    if (listingTypeFilter && listingTypeFilter !== 'All') {
+      matchesListingType = item.category.includes(listingTypeFilter);
     }
     
     // Filter by availability
@@ -108,7 +115,7 @@ export default function ProductsList({ searchQuery = '', selectedCategory = 'All
       matchesAvailability = availabilityFilter === 'Available' ? item.available : !item.available;
     }
     
-    return matchesSearch && matchesCategory && matchesAvailability;
+    return matchesSearch && matchesCategory && matchesListingType && matchesAvailability;
   });
 
   if (filteredItems.length === 0) {

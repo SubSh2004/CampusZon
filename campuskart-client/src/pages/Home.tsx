@@ -14,6 +14,7 @@ export default function Home() {
   const { theme, toggleTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [listingTypeFilter, setListingTypeFilter] = useState('All');
   const [availabilityFilter, setAvailabilityFilter] = useState('All');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
@@ -22,13 +23,11 @@ export default function Home() {
 
   const categories = [
     'All',
-    'Books',
     'Electronics',
+    'Books',
     'Furniture',
     'Clothing',
     'Sports',
-    'For Sale',
-    'For Rent',
     'Other'
   ];
 
@@ -43,7 +42,7 @@ export default function Home() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const activeFiltersCount = (selectedCategory !== 'All' ? 1 : 0) + (availabilityFilter !== 'All' ? 1 : 0);
+  const activeFiltersCount = (selectedCategory !== 'All' ? 1 : 0) + (listingTypeFilter !== 'All' ? 1 : 0) + (availabilityFilter !== 'All' ? 1 : 0);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-950 transition-colors duration-200">
@@ -228,6 +227,53 @@ export default function Home() {
               {/* Dropdown Menu */}
               {isFilterOpen && (
                 <div className="absolute top-full left-0 right-0 sm:right-auto sm:w-80 mt-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-xl z-50 overflow-hidden animate-fade-in">
+                  {/* Listing Type Section */}
+                  <div className="p-4 border-b border-gray-200 dark:border-slate-700">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-bold text-gray-900 dark:text-white">Listing Type</h3>
+                      {listingTypeFilter !== 'All' && (
+                        <button
+                          onClick={() => setListingTypeFilter('All')}
+                          className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <button
+                        onClick={() => setListingTypeFilter('All')}
+                        className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                          listingTypeFilter === 'All'
+                            ? 'bg-indigo-600 text-white shadow-md'
+                            : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'
+                        }`}
+                      >
+                        All
+                      </button>
+                      <button
+                        onClick={() => setListingTypeFilter('For Sale')}
+                        className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                          listingTypeFilter === 'For Sale'
+                            ? 'bg-green-600 text-white shadow-md'
+                            : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'
+                        }`}
+                      >
+                        💰 For Sale
+                      </button>
+                      <button
+                        onClick={() => setListingTypeFilter('For Rent')}
+                        className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                          listingTypeFilter === 'For Rent'
+                            ? 'bg-blue-600 text-white shadow-md'
+                            : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'
+                        }`}
+                      >
+                        🏠 For Rent
+                      </button>
+                    </div>
+                  </div>
+
                   {/* Category Section */}
                   <div className="p-4 border-b border-gray-200 dark:border-slate-700">
                     <div className="flex items-center justify-between mb-3">
@@ -313,6 +359,7 @@ export default function Home() {
                       <button
                         onClick={() => {
                           setSelectedCategory('All');
+                          setListingTypeFilter('All');
                           setAvailabilityFilter('All');
                         }}
                         className="w-full px-4 py-2 bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-200 rounded-md text-sm font-medium transition-colors"
@@ -347,7 +394,7 @@ export default function Home() {
           )}
         </div>
         
-        <ProductsList searchQuery={searchQuery} selectedCategory={selectedCategory} availabilityFilter={availabilityFilter} />
+        <ProductsList searchQuery={searchQuery} selectedCategory={selectedCategory} listingTypeFilter={listingTypeFilter} availabilityFilter={availabilityFilter} />
       </main>
 
       {/* Clean Footer */}

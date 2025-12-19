@@ -33,6 +33,7 @@ export default function Profile() {
     category: '',
     available: true,
   });
+  const [editListingType, setEditListingType] = useState<'For Sale' | 'For Rent' | ''>('');
 
   // Form state for editing profile
   const [profileForm, setProfileForm] = useState({
@@ -76,11 +77,25 @@ export default function Profile() {
 
   const handleEditClick = (item: Item) => {
     setEditingItem(item);
+    
+    // Parse category to extract listing type and actual category
+    let listingType: 'For Sale' | 'For Rent' | '' = '';
+    let category = item.category;
+    
+    if (item.category.includes('For Sale')) {
+      listingType = 'For Sale';
+      category = item.category.replace('For Sale - ', '');
+    } else if (item.category.includes('For Rent')) {
+      listingType = 'For Rent';
+      category = item.category.replace('For Rent - ', '');
+    }
+    
+    setEditListingType(listingType);
     setEditForm({
       title: item.title,
       description: item.description,
       price: item.price.toString(),
-      category: item.category,
+      category: category,
       available: item.available,
     });
     setShowEditModal(true);
@@ -100,7 +115,7 @@ export default function Profile() {
         title: editForm.title,
         description: editForm.description,
         price: parseFloat(editForm.price),
-        category: editForm.category,
+        category: editListingType ? `${editListingType} - ${editForm.category}` : editForm.category,
         available: editForm.available,
       });
 
@@ -436,28 +451,62 @@ export default function Profile() {
                       className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                     />
                   </div>
+                </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Category
-                    </label>
-                    <select
-                      required
-                      value={editForm.category}
-                      onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
-                      className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Listing Type
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setEditListingType('For Sale')}
+                      className={`px-4 py-3 rounded-md font-semibold transition-all ${
+                        editListingType === 'For Sale'
+                          ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg transform scale-105'
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                      }`}
                     >
-                      <option value="">Select category</option>
-                      <option value="Electronics">Electronics</option>
-                      <option value="Books">Books</option>
-                      <option value="Furniture">Furniture</option>
-                      <option value="Clothing">Clothing</option>
-                      <option value="Sports">Sports</option>
-                      <option value="For Sale">For Sale</option>
-                      <option value="For Rent">For Rent</option>
-                      <option value="Other">Other</option>
-                    </select>
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="text-xl">💰</span>
+                        <span>For Sale</span>
+                      </div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditListingType('For Rent')}
+                      className={`px-4 py-3 rounded-md font-semibold transition-all ${
+                        editListingType === 'For Rent'
+                          ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg transform scale-105'
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                      }`}
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="text-xl">🏠</span>
+                        <span>For Rent</span>
+                      </div>
+                    </button>
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Category
+                  </label>
+                  <select
+                    required
+                    value={editForm.category}
+                    onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
+                    className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  >
+                    <option value="">Select category</option>
+                    <option value="Electronics">Electronics</option>
+                    <option value="Books">Books</option>
+                    <option value="Furniture">Furniture</option>
+                    <option value="Clothing">Clothing</option>
+                    <option value="Sports">Sports</option>
+                    <option value="Other">Other</option>
+                  </select>
                 </div>
 
                 <div className="flex items-center">
