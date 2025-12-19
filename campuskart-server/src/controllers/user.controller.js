@@ -369,3 +369,127 @@ export const getUserById = async (req, res) => {
     });
   }
 };
+
+// Forgot Password - Send OTP
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Validate email
+    if (!email || !validator.isEmail(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid email is required',
+      });
+    }
+
+    // Check if user exists
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'No account found with this email',
+      });
+    }
+
+    // Generate OTP
+    const otp = generateOTP();
+
+    // Delete any existing OTP for this email
+    await OTP.deleteMany({ email });
+
+    // Save OTP to database
+    await OTP.create({ email, otp });
+
+    // Send response immediately
+    res.status(200).json({
+      success: true,
+      message: 'OTP sent to your email for password reset',
+    });
+
+    // Send OTP via email in background
+    import('../utils/emailService.js').then(({ sendPasswordResetOTP }) => {
+      sendPasswordResetOTP(email, otp, user.username).then(emailResult => {
+        if (emailResult.success) {
+          console.log('✅ Password reset OTP sent to:', email);
+        } else {
+          console.error('❌ Failed to send password reset OTP:', email, emailResult.error);
+        }
+      }).catch(err => {
+        console.error('❌ Error sending password reset OTP:', err);
+      });
+    });
+
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while processing request',
+      error: error.message,
+    });
+  }
+};
+
+// Reset Password - Verify OTP and Update Password
+export const resetPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    // Validation
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email, OTP, and new password are required',
+      });
+    }
+
+    // Validate password strength
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be at least 6 characters long',
+      });
+    }
+
+    // Find and verify OTP
+    const otpRecord = await OTP.findOne({ email, otp });
+    if (!otpRecord) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or expired OTP',
+      });
+    }
+
+    // Find user
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    // Hash new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // Update user password
+    user.password = hashedPassword;
+    await user.save();
+
+    // Delete the used OTP
+    await OTP.deleteOne({ email, otp });
+
+    res.status(200).json({
+      success: true,
+      message: 'Password reset successfully. You can now login with your new password.',
+    });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while resetting password',
+      error: error.message,
+    });
+  }
+};

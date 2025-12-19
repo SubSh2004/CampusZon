@@ -232,3 +232,71 @@ export const sendWelcomeEmail = async (email, username) => {
     return { success: false, error: error.message };
   }
 };
+
+// Send password reset OTP email
+export const sendPasswordResetOTP = async (email, otp, username) => {
+  try {
+    console.log('📧 Attempting to send password reset OTP to:', email);
+    
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+        <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0; margin: -20px -20px 20px -20px;">
+          <h1 style="color: white; margin: 0; font-size: 28px;">🔐 Password Reset Request</h1>
+        </div>
+        
+        <p style="font-size: 16px; color: #333;">Hi <strong>${username}</strong>,</p>
+        
+        <p style="font-size: 16px; color: #333;">We received a request to reset your CampusZon password.</p>
+        
+        <p style="font-size: 16px; color: #333;">Your One-Time Password (OTP) is:</p>
+        
+        <div style="background-color: #f7f7f7; padding: 20px; text-align: center; margin: 20px 0; border-radius: 8px; border: 2px dashed #667eea;">
+          <span style="font-size: 32px; font-weight: bold; color: #667eea; letter-spacing: 8px;">${otp}</span>
+        </div>
+        
+        <p style="font-size: 14px; color: #666;">⏰ This OTP will expire in <strong>10 minutes</strong>.</p>
+        
+        <div style="background-color: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin: 20px 0; border-radius: 4px;">
+          <p style="margin: 0; font-size: 14px; color: #856404;">
+            <strong>⚠️ Security Notice:</strong> If you didn't request this password reset, please ignore this email and your password will remain unchanged.
+          </p>
+        </div>
+        
+        <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 20px 0;">
+        <p style="font-size: 12px; color: #999; text-align: center;">CampusZon - Your Campus Marketplace</p>
+      </div>
+    `;
+
+    // Use Brevo HTTP API if available
+    if (process.env.BREVO_API_KEY) {
+      console.log('📧 Using Brevo HTTP API for password reset OTP');
+      await sendWithBrevoAPI(email, 'CampusZon - Password Reset OTP', htmlContent);
+      return { success: true };
+    }
+
+    // Use Resend HTTP API if available
+    if (process.env.RESEND_API_KEY) {
+      console.log('📧 Using Resend HTTP API for password reset OTP');
+      await sendWithResendAPI(email, 'CampusZon - Password Reset OTP', htmlContent);
+      return { success: true };
+    }
+
+    // Use Gmail SMTP as fallback
+    console.log('📧 Using Gmail SMTP for password reset OTP');
+    const transporter = createTransporter();
+    
+    const mailOptions = {
+      from: `CampusZon <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: 'CampusZon - Password Reset OTP',
+      html: htmlContent,
+    };
+
+    const result = await transporter.sendMail(mailOptions);
+    console.log('✅ Password reset OTP sent successfully:', result.messageId);
+    return { success: true };
+  } catch (error) {
+    console.error('❌ Error sending password reset OTP:', error.message);
+    return { success: false, error: error.message };
+  }
+};

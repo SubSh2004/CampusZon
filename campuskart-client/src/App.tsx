@@ -8,7 +8,7 @@ import Login from './pages/Login'
 import Signup from './pages/Signup'
 import AddItem from './pages/AddItem'
 import ItemDetail from './pages/ItemDetail'
-
+import ForgotPassword from './pages/ForgotPassword'
 import Profile from './pages/Profile'
 import OAuthCallback from './pages/OAuthCallback'
 
@@ -84,6 +84,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/add-item" element={<AddItem />} />

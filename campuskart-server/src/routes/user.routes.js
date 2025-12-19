@@ -1,5 +1,5 @@
 import express from 'express';
-import { signupUser, loginUser, sendOTP, verifyOTP, getProfile, updateProfile, getUserById } from '../controllers/user.controller.js';
+import { signupUser, loginUser, sendOTP, verifyOTP, getProfile, updateProfile, getUserById, forgotPassword, resetPassword } from '../controllers/user.controller.js';
 import { authenticate } from '../middleware/auth.js';
 import Unlock from '../models/unlock.model.js';
 
@@ -16,6 +16,12 @@ router.post('/signup', signupUser);
 
 // POST /api/user/login - Login user
 router.post('/login', loginUser);
+
+// POST /api/user/forgot-password - Send OTP for password reset
+router.post('/forgot-password', forgotPassword);
+
+// POST /api/user/reset-password - Reset password with OTP
+router.post('/reset-password', resetPassword);
 
 // GET /api/user/profile - Get user profile (protected)
 router.get('/profile', authenticate, getProfile);
