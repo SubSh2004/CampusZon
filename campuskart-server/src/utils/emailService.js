@@ -145,20 +145,15 @@ export const sendOTPEmail = async (email, otp) => {
       </div>
     `;
 
-    // Try Resend HTTP API first (works in sandbox mode only for verified email)
-    if (process.env.RESEND_API_KEY) {
-      try {
-        console.log('📧 Trying Resend HTTP API for email delivery');
-        const result = await sendWithResendAPI(email, 'CampusZon - Email Verification OTP', htmlContent);
-        return { success: true };
-      } catch (resendError) {
-        console.log('⚠️  Resend failed (sandbox mode?), falling back to SMTP');
-        // Continue to SMTP fallback
-      }
+    // Use Brevo HTTP API (Primary - No IP restrictions needed!)
+    if (process.env.BREVO_API_KEY) {
+      console.log('📧 Using Brevo HTTP API for email delivery');
+      const result = await sendWithBrevoAPI(email, 'CampusZon - Email Verification OTP', htmlContent);
+      return { success: true };
     }
     
-    // Use SMTP as fallback
-    console.log('📧 Using SMTP for email delivery');
+    // Use Gmail SMTP as fallback
+    console.log('📧 Using Gmail SMTP for email delivery');
     const transporter = createTransporter();
     
     const mailOptions = {
