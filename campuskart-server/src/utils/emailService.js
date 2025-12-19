@@ -145,17 +145,17 @@ export const sendOTPEmail = async (email, otp) => {
       </div>
     `;
 
-    // Use Brevo HTTP API if available (works on Render free tier!)
-    if (process.env.BREVO_API_KEY) {
-      console.log('📧 Using Brevo HTTP API for email delivery');
-      const result = await sendWithBrevoAPI(email, 'CampusZon - Email Verification OTP', htmlContent);
-      return { success: true };
-    }
-    
-    // Use Resend HTTP API if available
+    // Use Resend HTTP API if available (Recommended - works perfectly on Render free tier!)
     if (process.env.RESEND_API_KEY) {
       console.log('📧 Using Resend HTTP API for email delivery');
       const result = await sendWithResendAPI(email, 'CampusZon - Email Verification OTP', htmlContent);
+      return { success: true };
+    }
+    
+    // Use Brevo HTTP API if available (Requires IP whitelisting)
+    if (process.env.BREVO_API_KEY) {
+      console.log('📧 Using Brevo HTTP API for email delivery');
+      const result = await sendWithBrevoAPI(email, 'CampusZon - Email Verification OTP', htmlContent);
       return { success: true };
     }
     
