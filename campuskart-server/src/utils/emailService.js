@@ -145,33 +145,31 @@ export const sendOTPEmail = async (email, otp) => {
       </div>
     `;
 
-    // Use Resend HTTP API if available (Recommended - works perfectly on Render free tier!)
+    // Try Resend HTTP API first (works in sandbox mode only for verified email)
     if (process.env.RESEND_API_KEY) {
-      console.log('📧 Using Resend HTTP API for email delivery');
-      const result = await sendWithResendAPI(email, 'CampusZon - Email Verification OTP', htmlContent);
-      return { success: true };
+      try {
+        console.log('📧 Trying Resend HTTP API for email delivery');
+        const result = await sendWithResendAPI(email, 'CampusZon - Email Verification OTP', htmlContent);
+        return { success: true };
+      } catch (resendError) {
+        console.log('⚠️  Resend failed (sandbox mode?), falling back to SMTP');
+        // Continue to SMTP fallback
+      }
     }
     
-    // Use Brevo HTTP API if available (Requires IP whitelisting)
-    if (process.env.BREVO_API_KEY) {
-      console.log('📧 Using Brevo HTTP API for email delivery');
-      const result = await sendWithBrevoAPI(email, 'CampusZon - Email Verification OTP', htmlContent);
-      return { success: true };
-    }
-    
-    // Otherwise use SMTP
+    // Use SMTP as fallback
     console.log('📧 Using SMTP for email delivery');
     const transporter = createTransporter();
     
     const mailOptions = {
-      from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+      from: `CampusZon <${process.env.EMAIL_USER}>`,
       to: email,
       subject: 'CampusZon - Email Verification OTP',
       html: htmlContent,
     };
 
     const result = await transporter.sendMail(mailOptions);
-    console.log('✅ Email sent successfully:', result.messageId);
+    console.log('✅ Email sent successfully via SMTP:', result.messageId);
     return { success: true };
   } catch (error) {
     console.error('❌ Error sending OTP email:', error.message);
