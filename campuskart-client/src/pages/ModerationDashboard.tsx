@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from '../../config/axios';
+import axios from 'axios';
 
 interface ModerationStats {
   pending: number;
