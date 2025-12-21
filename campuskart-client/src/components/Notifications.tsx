@@ -16,12 +16,24 @@ interface Booking {
   createdAt: string;
 }
 
+interface ModerationNotification {
+  _id: string;
+  type: string;
+  title: string;
+  message: string;
+  itemId?: any;
+  imageUrl?: string;
+  read: boolean;
+  createdAt: string;
+}
+
 export default function Notifications() {
   const { theme } = useTheme();
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
+  const [moderationNotifications, setModerationNotifications] = useState<ModerationNotification[]>([]);
   const [unreadBookingsCount, setUnreadBookingsCount] = useState(0);
 
   useEffect(() => {
@@ -46,21 +58,26 @@ export default function Notifications() {
 
   const fetchNotifications = async () => {
     try {
-      const [bookingResponse, sellerBookingsResponse] = await Promise.all([
+      const [bookingResponse, sellerBookingsResponse, modNotificationsResponse] = await Promise.all([
         axios.get('/api/booking/unread-count'),
-        axios.get('/api/booking/seller')
+        axios.get('/api/booking/seller'),
+        axios.get('/api/notifications?limit=5&unreadOnly=true')
       ]);
 
       const bookCount = bookingResponse.data.unreadCount || 0;
+      const modCount = modNotificationsResponse.data.unreadCount || 0;
       
       setUnreadBookingsCount(bookCount);
-      setUnreadCount(bookCount);
+      setUnreadCount(bookCount + modCount);
       
       // Get recent unread bookings
       const unreadBookings = (sellerBookingsResponse.data.bookings || [])
         .filter((booking: Booking) => !booking.read && booking.status === 'pending')
         .slice(0, 3);
       setRecentBookings(unreadBookings);
+      
+      // Get moderation notifications
+      setModerationNotifications(modNotificationsResponse.data.notifications || []);
       
     } catch (error) {
       console.error('Error fetching notifications:', error);
@@ -199,8 +216,46 @@ export default function Notifications() {
                 )}
               </div>
 
+              {/* Moderation Notifications Section */}
+              {moderationNotifications.length > 0 && (
+                <div className={`p-4 ${theme === 'dark' ? 'bg-gray-750' : 'bg-gray-50'}`}>
+                  <h4 className={`text-sm font-semibold mb-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                    🛡️ Item Moderation
+                  </h4>
+                  {moderationNotifications.map(notification => (
+                    <div
+                      key={notification._id}
+                      className={`p-2 rounded ${
+                        theme === 'dark' 
+                          ? 'hover:bg-gray-700' 
+                          : 'hover:bg-white'
+                      } transition-colors mb-1`}
+                    >
+                      <p className={`font-medium text-sm ${
+                        notification.type === 'ITEM_APPROVED' 
+                          ? 'text-green-600 dark:text-green-400' 
+                          : 'text-red-600 dark:text-red-400'
+                      }`}>
+                        {notification.title}
+                      </p>
+                      <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mt-1`}>
+                        {notification.message}
+                      </p>
+                      <p className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'} mt-1`}>
+                        {new Date(notification.createdAt).toLocaleString([], { 
+                          month: 'short', 
+                          day: 'numeric', 
+                          hour: '2-digit', 
+                          minute: '2-digit' 
+                        })}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {/* Empty State */}
-              {recentBookings.length === 0 && (
+              {recentBookings.length === 0 && moderationNotifications.length === 0 && (
                 <div className="p-8 text-center">
                   <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                     No notifications

@@ -7,6 +7,7 @@ import ImageModeration from '../models/imageModeration.model.js';
 import UserViolation from '../models/userViolation.model.js';
 import ModerationAuditLog from '../models/moderationAuditLog.model.js';
 import Item from '../models/item.mongo.model.js';
+import Notification from '../models/notification.model.js';
 import { recordViolation, getUserViolationStats } from '../utils/enforcementSystem.js';
 import { createBlurredPreview } from '../utils/imageValidator.js';
 import axios from 'axios';
@@ -153,6 +154,37 @@ export const approveImage = async (req, res) => {
         moderatorNotes: notes
       }
     });
+    // Send notification to user
+    await Notification.create({
+      userId: moderation.userId,
+      type: 'ITEM_APPROVED',
+      title: 'Item Approved!',
+      message: `Your item "${item?.title || 'Unknown'}" has been approved and is now live.`,
+      itemId: moderation.itemId,
+      imageUrl: moderation.imageUrl,
+      read: false
+    });
+    // Send notification to user
+    await Notification.create({
+      userId: moderation.userId,
+      type: 'ITEM_APPROVED',
+      title: 'Item Approved!',
+      message: `Your item "${item?.title || 'Unknown'}" has been approved and is now live.`,
+      itemId: moderation.itemId,
+      imageUrl: moderation.imageUrl,
+      read: false
+    });
+
+    // Send notification to user
+    await Notification.create({
+      userId: moderation.userId,
+      type: 'ITEM_APPROVED',
+      title: 'Item Approved!',
+      message: `Your item "${item?.title || 'Unknown'}" has been approved and is now live.`,
+      itemId: moderation.itemId,
+      imageUrl: moderation.imageUrl,
+      read: false
+    });
 
     res.json({
       success: true,
@@ -250,9 +282,21 @@ export const rejectImage = async (req, res) => {
       }
     });
 
+    // Send notification to user
+    await Notification.create({
+      userId: moderation.userId,
+      type: 'ITEM_REJECTED',
+      title: 'Item Rejected',
+      message: notes || `Your item "${item?.title || 'Unknown'}" was rejected. Reasons: ${reasons.join(', ')}`,
+      itemId: moderation.itemId,
+      imageUrl: moderation.imageUrl,
+      read: false,
+      metadata: new Map([['reasons', reasons]])
+    });
+
     res.json({
       success: true,
-      message: 'Image rejected successfully',
+      message: 'Image rejected and user notified',
       moderation,
       enforcement
     });
