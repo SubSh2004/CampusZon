@@ -214,8 +214,11 @@ export const getAllItems = async (req, res) => {
       });
     }
 
-    // Query MongoDB for items matching the domain
-    const items = await Item.find({ emailDomain }).sort({ createdAt: -1 }).lean();
+    // Query MongoDB for items matching the domain that have at least one image
+    const items = await Item.find({ 
+      emailDomain,
+      imageUrls: { $exists: true, $ne: [] } // Only items with approved images
+    }).sort({ createdAt: -1 }).lean();
 
     // Convert _id to id for frontend compatibility
     const itemsWithId = items.map(item => ({

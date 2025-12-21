@@ -61,7 +61,7 @@ export default function Notifications() {
       const [bookingResponse, sellerBookingsResponse, modNotificationsResponse] = await Promise.all([
         axios.get('/api/booking/unread-count'),
         axios.get('/api/booking/seller'),
-        axios.get('/api/notifications?limit=5&unreadOnly=true')
+        axios.get('/api/notifications?limit=10')
       ]);
 
       const bookCount = bookingResponse.data.unreadCount || 0;
@@ -76,7 +76,7 @@ export default function Notifications() {
         .slice(0, 3);
       setRecentBookings(unreadBookings);
       
-      // Get moderation notifications
+      // Get moderation notifications (both read and unread for recent history)
       setModerationNotifications(modNotificationsResponse.data.notifications || []);
       
     } catch (error) {
