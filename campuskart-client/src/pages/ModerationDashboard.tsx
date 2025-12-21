@@ -39,7 +39,6 @@ const ModerationDashboard: React.FC = () => {
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
   const [selectedImage, setSelectedImage] = useState<PendingImage | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showBlurred, setShowBlurred] = useState(true);
   const [actionNotes, setActionNotes] = useState('');
   const [activeTab, setActiveTab] = useState<'pending' | 'approved' | 'rejected' | 'violations'>('pending');
   const [searchTerm, setSearchTerm] = useState('');
@@ -376,23 +375,15 @@ const ModerationDashboard: React.FC = () => {
                   </button>
                 </div>
 
-                {/* Image Preview with Blur Toggle */}
+                {/* Image Preview */}
                 <div className="mb-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={showBlurred}
-                        onChange={(e) => setShowBlurred(e.target.checked)}
-                        className="mr-2"
-                      />
-                      Blur Preview (for safety)
-                    </label>
-                  </div>
                   <img
-                    src={`/api/moderation/${selectedImage._id}/preview?blur=${showBlurred}`}
-                    alt="Review"
+                    src={selectedImage.imageUrl}
+                    alt={selectedImage.itemId?.title || 'Review image'}
                     className="w-full max-h-96 object-contain rounded border"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://via.placeholder.com/800x600?text=Image+Not+Available';
+                    }}
                   />
                 </div>
 
