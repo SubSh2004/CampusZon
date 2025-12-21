@@ -11,32 +11,32 @@ import axios from 'axios';
  * Adjust these based on your risk tolerance
  */
 const THRESHOLDS = {
-  // Auto-approval thresholds (below these = auto approve)
+  // Auto-approval thresholds (below these = auto approve) - VERY LENIENT for 75% approval rate
   SAFE: {
-    adult: 0.5,        // Increased from 0.2 - more lenient for clean images
-    violence: 0.5,     // Increased from 0.2
-    racy: 0.5,         // Increased from 0.3
-    nudity: 0.4,       // Increased from 0.15
-    explicitNudity: 0.3, // Increased from 0.1
-    suggestive: 0.5,   // Increased from 0.3
-    drugs: 0.4,        // Increased from 0.2
-    weapons: 0.4,      // Increased from 0.2
-    hate: 0.2,         // Increased from 0.1
-    gambling: 0.5      // Increased from 0.3
+    adult: 0.75,        // Very lenient - only flag very suspicious content
+    violence: 0.75,     // Very lenient
+    racy: 0.75,         // Very lenient
+    nudity: 0.7,        // Very lenient
+    explicitNudity: 0.6, // Moderately lenient
+    suggestive: 0.75,   // Very lenient
+    drugs: 0.7,         // Very lenient
+    weapons: 0.7,       // Very lenient
+    hate: 0.5,          // Keep moderate for hate symbols
+    gambling: 0.75      // Very lenient
   },
   
-  // Auto-rejection thresholds (above these = auto reject)
+  // Auto-rejection thresholds (above these = auto reject) - Keep high to rarely reject
   UNSAFE: {
-    adult: 0.8,        // Increased from 0.7 - only reject very obvious violations
-    violence: 0.8,     // Increased from 0.7
-    racy: 0.7,         // Kept at 0.6
-    nudity: 0.7,       // Increased from 0.6
-    explicitNudity: 0.5, // Increased from 0.4
-    suggestive: 0.8,   // Increased from 0.7
-    drugs: 0.7,        // Increased from 0.6
-    weapons: 0.7,      // Increased from 0.6
-    hate: 0.4,         // Increased from 0.3
-    gambling: 0.8      // Increased from 0.7
+    adult: 0.9,         // Only reject obvious violations
+    violence: 0.9,      // Only reject obvious violations
+    racy: 0.85,         // Only reject obvious violations
+    nudity: 0.85,       // Only reject obvious violations
+    explicitNudity: 0.7, // Moderate - still block explicit content
+    suggestive: 0.9,    // Only reject obvious violations
+    drugs: 0.85,        // Only reject obvious violations
+    weapons: 0.85,      // Only reject obvious violations
+    hate: 0.6,          // Keep strict for hate symbols
+    gambling: 0.9       // Only reject obvious violations
   }
 };
 
