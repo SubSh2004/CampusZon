@@ -3,6 +3,7 @@ import { useRecoilValue } from 'recoil';
 import axios from 'axios';
 import { userAtom } from '../store/user.atom';
 import ProductCard from './ProductCard';
+import { fuzzySearch } from '../utils/searchUtils';
 
 interface Item {
   id: string; // Changed from number to string for MongoDB ObjectId compatibility
@@ -85,19 +86,15 @@ export default function ProductsList({ searchQuery = '', selectedCategory = 'All
   }
 
   // Filter items based on search query, category, and availability
-  const filteredItems = items.filter((item) => {
-    // Filter by search query
-    let matchesSearch = true;
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      matchesSearch = (
-        item.title.toLowerCase().includes(query) ||
-        item.description.toLowerCase().includes(query) ||
-        item.category.toLowerCase().includes(query)
-      );
-    }
-    
-    // Filter by category
+  let filteredItems = items;
+  
+  // Apply fuzzy search if query exists
+  if (searchQuery && searchQuery.trim()) {
+    filteredItems = fuzzySearch(filteredItems, searchQuery, 0.3);
+  }
+  
+  // Filter by category
+  filteredItems = filteredItems.filter((item) => {
     let matchesCategory = true;
     if (selectedCategory && selectedCategory !== 'All') {
       matchesCategory = item.category.includes(selectedCategory);
@@ -115,7 +112,7 @@ export default function ProductsList({ searchQuery = '', selectedCategory = 'All
       matchesAvailability = availabilityFilter === 'Available' ? item.available : !item.available;
     }
     
-    return matchesSearch && matchesCategory && matchesListingType && matchesAvailability;
+    return matchesCategory && matchesListingType && matchesAvailability;
   });
 
   if (filteredItems.length === 0) {

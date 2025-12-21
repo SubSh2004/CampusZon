@@ -7,6 +7,9 @@ import { useTheme } from '../context/ThemeContext';
 import { getOrganizationName } from '../utils/domainMapper';
 import ProductsList from '../components/ProductsList';
 import Notifications from '../components/Notifications';
+import SearchWithAutoComplete from '../components/SearchWithAutoComplete';
+import { generateSuggestions } from '../utils/searchUtils';
+import axios from 'axios';
 
 export default function Home() {
   const user = useRecoilValue(userAtom);
@@ -17,9 +20,52 @@ export default function Home() {
   const [listingTypeFilter, setListingTypeFilter] = useState('All');
   const [availabilityFilter, setAvailabilityFilter] = useState('All');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [allItems, setAllItems] = useState<any[]>([]);
+  const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
   const filterRef = useRef<HTMLDivElement>(null);
   
   const organizationName = user.email ? getOrganizationName(user.email) : '';
+
+  const categories = [
+    'All',
+    'Electronics',
+    'Books',
+    'Furniture',
+    'Clothing',
+    'Sports',
+    'Other'
+  ];
+
+  // Fetch all items for generating suggestions
+  useEffect(() => {
+    const fetchItems = async () => {
+      try {
+        if (!user.email) return;
+        
+        const emailDomain = user.email.split('@')[1] || '';
+        if (!emailDomain) return;
+        
+        const response = await axios.get(`/api/items?emailDomain=${emailDomain}`);
+        if (response.data.success) {
+          setAllItems(response.data.items);
+        }
+      } catch (err) {
+        console.error('Error fetching items for suggestions:', err);
+      }
+    };
+
+    fetchItems();
+  }, [user.email]);
+
+  // Generate search suggestions based on current query
+  useEffect(() => {
+    if (searchQuery.trim() && allItems.length > 0) {
+      const suggestions = generateSuggestions(allItems, searchQuery, 8);
+      setSearchSuggestions(suggestions);
+    } else {
+      setSearchSuggestions([]);
+    }
+  }, [searchQuery, allItems]);
 
   const categories = [
     'All',
@@ -161,42 +207,15 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8">
-        {/* Clean Minimalist Search Bar */}
+        {/* Search Bar with Auto-Complete */}
         <div className="mb-4 sm:mb-6 md:mb-8">
           <div className="max-w-3xl mx-auto">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search for items (laptop, books, furniture...)"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 sm:px-5 py-3 sm:py-3.5 pl-10 sm:pl-12 pr-10 text-sm sm:text-base text-gray-900 dark:text-gray-100 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-300 focus:border-transparent dark:focus:border-transparent outline-none transition-all shadow-sm font-normal placeholder:text-gray-500 dark:placeholder:text-slate-500"
-              />
-              <svg
-                className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-500 dark:text-slate-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-900 dark:text-slate-500 dark:hover:text-slate-300 p-1 hover:bg-gray-100 dark:hover:bg-slate-800 rounded transition"
-                  aria-label="Clear search"
-                >
-                  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              )}
-            </div>
+            <SearchWithAutoComplete
+              value={searchQuery}
+              onChange={setSearchQuery}
+              suggestions={searchSuggestions}
+              placeholder="Search for items (laptop, books, furniture...)"
+            />
           </div>
         </div>
 
