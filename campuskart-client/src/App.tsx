@@ -11,6 +11,7 @@ import ItemDetail from './pages/ItemDetail'
 import ForgotPassword from './pages/ForgotPassword'
 import Profile from './pages/Profile'
 import OAuthCallback from './pages/OAuthCallback'
+import ModerationDashboard from './components/ModerationDashboard'
 
 export default function App() {
   const setUser = useSetRecoilState(userAtom);
@@ -90,6 +91,7 @@ export default function App() {
         <Route path="/add-item" element={<AddItem />} />
         <Route path="/item/:id" element={<ItemDetail />} />
         <Route path="/oauth-callback" element={<OAuthCallback />} />
+        <Route path="/admin/moderation" element={<ModerationDashboard />} />
       </Routes>
     </div>
   )
