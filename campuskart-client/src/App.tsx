@@ -11,7 +11,7 @@ import ItemDetail from './pages/ItemDetail'
 import ForgotPassword from './pages/ForgotPassword'
 import Profile from './pages/Profile'
 import OAuthCallback from './pages/OAuthCallback'
-import ModerationDashboard from './components/ModerationDashboard'
+import ModerationDashboard from './pages/ModerationDashboard'
 
 export default function App() {
   const setUser = useSetRecoilState(userAtom);
