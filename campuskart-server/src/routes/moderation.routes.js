@@ -12,7 +12,10 @@ import {
   reportImage,
   getModerationStats,
   getBlurredPreview,
-  getAuditLogs
+  getAuditLogs,
+  getImagesByStatus,
+  getUserViolations,
+  reverseDecision
 } from '../controllers/moderation.controller.js';
 import { authenticateToken } from '../middleware/auth.js';
 
@@ -35,12 +38,15 @@ const requireAdmin = (req, res, next) => {
 
 // Admin routes
 router.get('/pending', authenticateToken, requireAdmin, getPendingReviews);
+router.get('/images', authenticateToken, requireAdmin, getImagesByStatus);
+router.get('/violations', authenticateToken, requireAdmin, getUserViolations);
 router.get('/stats', authenticateToken, requireAdmin, getModerationStats);
 router.get('/audit-logs', authenticateToken, requireAdmin, getAuditLogs);
 router.get('/:imageId', authenticateToken, requireAdmin, getModerationDetails);
 router.get('/:imageId/preview', authenticateToken, requireAdmin, getBlurredPreview);
 router.post('/:imageId/approve', authenticateToken, requireAdmin, approveImage);
 router.post('/:imageId/reject', authenticateToken, requireAdmin, rejectImage);
+router.post('/:imageId/reverse', authenticateToken, requireAdmin, reverseDecision);
 
 // User routes (reporting)
 router.post('/report/:itemId', authenticateToken, reportImage);

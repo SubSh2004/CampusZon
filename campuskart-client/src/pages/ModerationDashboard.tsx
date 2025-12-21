@@ -39,11 +39,14 @@ const ModerationDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showBlurred, setShowBlurred] = useState(true);
   const [actionNotes, setActionNotes] = useState('');
+  const [activeTab, setActiveTab] = useState<'pending' | 'approved' | 'rejected' | 'violations'>('pending');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [reverseAction, setReverseAction] = useState<'approve' | 'reject' | null>(null);
 
   useEffect(() => {
     fetchStats();
-    fetchPendingImages();
-  }, []);
+    fetchImages();
+  }, [activeTab, searchTerm]);
 
   const fetchStats = async () => {
     try {
@@ -66,6 +69,28 @@ const ModerationDashboard: React.FC = () => {
     }
   };
 
+  const fetchImages = async () => {
+    try {
+      setLoading(true);
+      let endpoint = '';
+      
+      if (activeTab === 'pending') {
+        endpoint = `/api/moderation/pending?search=${searchTerm}`;
+      } else if (activeTab === 'violations') {
+        return; // Handle violations separately
+      } else {
+        endpoint = `/api/moderation/images?status=${activeTab.toUpperCase()}&search=${searchTerm}`;
+      }
+      
+      const response = await axios.get(endpoint);
+      setPendingImages(response.data.images);
+    } catch (error) {
+      console.error('Failed to fetch images:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleApprove = async (imageId: string) => {
     try {
       await axios.post(`/api/moderation/${imageId}/approve`, {
@@ -74,7 +99,8 @@ const ModerationDashboard: React.FC = () => {
       alert('Image approved successfully');
       setActionNotes('');
       setSelectedImage(null);
-      fetchPendingImages();
+      setReverseAction(null);
+      fetchImages();
       fetchStats();
     } catch (error: any) {
       alert('Failed to approve image: ' + error.response?.data?.message);
@@ -91,10 +117,28 @@ const ModerationDashboard: React.FC = () => {
       alert('Image rejected and violation recorded');
       setActionNotes('');
       setSelectedImage(null);
-      fetchPendingImages();
+      setReverseAction(null);
+      fetchImages();
       fetchStats();
     } catch (error: any) {
       alert('Failed to reject image: ' + error.response?.data?.message);
+    }
+  };
+
+  const handleReverseDecision = async (imageId: string, newStatus: string) => {
+    try {
+      await axios.post(`/api/moderation/${imageId}/reverse`, {
+        newStatus,
+        notes: actionNotes
+      });
+      alert('Decision reversed successfully');
+      setActionNotes('');
+      setSelectedImage(null);
+      setReverseAction(null);
+      fetchImages();
+      fetchStats();
+    } catch (error: any) {
+      alert('Failed to reverse decision: ' + error.response?.data?.message);
     }
   };
 
@@ -128,24 +172,33 @@ const ModerationDashboard: React.FC = () => {
         {/* Statistics Cards */}
         {stats && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <div className="bg-white rounded-lg shadow p-4">
+            <button 
+              onClick={() => setActiveTab('pending')}
+              className={`bg-white rounded-lg shadow p-4 text-left transition ${activeTab === 'pending' ? 'ring-2 ring-blue-500' : 'hover:shadow-md'}`}
+            >
               <div className="text-sm text-gray-500">Pending Review</div>
               <div className="text-2xl font-bold text-blue-600">
                 {stats.reviewing + stats.flagged}
               </div>
-            </div>
-            <div className="bg-white rounded-lg shadow p-4">
+            </button>
+            <button 
+              onClick={() => setActiveTab('approved')}
+              className={`bg-white rounded-lg shadow p-4 text-left transition ${activeTab === 'approved' ? 'ring-2 ring-green-500' : 'hover:shadow-md'}`}
+            >
               <div className="text-sm text-gray-500">Approved</div>
               <div className="text-2xl font-bold text-green-600">
                 {stats.approved}
               </div>
-            </div>
-            <div className="bg-white rounded-lg shadow p-4">
+            </button>
+            <button 
+              onClick={() => setActiveTab('rejected')}
+              className={`bg-white rounded-lg shadow p-4 text-left transition ${activeTab === 'rejected' ? 'ring-2 ring-red-500' : 'hover:shadow-md'}`}
+            >
               <div className="text-sm text-gray-500">Rejected</div>
               <div className="text-2xl font-bold text-red-600">
                 {stats.rejected}
               </div>
-            </div>
+            </button>
             <div className="bg-white rounded-lg shadow p-4">
               <div className="text-sm text-gray-500">User Reports</div>
               <div className="text-2xl font-bold text-orange-600">
@@ -172,6 +225,22 @@ const ModerationDashboard: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* Search Bar */}
+        <div className="mb-6">
+          <input
+            type="text"
+            placeholder="Search by title, user name, or email..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+
+        {/* Tab Title */}
+        <h2 className="text-2xl font-semibold mb-4 capitalize">
+          {activeTab === 'pending' ? 'Pending Review' : activeTab} Images
+        </h2>
 
         {/* Pending Images Grid */}
         <div className="bg-white rounded-lg shadow p-6">
@@ -375,20 +444,43 @@ const ModerationDashboard: React.FC = () => {
 
                 {/* Action Buttons */}
                 <div className="flex gap-3">
-                  <button
-                    onClick={() => handleApprove(selectedImage._id)}
-                    className="flex-1 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 font-semibold"
-                  >
-                    ✓ Approve Image
-                  </button>
-                  <button
-                    onClick={() =>
-                      handleReject(selectedImage._id, ['INAPPROPRIATE'])
-                    }
-                    className="flex-1 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 font-semibold"
-                  >
-                    ✕ Reject & Add Violation
-                  </button>
+                  {activeTab === 'pending' && (
+                    <>
+                      <button
+                        onClick={() => handleApprove(selectedImage._id)}
+                        className="flex-1 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 font-semibold"
+                      >
+                        ✓ Approve Image
+                      </button>
+                      <button
+                        onClick={() =>
+                          handleReject(selectedImage._id, ['INAPPROPRIATE'])
+                        }
+                        className="flex-1 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 font-semibold"
+                      >
+                        ✕ Reject & Add Violation
+                      </button>
+                    </>
+                  )}
+                  
+                  {activeTab === 'approved' && (
+                    <button
+                      onClick={() => handleReverseDecision(selectedImage._id, 'REJECTED')}
+                      className="flex-1 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 font-semibold"
+                    >
+                      ✕ Reverse - Reject Image
+                    </button>
+                  )}
+                  
+                  {activeTab === 'rejected' && (
+                    <button
+                      onClick={() => handleReverseDecision(selectedImage._id, 'APPROVED')}
+                      className="flex-1 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 font-semibold"
+                    >
+                      ✓ Reverse - Approve Image
+                    </button>
+                  )}
+                  
                   <button
                     onClick={() => setSelectedImage(null)}
                     className="px-4 py-2 border rounded hover:bg-gray-100"

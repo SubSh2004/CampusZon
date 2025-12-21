@@ -551,6 +551,228 @@ export const getBlurredPreview = async (req, res) => {
 };
 
 /**
+ * Get all images by status with search
+ * @route GET /api/moderation/images
+ * @access Admin only
+ */
+export const getImagesByStatus = async (req, res) => {
+  try {
+    const { 
+      status = 'APPROVED', 
+      page = 1, 
+      limit = 20,
+      search = '',
+      userId = ''
+    } = req.query;
+
+    // Build query
+    const query = { status };
+    
+    // Add search filter
+    if (search) {
+      const items = await Item.find({
+        $or: [
+          { title: { $regex: search, $options: 'i' } },
+          { userName: { $regex: search, $options: 'i' } },
+          { userEmail: { $regex: search, $options: 'i' } }
+        ]
+      }).select('_id');
+      
+      query.itemId = { $in: items.map(i => i._id) };
+    }
+    
+    if (userId) {
+      query.userId = userId;
+    }
+
+    const images = await ImageModeration.find(query)
+      .populate('itemId', 'title category description userId userName userEmail')
+      .sort({ createdAt: -1 })
+      .limit(parseInt(limit))
+      .skip((parseInt(page) - 1) * parseInt(limit));
+
+    const total = await ImageModeration.countDocuments(query);
+
+    res.json({
+      success: true,
+      images,
+      pagination: {
+        total,
+        page: parseInt(page),
+        pages: Math.ceil(total / parseInt(limit))
+      }
+    });
+
+  } catch (error) {
+    console.error('Error fetching images by status:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch images',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * Get user violations with search
+ * @route GET /api/moderation/violations
+ * @access Admin only
+ */
+export const getUserViolations = async (req, res) => {
+  try {
+    const { 
+      status = 'all',
+      page = 1, 
+      limit = 20,
+      search = ''
+    } = req.query;
+
+    // Build query
+    const query = {};
+    
+    if (status !== 'all') {
+      query.accountStatus = status.toUpperCase();
+    }
+    
+    // Search by userId (email pattern)
+    if (search) {
+      query.userId = { $regex: search, $options: 'i' };
+    }
+
+    const violations = await UserViolation.find(query)
+      .sort({ lastViolationDate: -1 })
+      .limit(parseInt(limit))
+      .skip((parseInt(page) - 1) * parseInt(limit));
+
+    const total = await UserViolation.countDocuments(query);
+
+    res.json({
+      success: true,
+      violations,
+      pagination: {
+        total,
+        page: parseInt(page),
+        pages: Math.ceil(total / parseInt(limit))
+      }
+    });
+
+  } catch (error) {
+    console.error('Error fetching violations:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch violations',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * Reverse moderation decision
+ * @route POST /api/moderation/:imageId/reverse
+ * @access Admin only
+ */
+export const reverseDecision = async (req, res) => {
+  try {
+    const { imageId } = req.params;
+    const { newStatus, notes } = req.body;
+    const adminId = req.user?.userId || 'ADMIN';
+
+    const moderation = await ImageModeration.findById(imageId);
+
+    if (!moderation) {
+      return res.status(404).json({
+        success: false,
+        message: 'Moderation record not found'
+      });
+    }
+
+    const previousStatus = moderation.status;
+
+    // Update moderation record
+    moderation.status = newStatus;
+    moderation.manualReview = {
+      reviewedBy: adminId,
+      reviewedAt: new Date(),
+      reviewNotes: notes,
+      finalDecision: newStatus,
+      reversed: true,
+      previousDecision: previousStatus
+    };
+    await moderation.save();
+
+    // Update item accordingly
+    const item = await Item.findById(moderation.itemId);
+    if (item) {
+      if (newStatus === 'APPROVED') {
+        // Add image back if reversing rejection
+        if (!item.imageUrls.includes(moderation.imageUrl)) {
+          item.imageUrls.push(moderation.imageUrl);
+          if (!item.imageUrl) {
+            item.imageUrl = moderation.imageUrl;
+          }
+        }
+      } else if (newStatus === 'REJECTED') {
+        // Remove image if reversing approval
+        item.imageUrls = item.imageUrls.filter(url => url !== moderation.imageUrl);
+        if (item.imageUrl === moderation.imageUrl) {
+          item.imageUrl = item.imageUrls[0] || null;
+        }
+      }
+      await item.save();
+    }
+
+    // Create audit log
+    await ModerationAuditLog.create({
+      action: 'DECISION_REVERSED',
+      imageId: moderation._id,
+      itemId: moderation.itemId,
+      userId: moderation.userId,
+      actorType: 'ADMIN',
+      actorId: adminId,
+      details: {
+        previousStatus,
+        newStatus,
+        moderatorNotes: notes,
+        reversed: true
+      }
+    });
+
+    // Send notification to user
+    const notificationTitle = newStatus === 'APPROVED' 
+      ? 'Item Re-approved!' 
+      : 'Item Status Changed';
+    const notificationMessage = notes || 
+      (newStatus === 'APPROVED' 
+        ? `Your item "${item?.title || 'Unknown'}" has been re-approved.`
+        : `Your item "${item?.title || 'Unknown'}" status has been updated.`);
+
+    await Notification.create({
+      userId: moderation.userId,
+      type: newStatus === 'APPROVED' ? 'ITEM_APPROVED' : 'ITEM_REJECTED',
+      title: notificationTitle,
+      message: notificationMessage,
+      itemId: moderation.itemId,
+      imageUrl: moderation.imageUrl,
+      read: false
+    });
+
+    res.json({
+      success: true,
+      message: 'Decision reversed successfully',
+      moderation
+    });
+
+  } catch (error) {
+    console.error('Error reversing decision:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to reverse decision',
+      error: error.message
+    });
+  }
+};
+
+/**
  * Get audit logs
  * @route GET /api/moderation/audit-logs
  * @access Admin only
@@ -603,5 +825,8 @@ export default {
   reportImage,
   getModerationStats,
   getBlurredPreview,
-  getAuditLogs
+  getAuditLogs,
+  getImagesByStatus,
+  getUserViolations,
+  reverseDecision
 };
