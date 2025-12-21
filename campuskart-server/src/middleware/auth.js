@@ -28,3 +28,6 @@ export const authenticate = async (req, res, next) => {
     res.status(401).json({ success: false, message: 'Invalid token' });
   }
 };
+
+// Alias for compatibility with moderation routes
+export const authenticateToken = authenticate;

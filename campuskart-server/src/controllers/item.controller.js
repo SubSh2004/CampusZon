@@ -1,6 +1,10 @@
 import mongoose from 'mongoose';
 import Item from '../models/item.mongo.model.js';
+import ImageModeration from '../models/imageModeration.model.js';
+import UserViolation from '../models/userViolation.model.js';
 import imgbbUploader from 'imgbb-uploader';
+import { queueImageModeration } from '../utils/moderationQueue.js';
+import { checkUserCanUpload } from '../utils/enforcementSystem.js';
 
 // Create a new item
 export const createItem = async (req, res) => {
@@ -40,30 +44,54 @@ export const createItem = async (req, res) => {
       });
     }
 
-    // Upload images to ImgBB if present (up to 5)
+    // Check if user is allowed to upload (enforcement check)
+    const uploadPermission = await checkUserCanUpload(userId);
+    if (!uploadPermission.allowed) {
+      return res.status(403).json({
+        success: false,
+        message: uploadPermission.reason,
+        suspendedUntil: uploadPermission.suspendedUntil,
+        banReason: uploadPermission.banReason
+      });
+    }
+
+    // Upload images with moderation
     let imageUrls = [];
-    let imageUrl = null; // Keep first image as imageUrl for backward compatibility
+    let imageUrl = null;
+    let pendingModerationCount = 0;
     
     if (req.files && req.files.length > 0) {
       try {
         // Limit to 5 images
         const filesToUpload = req.files.slice(0, 5);
         
-        // Upload all images to ImgBB
-        const uploadPromises = filesToUpload.map(async (file) => {
+        // Upload to temporary storage first (ImgBB)
+        const tempUploadPromises = filesToUpload.map(async (file) => {
           const base64Image = file.buffer.toString('base64');
           const response = await imgbbUploader({
             apiKey: process.env.IMGBB_API_KEY,
             base64string: base64Image,
-            name: `${Date.now()}-${file.originalname}`,
+            name: `temp-${Date.now()}-${file.originalname}`,
           });
-          return response.url;
+          return {
+            url: response.url,
+            buffer: file.buffer,
+            metadata: {
+              originalname: file.originalname,
+              mimetype: file.mimetype,
+              size: file.size
+            }
+          };
         });
         
-        imageUrls = await Promise.all(uploadPromises);
-        imageUrl = imageUrls[0]; // Set first image as main image for backward compatibility
+        const tempUploads = await Promise.all(tempUploadPromises);
+        
+        // Note: Images are uploaded to temp storage, but not added to item yet
+        // They will be added after moderation approval
+        pendingModerationCount = tempUploads.length;
+        
       } catch (uploadError) {
-        console.error('ImgBB upload error:', uploadError);
+        console.error('Image upload error:', uploadError);
         return res.status(500).json({
           success: false,
           message: 'Failed to upload images',
@@ -71,14 +99,14 @@ export const createItem = async (req, res) => {
       }
     }
 
-    // Create new item (MongoDB)
+    // Create new item WITHOUT images (images added after moderation)
     const newItem = await Item.create({
       title,
       description,
       price: parseFloat(price),
       category,
-      imageUrl,
-      imageUrls,
+      imageUrl: null, // Will be set after moderation approval
+      imageUrls: [], // Will be populated after moderation approval
       available: true,
       userId,
       userName,
@@ -88,15 +116,80 @@ export const createItem = async (req, res) => {
       emailDomain,
     });
 
+    // Queue images for moderation
+    if (req.files && req.files.length > 0) {
+      const filesToUpload = req.files.slice(0, 5);
+      
+      for (let i = 0; i < filesToUpload.length; i++) {
+        const file = filesToUpload[i];
+        
+        // Upload to temporary storage
+        const base64Image = file.buffer.toString('base64');
+        const tempUpload = await imgbbUploader({
+          apiKey: process.env.IMGBB_API_KEY,
+          base64string: base64Image,
+          name: `temp-${Date.now()}-${file.originalname}`,
+        });
+
+        // Queue for moderation
+        await queueImageModeration({
+          imageBuffer: file.buffer,
+          tempImageUrl: tempUpload.url,
+          itemId: newItem._id,
+          userId,
+          category,
+          fileMetadata: {
+            originalname: file.originalname,
+            mimetype: file.mimetype,
+            size: file.size
+          },
+          onApproved: async (approvedUrl, moderationRecord) => {
+            // Add approved image to item
+            const item = await Item.findById(newItem._id);
+            if (item) {
+              item.imageUrls.push(approvedUrl);
+              if (!item.imageUrl) {
+                item.imageUrl = approvedUrl; // First approved image becomes main image
+              }
+              await item.save();
+            }
+          },
+          onRejected: async (reasons, errorMessage) => {
+            console.log(`Image rejected for item ${newItem._id}: ${reasons.join(', ')}`);
+          },
+          onManualReview: async (moderationRecord) => {
+            console.log(`Image flagged for manual review: ${moderationRecord._id}`);
+          }
+        });
+      }
+
+      // Update user violation stats (increment upload count)
+      await UserViolation.findOneAndUpdate(
+        { userId },
+        {
+          $inc: { 'stats.totalImagesUploaded': filesToUpload.length }
+        },
+        { upsert: true }
+      );
+    }
+
     // Return response
     res.status(201).json({
       success: true,
-      message: 'Item created successfully',
+      message: pendingModerationCount > 0 
+        ? `Item created successfully. ${pendingModerationCount} image(s) are being reviewed and will appear once approved.`
+        : 'Item created successfully',
       item: {
         ...newItem.toObject(),
         id: newItem._id.toString(),
         _id: undefined
       },
+      moderation: {
+        pending: pendingModerationCount,
+        message: pendingModerationCount > 0 
+          ? 'Images are being moderated and will be visible once approved'
+          : null
+      }
     });
   } catch (error) {
     console.error('Create item error:', error);
