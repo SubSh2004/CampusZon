@@ -47,7 +47,7 @@ const imageModerationSchema = new mongoose.Schema({
   // AI Provider info
   aiProvider: {
     type: String,
-    enum: ['GOOGLE_VISION', 'AWS_REKOGNITION', 'AZURE_CONTENT_MODERATOR', 'OPENAI_VISION'],
+    enum: ['GOOGLE_VISION', 'AWS_REKOGNITION', 'AZURE_CONTENT_MODERATOR', 'OPENAI_VISION', 'NONE', 'FAILED'],
     default: 'GOOGLE_VISION'
   },
   

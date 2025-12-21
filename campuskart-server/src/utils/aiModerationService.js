@@ -344,10 +344,11 @@ class ModerationService {
     if (this.providers.length === 0) {
       // Fallback: manual review required
       return {
-        scores: { adult: 0.5, violence: 0.5, racy: 0.5 },
+        scores: { adult: 0, violence: 0, racy: 0 },
         labels: [],
         provider: 'NONE',
         decision: 'MANUAL_REVIEW_REQUIRED',
+        rejectionReasons: [],
         reason: 'No AI provider configured'
       };
     }
@@ -372,12 +373,14 @@ class ModerationService {
       }
     }
 
-    // All providers failed - require manual review
+    // All providers failed - require manual review with safe defaults
+    console.warn('All AI providers failed - sending to manual review');
     return {
-      scores: {},
+      scores: { adult: 0, violence: 0, racy: 0 },
       labels: [],
       provider: 'FAILED',
       decision: 'MANUAL_REVIEW_REQUIRED',
+      rejectionReasons: [],
       reason: 'All AI providers failed',
       error: 'Moderation service unavailable'
     };
