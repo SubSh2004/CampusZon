@@ -21,6 +21,8 @@ interface PendingImage {
   detectedLabels: string[];
   reportCount: number;
   createdAt: string;
+  rejectionReasons?: string[];
+  notes?: string;
   itemId: {
     _id: string;
     title: string;
@@ -245,6 +247,28 @@ const ModerationDashboard: React.FC = () => {
                           </span>
                         ))}
                       </div>
+                    </div>
+                  )}
+
+                  {/* AI Rejection Reasons */}
+                  {image.rejectionReasons && image.rejectionReasons.length > 0 && (
+                    <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded">
+                      <div className="text-xs font-semibold text-red-700 mb-1">⚠️ AI Flagged:</div>
+                      <div className="space-y-1">
+                        {image.rejectionReasons.map((reason, idx) => (
+                          <div key={idx} className="text-xs text-red-600">
+                            • {reason.replace(/_/g, ' ')}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* AI Notes */}
+                  {image.notes && (
+                    <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded">
+                      <div className="text-xs font-semibold text-yellow-700 mb-1">📝 Note:</div>
+                      <div className="text-xs text-yellow-600">{image.notes}</div>
                     </div>
                   )}
                 </div>
