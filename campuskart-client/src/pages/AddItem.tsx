@@ -120,12 +120,18 @@ export default function AddItem() {
       });
 
       if (response.data.success) {
-        setSuccess('Item added successfully!');
-        
-        // Navigate to homepage after a short delay
-        setTimeout(() => {
-          navigate('/');
-        }, 1500);
+        // Check if requires manual review
+        if (response.data.moderation?.requiresManualReview) {
+          setSuccess('Admin will check and upload your item. Thank you!');
+          setTimeout(() => {
+            navigate('/');
+          }, 2500);
+        } else {
+          setSuccess('Item added successfully!');
+          setTimeout(() => {
+            navigate('/');
+          }, 1500);
+        }
       }
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || 'Failed to add item. Please try again.';

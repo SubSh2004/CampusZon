@@ -94,7 +94,20 @@ class ModerationQueue {
       const processed = await processImageUpload(imageBuffer, job.fileMetadata || {});
       
       if (!processed.success) {
-        await this.handleRejection(job, ['LOW_QUALITY'], processed.error);
+        // Send to manual review instead of auto-rejecting
+        const moderationRecord = await ImageModeration.create({
+          imageUrl: job.tempImageUrl,
+          tempImageUrl: job.tempImageUrl,
+          itemId: job.itemId,
+          userId: job.userId,
+          status: 'FLAGGED',
+          moderationDecision: 'MANUAL_REVIEW',
+          rejectionReasons: ['LOW_QUALITY'],
+          notes: processed.error,
+          processingAttempts: job.attempts + 1,
+          lastProcessedAt: new Date()
+        });
+        await this.handleManualReview(job, moderationRecord);
         return;
       }
 

@@ -177,7 +177,7 @@ export const createItem = async (req, res) => {
     res.status(201).json({
       success: true,
       message: pendingModerationCount > 0 
-        ? `Item created successfully. ${pendingModerationCount} image(s) are being reviewed and will appear once approved.`
+        ? 'Admin will check and upload your item. Thank you!'
         : 'Item created successfully',
       item: {
         ...newItem.toObject(),
@@ -186,8 +186,9 @@ export const createItem = async (req, res) => {
       },
       moderation: {
         pending: pendingModerationCount,
+        requiresManualReview: pendingModerationCount > 0,
         message: pendingModerationCount > 0 
-          ? 'Images are being moderated and will be visible once approved'
+          ? 'Your images are being reviewed by our admin team'
           : null
       }
     });
