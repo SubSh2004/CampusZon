@@ -54,6 +54,8 @@ class GoogleVisionModerator {
     try {
       const base64Image = imageBuffer.toString('base64');
       
+      console.log(`[Google Vision] Making API call with key: ${this.apiKey.substring(0, 20)}...`);
+      
       const response = await axios.post(
         `${this.baseUrl}?key=${this.apiKey}`,
         {
@@ -71,6 +73,8 @@ class GoogleVisionModerator {
         { timeout: 30000 }
       );
 
+      console.log('[Google Vision] API call successful');
+      
       const result = response.data.responses[0];
       
       if (result.error) {
@@ -109,6 +113,11 @@ class GoogleVisionModerator {
 
     } catch (error) {
       console.error('Google Vision moderation error:', error.message);
+      if (error.response) {
+        console.error('Status:', error.response.status);
+        console.error('Headers:', error.response.headers);
+        console.error('Data:', JSON.stringify(error.response.data, null, 2));
+      }
       throw error;
     }
   }
