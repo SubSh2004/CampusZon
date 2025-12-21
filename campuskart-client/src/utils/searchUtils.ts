@@ -110,6 +110,8 @@ export function generateSuggestions(items: Item[], query: string, maxSuggestions
   const queryLower = query.toLowerCase();
   const suggestions = new Set<string>();
   
+  console.log(`Generating suggestions for query: "${query}" from ${items.length} items`);
+  
   // Extract keywords from titles and descriptions
   items.forEach(item => {
     const title = item.title.toLowerCase();
@@ -119,17 +121,22 @@ export function generateSuggestions(items: Item[], query: string, maxSuggestions
     // Add exact matches and partial matches from titles
     if (title.includes(queryLower)) {
       suggestions.add(item.title);
+      console.log(`Added title: ${item.title}`);
     }
     
     // Add category if it matches
     if (category.includes(queryLower)) {
       suggestions.add(item.category);
+      console.log(`Added category: ${item.category}`);
     }
     
     // Extract multi-word phrases from titles that contain the query
     const titleWords = item.title.split(/\s+/);
     for (let i = 0; i < titleWords.length; i++) {
       if (titleWords[i].toLowerCase().includes(queryLower)) {
+        // Add single word
+        suggestions.add(titleWords[i]);
+        
         // Add 2-word phrase
         if (i < titleWords.length - 1) {
           suggestions.add(`${titleWords[i]} ${titleWords[i + 1]}`);
@@ -144,11 +151,13 @@ export function generateSuggestions(items: Item[], query: string, maxSuggestions
     // Extract keywords from description
     const descWords = description.split(/\s+/);
     descWords.forEach(word => {
-      if (word.length > 3 && word.includes(queryLower)) {
+      if (word.length > 2 && word.includes(queryLower)) {
         suggestions.add(word);
       }
     });
   });
+  
+  console.log(`Total suggestions before scoring: ${suggestions.size}`);
   
   // Convert to array and score by relevance
   const scoredSuggestions = Array.from(suggestions).map(suggestion => ({
@@ -157,10 +166,14 @@ export function generateSuggestions(items: Item[], query: string, maxSuggestions
   }));
   
   // Sort by score and return top suggestions
-  return scoredSuggestions
+  const result = scoredSuggestions
     .sort((a, b) => b.score - a.score)
     .slice(0, maxSuggestions)
     .map(s => s.text);
+  
+  console.log(`Final suggestions (${result.length}):`, result);
+  
+  return result;
 }
 
 /**

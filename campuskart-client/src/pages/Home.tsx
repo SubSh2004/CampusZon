@@ -48,6 +48,7 @@ export default function Home() {
         const response = await axios.get(`/api/items?emailDomain=${emailDomain}`);
         if (response.data.success) {
           setAllItems(response.data.items);
+          console.log('Fetched items for suggestions:', response.data.items.length);
         }
       } catch (err) {
         console.error('Error fetching items for suggestions:', err);
@@ -61,21 +62,12 @@ export default function Home() {
   useEffect(() => {
     if (searchQuery.trim() && allItems.length > 0) {
       const suggestions = generateSuggestions(allItems, searchQuery, 8);
+      console.log('Generated suggestions:', suggestions);
       setSearchSuggestions(suggestions);
     } else {
       setSearchSuggestions([]);
     }
   }, [searchQuery, allItems]);
-
-  const categories = [
-    'All',
-    'Electronics',
-    'Books',
-    'Furniture',
-    'Clothing',
-    'Sports',
-    'Other'
-  ];
 
   // Close dropdown when clicking outside
   useEffect(() => {

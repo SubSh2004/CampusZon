@@ -20,6 +20,12 @@ export default function SearchWithAutoComplete({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Debug: Log suggestions when they change
+  useEffect(() => {
+    console.log('SearchWithAutoComplete - suggestions:', suggestions);
+    console.log('SearchWithAutoComplete - showSuggestions:', showSuggestions);
+  }, [suggestions, showSuggestions]);
+
   // Close suggestions when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -93,7 +99,7 @@ export default function SearchWithAutoComplete({
           onFocus={handleInputFocus}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="w-full px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base border-2 border-gray-200 dark:border-gray-700 rounded-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 pr-10"
+          className="w-full pl-12 pr-10 py-3 sm:py-4 text-sm sm:text-base border-2 border-gray-200 dark:border-gray-700 rounded-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
           autoComplete="off"
         />
         
