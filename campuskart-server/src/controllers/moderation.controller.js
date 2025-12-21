@@ -24,7 +24,7 @@ export const getPendingReviews = async (req, res) => {
     const images = await ImageModeration.find({
       status: { $in: ['REVIEWING', 'FLAGGED'] }
     })
-      .populate('itemId', 'title category description userId')
+      .populate('itemId', 'title category description userId userName userEmail userPhone')
       .sort({ createdAt: -1 })
       .limit(parseInt(limit))
       .skip((parseInt(page) - 1) * parseInt(limit));
@@ -586,7 +586,7 @@ export const getImagesByStatus = async (req, res) => {
     }
 
     const images = await ImageModeration.find(query)
-      .populate('itemId', 'title category description userId userName userEmail')
+      .populate('itemId', 'title category description userId userName userEmail userPhone')
       .sort({ createdAt: -1 })
       .limit(parseInt(limit))
       .skip((parseInt(page) - 1) * parseInt(limit));

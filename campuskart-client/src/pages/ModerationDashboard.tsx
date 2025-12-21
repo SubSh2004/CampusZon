@@ -27,8 +27,10 @@ interface PendingImage {
     _id: string;
     title: string;
     category: string;
+    description: string;
     userName: string;
     userEmail: string;
+    userPhone: string;
   };
 }
 
@@ -263,9 +265,12 @@ const ModerationDashboard: React.FC = () => {
                   {/* Image Preview */}
                   <div className="relative mb-3">
                     <img
-                      src={`/api/moderation/${image._id}/preview?blur=${showBlurred}`}
-                      alt="Pending moderation"
+                      src={image.imageUrl}
+                      alt={image.itemId?.title || 'Item image'}
                       className="w-full h-48 object-cover rounded"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x300?text=Image+Not+Available';
+                      }}
                     />
                     {image.reportCount > 0 && (
                       <span className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">
@@ -275,15 +280,25 @@ const ModerationDashboard: React.FC = () => {
                   </div>
 
                   {/* Item Info */}
-                  <div className="mb-2">
-                    <div className="font-semibold truncate">
-                      {image.itemId?.title}
+                  <div className="mb-3 pb-3 border-b">
+                    <div className="font-bold text-lg mb-1 truncate">
+                      {image.itemId?.title || 'No title'}
                     </div>
-                    <div className="text-sm text-gray-600">
-                      {image.itemId?.category}
+                    <div className="text-sm text-gray-600 mb-1">
+                      📂 {image.itemId?.category || 'No category'}
                     </div>
-                    <div className="text-xs text-gray-500">
-                      by {image.itemId?.userName}
+                    <div className="text-xs text-gray-700 line-clamp-2 mb-2">
+                      {image.itemId?.description || 'No description'}
+                    </div>
+                  </div>
+
+                  {/* User Info */}
+                  <div className="mb-3 pb-3 border-b bg-blue-50 p-2 rounded">
+                    <div className="text-xs font-semibold text-blue-900 mb-1">👤 Seller Info:</div>
+                    <div className="text-xs text-gray-700">
+                      <div><strong>Name:</strong> {image.itemId?.userName || 'N/A'}</div>
+                      <div><strong>Email:</strong> {image.itemId?.userEmail || 'N/A'}</div>
+                      <div><strong>Phone:</strong> {image.itemId?.userPhone || 'N/A'}</div>
                     </div>
                   </div>
 
