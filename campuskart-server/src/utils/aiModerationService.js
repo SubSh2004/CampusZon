@@ -13,30 +13,30 @@ import axios from 'axios';
 const THRESHOLDS = {
   // Auto-approval thresholds (below these = auto approve)
   SAFE: {
-    adult: 0.2,
-    violence: 0.2,
-    racy: 0.3,
-    nudity: 0.15,
-    explicitNudity: 0.1,
-    suggestive: 0.3,
-    drugs: 0.2,
-    weapons: 0.2,
-    hate: 0.1,
-    gambling: 0.3
+    adult: 0.5,        // Increased from 0.2 - more lenient for clean images
+    violence: 0.5,     // Increased from 0.2
+    racy: 0.5,         // Increased from 0.3
+    nudity: 0.4,       // Increased from 0.15
+    explicitNudity: 0.3, // Increased from 0.1
+    suggestive: 0.5,   // Increased from 0.3
+    drugs: 0.4,        // Increased from 0.2
+    weapons: 0.4,      // Increased from 0.2
+    hate: 0.2,         // Increased from 0.1
+    gambling: 0.5      // Increased from 0.3
   },
   
   // Auto-rejection thresholds (above these = auto reject)
   UNSAFE: {
-    adult: 0.7,
-    violence: 0.7,
-    racy: 0.6,
-    nudity: 0.6,
-    explicitNudity: 0.4,
-    suggestive: 0.7,
-    drugs: 0.6,
-    weapons: 0.6,
-    hate: 0.3,
-    gambling: 0.7
+    adult: 0.8,        // Increased from 0.7 - only reject very obvious violations
+    violence: 0.8,     // Increased from 0.7
+    racy: 0.7,         // Kept at 0.6
+    nudity: 0.7,       // Increased from 0.6
+    explicitNudity: 0.5, // Increased from 0.4
+    suggestive: 0.8,   // Increased from 0.7
+    drugs: 0.7,        // Increased from 0.6
+    weapons: 0.7,      // Increased from 0.6
+    hate: 0.4,         // Increased from 0.3
+    gambling: 0.8      // Increased from 0.7
   }
 };
 
