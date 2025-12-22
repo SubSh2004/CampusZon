@@ -85,6 +85,7 @@ export const signupUser = async (req, res) => {
         email: newUser.email,
         phoneNumber: newUser.phoneNumber,
         hostelName: newUser.hostelName,
+        isAdmin: newUser.isAdmin || false,
       },
     });
   } catch (error) {
@@ -142,6 +143,7 @@ export const loginUser = async (req, res) => {
         email: user.email,
         phoneNumber: user.phoneNumber,
         hostelName: user.hostelName,
+        isAdmin: user.isAdmin || false,
       },
     });
   } catch (error) {

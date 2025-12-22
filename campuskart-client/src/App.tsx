@@ -26,6 +26,7 @@ export default function App() {
       const phoneNumber = localStorage.getItem('phoneNumber');
       const hostelName = localStorage.getItem('hostelName');
       const userId = localStorage.getItem('userId');
+      const isAdmin = localStorage.getItem('isAdmin') === 'true';
       
       if (token && username && email) {
         // Set axios default authorization header
@@ -40,6 +41,7 @@ export default function App() {
           phoneNumber: phoneNumber || null,
           hostelName: hostelName || null,
           userId: userId || null,
+          isAdmin: isAdmin,
         });
         
         try {
@@ -60,6 +62,7 @@ export default function App() {
               phoneNumber: null,
               hostelName: null,
               userId: null,
+              isAdmin: false,
             });
           }
           // For other errors (network issues, server down), keep user logged in

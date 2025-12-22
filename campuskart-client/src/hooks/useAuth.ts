@@ -26,6 +26,7 @@ interface AuthResponse {
     email: string;
     phoneNumber: string;
     hostelName: string;
+    isAdmin?: boolean;
   };
 }
 
@@ -47,6 +48,7 @@ export const useAuth = () => {
         localStorage.setItem('phoneNumber', user.phoneNumber);
         localStorage.setItem('hostelName', user.hostelName);
         localStorage.setItem('userId', user.id);
+        localStorage.setItem('isAdmin', user.isAdmin ? 'true' : 'false');
         
         // Set axios default authorization header
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -60,6 +62,7 @@ export const useAuth = () => {
           phoneNumber: user.phoneNumber,
           hostelName: user.hostelName,
           userId: user.id,
+          isAdmin: user.isAdmin || false,
         });
         
         // Navigate to home
@@ -89,6 +92,7 @@ export const useAuth = () => {
         localStorage.setItem('phoneNumber', user.phoneNumber);
         localStorage.setItem('hostelName', user.hostelName);
         localStorage.setItem('userId', user.id);
+        localStorage.setItem('isAdmin', user.isAdmin ? 'true' : 'false');
         
         // Set axios default authorization header
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -102,6 +106,7 @@ export const useAuth = () => {
           phoneNumber: user.phoneNumber,
           hostelName: user.hostelName,
           userId: user.id,
+          isAdmin: user.isAdmin || false,
         });
         
         // Navigate to home
@@ -125,6 +130,7 @@ export const useAuth = () => {
     localStorage.removeItem('phoneNumber');
     localStorage.removeItem('hostelName');
     localStorage.removeItem('userId');
+    localStorage.removeItem('isAdmin');
     
     // Remove axios default authorization header
     delete axios.defaults.headers.common['Authorization'];
@@ -138,6 +144,7 @@ export const useAuth = () => {
       phoneNumber: null,
       hostelName: null,
       userId: null,
+      isAdmin: false,
     });
     
     // Navigate to login
