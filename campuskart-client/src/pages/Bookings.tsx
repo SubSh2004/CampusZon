@@ -264,11 +264,30 @@ export default function Bookings() {
                               {processingBookingId === booking._id ? '⏳ Cancelling...' : '🗑️ Cancel Booking'}
                             </button>
                           )}
-                          {booking.status === 'rejected' && booking.rejectionNote && (
-                            <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                              <p className="text-xs font-semibold text-red-700 dark:text-red-400">Rejection Reason:</p>
-                              <p className="text-xs text-red-600 dark:text-red-300 mt-1">"{booking.rejectionNote}"</p>
-                            </div>
+                          {booking.status === 'rejected' && (
+                            <>
+                              {booking.rejectionNote && (
+                                <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                                  <p className="text-xs font-semibold text-red-700 dark:text-red-400">Rejection Reason:</p>
+                                  <p className="text-xs text-red-600 dark:text-red-300 mt-1">"{booking.rejectionNote}"</p>
+                                </div>
+                              )}
+                              <div className="flex gap-2 mt-3">
+                                <button
+                                  onClick={() => handleCancelBooking(booking._id)}
+                                  disabled={processingBookingId === booking._id}
+                                  className="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  {processingBookingId === booking._id ? '⏳ Deleting...' : '🗑️ Delete'}
+                                </button>
+                                <Link
+                                  to={`/item/${itemId}`}
+                                  className="flex-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors text-center"
+                                >
+                                  🔄 Book Again
+                                </Link>
+                              </div>
+                            </>
                           )}
                         </div>
                         <div className="text-right">
