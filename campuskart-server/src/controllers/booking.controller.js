@@ -158,6 +158,8 @@ export const getSellerBookings = async (req, res) => {
     const sellerId = req.user._id.toString();
 
     const bookings = await Booking.find({ sellerId })
+      .populate('buyerId', 'username email phoneNumber hostelName')
+      .populate('itemId', 'title price imageUrl imageUrls category')
       .sort({ createdAt: -1 });
 
     res.json({ success: true, bookings });
@@ -173,6 +175,7 @@ export const getBuyerBookings = async (req, res) => {
     const buyerId = req.user._id.toString();
 
     const bookings = await Booking.find({ buyerId })
+      .populate('itemId', 'title price imageUrl imageUrls category')
       .sort({ createdAt: -1 });
 
     res.json({ success: true, bookings });

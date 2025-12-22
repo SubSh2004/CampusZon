@@ -2,7 +2,8 @@ import mongoose from 'mongoose';
 
 const bookingSchema = new mongoose.Schema({
   itemId: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Item',
     required: true
   },
   itemTitle: {
@@ -14,7 +15,8 @@ const bookingSchema = new mongoose.Schema({
     required: true
   },
   buyerId: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
     required: true
   },
   buyerName: {
