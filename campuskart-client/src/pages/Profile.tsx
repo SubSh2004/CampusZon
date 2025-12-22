@@ -233,20 +233,20 @@ export default function Profile() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8 max-w-6xl">
         {/* User Info Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8 dark:border dark:border-gray-700">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">My Profile</h1>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 mb-6 sm:mb-8 dark:border dark:border-gray-700">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-6">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">My Profile</h1>
             <button
               onClick={handleEditProfileClick}
-              className="bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600 transition text-sm font-medium"
+              className="w-full sm:w-auto bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600 transition text-sm font-medium"
             >
               Edit Profile
             </button>
           </div>
           
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <div>
-              <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">Personal Information</h2>
+              <h2 className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3 sm:mb-4">Personal Information</h2>
               <div className="space-y-3">
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Username</p>
@@ -260,7 +260,7 @@ export default function Profile() {
             </div>
 
             <div>
-              <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">Contact Details</h2>
+              <h2 className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3 sm:mb-4">Contact Details</h2>
               <div className="space-y-3">
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Phone Number</p>
@@ -276,12 +276,12 @@ export default function Profile() {
         </div>
 
         {/* My Items Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 dark:border dark:border-gray-700">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">My Listed Items</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 dark:border dark:border-gray-700">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">My Listed Items</h2>
             <button
               onClick={() => navigate('/add-item')}
-              className="bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600 transition"
+              className="w-full sm:w-auto bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600 transition text-sm sm:text-base"
             >
               + Add New Item
             </button>
@@ -306,11 +306,11 @@ export default function Profile() {
               {myItems.map((item) => (
                 <div
                   key={item.id}
-                  className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition bg-white dark:bg-gray-800"
+                  className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 sm:p-4 hover:shadow-md transition bg-white dark:bg-gray-800"
                 >
-                  <div className="flex gap-4">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                     {/* Image */}
-                    <div className="w-24 h-24 flex-shrink-0">
+                    <div className="w-full sm:w-24 h-48 sm:h-24 flex-shrink-0">
                       {item.imageUrl ? (
                         <img
                           src={item.imageUrl}
@@ -328,15 +328,15 @@ export default function Profile() {
 
                     {/* Item Details */}
                     <div className="flex-1">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{item.title}</h3>
-                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{item.category}</p>
-                          <p className="text-gray-600 dark:text-gray-300 text-sm mt-2 line-clamp-2">{item.description}</p>
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-0">
+                        <div className="flex-1">
+                          <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{item.title}</h3>
+                          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">{item.category}</p>
+                          <p className="text-gray-600 dark:text-gray-300 text-xs sm:text-sm mt-2 line-clamp-2">{item.description}</p>
                         </div>
-                        <div className="text-right">
-                          <p className="text-xl font-bold text-indigo-600 dark:text-indigo-400">₹{parseFloat(item.price.toString()).toFixed(2)}</p>
-                          <span className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-semibold ${
+                        <div className="sm:text-right flex sm:flex-col items-center sm:items-end gap-2 sm:gap-0">
+                          <p className="text-lg sm:text-xl font-bold text-indigo-600 dark:text-indigo-400">₹{parseFloat(item.price.toString()).toFixed(2)}</p>
+                          <span className={`inline-block sm:mt-2 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-semibold whitespace-nowrap ${
                             item.available 
                               ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' 
                               : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400'
@@ -347,26 +347,27 @@ export default function Profile() {
                       </div>
 
                       {/* Action Buttons */}
-                      <div className="flex gap-2 mt-4">
+                      <div className="flex flex-wrap gap-2 mt-4">
                         <button
                           onClick={() => handleEditClick(item)}
-                          className="px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/50 transition text-sm font-medium"
+                          className="px-3 py-1.5 sm:py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/50 transition text-xs sm:text-sm font-medium"
                         >
                           Edit
                         </button>
                         <button
                           onClick={() => toggleAvailability(item)}
-                          className={`px-3 py-1 rounded-md transition text-sm font-medium ${
+                          className={`px-3 py-1.5 sm:py-1 rounded-md transition text-xs sm:text-sm font-medium ${
                             item.available
                               ? 'bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-900/50'
                               : 'bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/50'
                           }`}
                         >
-                          Mark as {item.available ? 'Unavailable' : 'Available'}
+                          <span className="hidden sm:inline">Mark as {item.available ? 'Unavailable' : 'Available'}</span>
+                          <span className="sm:hidden">{item.available ? 'Unavailable' : 'Available'}</span>
                         </button>
                         <button
                           onClick={() => handleDeleteItem(item.id)}
-                          className="px-3 py-1 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-md hover:bg-red-100 dark:hover:bg-red-900/50 transition text-sm font-medium"
+                          className="px-3 py-1.5 sm:py-1 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-md hover:bg-red-100 dark:hover:bg-red-900/50 transition text-xs sm:text-sm font-medium"
                         >
                           Delete
                         </button>
