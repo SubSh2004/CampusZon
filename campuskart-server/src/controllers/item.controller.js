@@ -44,51 +44,28 @@ export const createItem = async (req, res) => {
       });
     }
 
-    // Check if user is allowed to upload (enforcement check)
-    const uploadPermission = await checkUserCanUpload(userId);
-    if (!uploadPermission.allowed) {
-      return res.status(403).json({
-        success: false,
-        message: uploadPermission.reason,
-        suspendedUntil: uploadPermission.suspendedUntil,
-        banReason: uploadPermission.banReason
-      });
-    }
-
-    // Upload images with moderation
+    // Upload images directly to ImgBB (no AI moderation)
     let imageUrls = [];
     let imageUrl = null;
-    let pendingModerationCount = 0;
     
     if (req.files && req.files.length > 0) {
       try {
         // Limit to 5 images
         const filesToUpload = req.files.slice(0, 5);
         
-        // Upload to temporary storage first (ImgBB)
-        const tempUploadPromises = filesToUpload.map(async (file) => {
+        // Upload all images to ImgBB
+        const uploadPromises = filesToUpload.map(async (file) => {
           const base64Image = file.buffer.toString('base64');
           const response = await imgbbUploader({
             apiKey: process.env.IMGBB_API_KEY,
             base64string: base64Image,
-            name: `temp-${Date.now()}-${file.originalname}`,
+            name: `item-${Date.now()}-${file.originalname}`,
           });
-          return {
-            url: response.url,
-            buffer: file.buffer,
-            metadata: {
-              originalname: file.originalname,
-              mimetype: file.mimetype,
-              size: file.size
-            }
-          };
+          return response.url;
         });
         
-        const tempUploads = await Promise.all(tempUploadPromises);
-        
-        // Note: Images are uploaded to temp storage, but not added to item yet
-        // They will be added after moderation approval
-        pendingModerationCount = tempUploads.length;
+        imageUrls = await Promise.all(uploadPromises);
+        imageUrl = imageUrls[0]; // First image is the main image
         
       } catch (uploadError) {
         console.error('Image upload error:', uploadError);
@@ -99,14 +76,14 @@ export const createItem = async (req, res) => {
       }
     }
 
-    // Create new item WITHOUT images (images added after moderation)
+    // Create new item with images immediately available
     const newItem = await Item.create({
       title,
       description,
       price: parseFloat(price),
       category,
-      imageUrl: null, // Will be set after moderation approval
-      imageUrls: [], // Will be populated after moderation approval
+      imageUrl,
+      imageUrls,
       available: true,
       userId,
       userName,
@@ -114,82 +91,17 @@ export const createItem = async (req, res) => {
       userHostel,
       userEmail,
       emailDomain,
+      moderationStatus: 'active', // All items start as active
     });
-
-    // Queue images for moderation
-    if (req.files && req.files.length > 0) {
-      const filesToUpload = req.files.slice(0, 5);
-      
-      for (let i = 0; i < filesToUpload.length; i++) {
-        const file = filesToUpload[i];
-        
-        // Upload to temporary storage
-        const base64Image = file.buffer.toString('base64');
-        const tempUpload = await imgbbUploader({
-          apiKey: process.env.IMGBB_API_KEY,
-          base64string: base64Image,
-          name: `temp-${Date.now()}-${file.originalname}`,
-        });
-
-        // Queue for moderation
-        await queueImageModeration({
-          imageBuffer: file.buffer,
-          tempImageUrl: tempUpload.url,
-          itemId: newItem._id,
-          userId,
-          category,
-          fileMetadata: {
-            originalname: file.originalname,
-            mimetype: file.mimetype,
-            size: file.size
-          },
-          onApproved: async (approvedUrl, moderationRecord) => {
-            // Add approved image to item
-            const item = await Item.findById(newItem._id);
-            if (item) {
-              item.imageUrls.push(approvedUrl);
-              if (!item.imageUrl) {
-                item.imageUrl = approvedUrl; // First approved image becomes main image
-              }
-              await item.save();
-            }
-          },
-          onRejected: async (reasons, errorMessage) => {
-            console.log(`Image rejected for item ${newItem._id}: ${reasons.join(', ')}`);
-          },
-          onManualReview: async (moderationRecord) => {
-            console.log(`Image flagged for manual review: ${moderationRecord._id}`);
-          }
-        });
-      }
-
-      // Update user violation stats (increment upload count)
-      await UserViolation.findOneAndUpdate(
-        { userId },
-        {
-          $inc: { 'stats.totalImagesUploaded': filesToUpload.length }
-        },
-        { upsert: true }
-      );
-    }
 
     // Return response
     res.status(201).json({
       success: true,
-      message: pendingModerationCount > 0 
-        ? 'Admin will check and upload your item. Thank you!'
-        : 'Item created successfully',
+      message: 'Item created successfully! It\'s now visible to all users.',
       item: {
         ...newItem.toObject(),
         id: newItem._id.toString(),
         _id: undefined
-      },
-      moderation: {
-        pending: pendingModerationCount,
-        requiresManualReview: pendingModerationCount > 0,
-        message: pendingModerationCount > 0 
-          ? 'Your images are being reviewed by our admin team'
-          : null
       }
     });
   } catch (error) {
@@ -214,10 +126,10 @@ export const getAllItems = async (req, res) => {
       });
     }
 
-    // Query MongoDB for items matching the domain that have at least one image
+    // Query MongoDB for items matching the domain with active moderation status
     const items = await Item.find({ 
       emailDomain,
-      imageUrls: { $exists: true, $ne: [] } // Only items with approved images
+      moderationStatus: { $in: ['active', 'warned'] } // Show active and warned items
     }).sort({ createdAt: -1 }).lean();
 
     // Convert _id to id for frontend compatibility
@@ -379,6 +291,249 @@ export const deleteItem = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Server error while deleting item',
+      error: error.message,
+    });
+  }
+};
+
+// Report item
+export const reportItem = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId, userName, userEmail, reason, description } = req.body;
+    
+    if (!userId || !reason) {
+      return res.status(400).json({
+        success: false,
+        message: 'User ID and reason are required',
+      });
+    }
+    
+    const item = await Item.findById(id);
+    if (!item) {
+      return res.status(404).json({
+        success: false,
+        message: 'Item not found',
+      });
+    }
+
+    // Check if user already reported this item
+    const alreadyReported = item.reports.some(report => report.userId === userId);
+    if (alreadyReported) {
+      return res.status(400).json({
+        success: false,
+        message: 'You have already reported this item',
+      });
+    }
+
+    // Add report
+    item.reports.push({
+      userId,
+      userName,
+      userEmail,
+      reason,
+      description,
+      createdAt: new Date()
+    });
+    item.reportCount = item.reports.length;
+    await item.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Item reported successfully. Admin will review it.',
+    });
+  } catch (error) {
+    console.error('Report item error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while reporting item',
+      error: error.message,
+    });
+  }
+};
+
+// Add review to item
+export const addReview = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId, userName, rating, comment } = req.body;
+    
+    if (!userId || !rating) {
+      return res.status(400).json({
+        success: false,
+        message: 'User ID and rating are required',
+      });
+    }
+
+    if (rating < 1 || rating > 5) {
+      return res.status(400).json({
+        success: false,
+        message: 'Rating must be between 1 and 5',
+      });
+    }
+    
+    const item = await Item.findById(id);
+    if (!item) {
+      return res.status(404).json({
+        success: false,
+        message: 'Item not found',
+      });
+    }
+
+    // Check if user already reviewed this item
+    const existingReviewIndex = item.reviews.findIndex(review => review.userId === userId);
+    
+    if (existingReviewIndex >= 0) {
+      // Update existing review
+      item.reviews[existingReviewIndex] = {
+        userId,
+        userName,
+        rating,
+        comment,
+        createdAt: new Date()
+      };
+    } else {
+      // Add new review
+      item.reviews.push({
+        userId,
+        userName,
+        rating,
+        comment,
+        createdAt: new Date()
+      });
+    }
+
+    // Calculate average rating
+    const totalRating = item.reviews.reduce((sum, review) => sum + review.rating, 0);
+    item.averageRating = totalRating / item.reviews.length;
+    item.reviewCount = item.reviews.length;
+    
+    await item.save();
+
+    res.status(200).json({
+      success: true,
+      message: existingReviewIndex >= 0 ? 'Review updated successfully' : 'Review added successfully',
+      averageRating: item.averageRating,
+      reviewCount: item.reviewCount
+    });
+  } catch (error) {
+    console.error('Add review error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while adding review',
+      error: error.message,
+    });
+  }
+};
+
+// Get reported items (Admin only)
+export const getReportedItems = async (req, res) => {
+  try {
+    const items = await Item.find({ 
+      reportCount: { $gt: 0 },
+      moderationStatus: { $ne: 'removed' }
+    }).sort({ reportCount: -1, createdAt: -1 }).lean();
+
+    const itemsWithId = items.map(item => ({
+      ...item,
+      id: item._id.toString(),
+      _id: undefined
+    }));
+
+    res.status(200).json({
+      success: true,
+      count: itemsWithId.length,
+      items: itemsWithId,
+    });
+  } catch (error) {
+    console.error('Get reported items error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching reported items',
+      error: error.message,
+    });
+  }
+};
+
+// Get all items for admin review
+export const getAllItemsForAdmin = async (req, res) => {
+  try {
+    const items = await Item.find({}).sort({ createdAt: -1 }).lean();
+
+    const itemsWithId = items.map(item => ({
+      ...item,
+      id: item._id.toString(),
+      _id: undefined
+    }));
+
+    res.status(200).json({
+      success: true,
+      count: itemsWithId.length,
+      items: itemsWithId,
+    });
+  } catch (error) {
+    console.error('Get all items for admin error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching items',
+      error: error.message,
+    });
+  }
+};
+
+// Admin action on item (keep/warn/remove)
+export const moderateItem = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { action, notes, adminId } = req.body; // action: 'keep', 'warn', 'remove'
+    
+    if (!action || !['keep', 'warn', 'remove'].includes(action)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid action is required (keep/warn/remove)',
+      });
+    }
+
+    const item = await Item.findById(id);
+    if (!item) {
+      return res.status(404).json({
+        success: false,
+        message: 'Item not found',
+      });
+    }
+
+    // Update moderation status
+    if (action === 'keep') {
+      item.moderationStatus = 'active';
+      item.reports = []; // Clear reports
+      item.reportCount = 0;
+    } else if (action === 'warn') {
+      item.moderationStatus = 'warned';
+    } else if (action === 'remove') {
+      item.moderationStatus = 'removed';
+      item.available = false; // Also mark as unavailable
+    }
+
+    item.moderationNotes = notes || '';
+    item.moderatedAt = new Date();
+    item.moderatedBy = adminId;
+
+    await item.save();
+
+    res.status(200).json({
+      success: true,
+      message: `Item ${action === 'keep' ? 'kept active' : action === 'warn' ? 'warned' : 'removed'} successfully`,
+      item: {
+        ...item.toObject(),
+        id: item._id.toString(),
+        _id: undefined
+      }
+    });
+  } catch (error) {
+    console.error('Moderate item error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while moderating item',
       error: error.message,
     });
   }

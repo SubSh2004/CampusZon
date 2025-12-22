@@ -5,6 +5,7 @@ import { useRecoilValue } from 'recoil';
 import { userAtom } from '../store/user.atom';
 import { API_URL, SOCKET_URL } from '../config/api';
 import { io, Socket } from 'socket.io-client';
+import ReportButton from './ReportButton';
 
 interface Item {
   id: string; // MongoDB ObjectId as string
@@ -253,6 +254,13 @@ export default function ProductCard({ item }: ProductCardProps) {
                 <span className="relative z-10">View Details</span>
               </Link>
             </div>
+
+            {/* Report Button */}
+            {!isOwnItem && (
+              <div className="mt-2 flex justify-end">
+                <ReportButton itemId={item.id} itemTitle={item.title} />
+              </div>
+            )}
           </div>
         </div>
       </Link>

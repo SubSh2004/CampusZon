@@ -8,6 +8,7 @@ interface UserState {
   phoneNumber?: string | null;
   hostelName?: string | null;
   userId?: string | null;
+  isAdmin?: boolean;
 }
 
 export const userAtom = atom<UserState>({
@@ -20,5 +21,6 @@ export const userAtom = atom<UserState>({
     phoneNumber: null,
     hostelName: null,
     userId: null,
+    isAdmin: false,
   },
 });

@@ -1,504 +1,366 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from '../config/axios';
+import { useRecoilValue } from 'recoil';
+import { userAtom } from '../store/user.atom';
 
-interface ModerationStats {
-  pending: number;
-  reviewing: number;
-  flagged: number;
-  approved: number;
-  rejected: number;
-  usersWarned: number;
-  usersSuspended: number;
-  usersBanned: number;
-  reportedImages: number;
+interface Report {
+  userId: string;
+  userName: string;
+  userEmail: string;
+  reason: string;
+  description: string;
+  createdAt: string;
 }
 
-interface PendingImage {
-  _id: string;
-  imageUrl: string;
-  status: string;
-  aiScores: Record<string, number>;
-  detectedLabels: string[];
-  reportCount: number;
+interface Review {
+  userId: string;
+  userName: string;
+  rating: number;
+  comment: string;
   createdAt: string;
-  rejectionReasons?: string[];
-  notes?: string;
-  itemId: {
-    _id: string;
-    title: string;
-    category: string;
-    description: string;
-    userName: string;
-    userEmail: string;
-    userPhone: string;
-  };
+}
+
+interface Item {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  category: string;
+  imageUrl: string;
+  imageUrls: string[];
+  available: boolean;
+  userName: string;
+  userEmail: string;
+  userPhone: string;
+  reports: Report[];
+  reportCount: number;
+  reviews: Review[];
+  averageRating: number;
+  reviewCount: number;
+  moderationStatus: 'active' | 'warned' | 'removed';
+  moderationNotes?: string;
+  moderatedAt?: string;
+  createdAt: string;
 }
 
 const ModerationDashboard: React.FC = () => {
-  const [stats, setStats] = useState<ModerationStats | null>(null);
-  const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
-  const [selectedImage, setSelectedImage] = useState<PendingImage | null>(null);
+  const navigate = useNavigate();
+  const user = useRecoilValue(userAtom);
+  const [activeTab, setActiveTab] = useState<'reported' | 'all'>('reported');
+  const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [actionNotes, setActionNotes] = useState('');
-  const [activeTab, setActiveTab] = useState<'pending' | 'approved' | 'rejected' | 'violations'>('pending');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [reverseAction, setReverseAction] = useState<'approve' | 'reject' | null>(null);
+  const [processingAction, setProcessingAction] = useState(false);
 
   useEffect(() => {
-    fetchStats();
-    fetchImages();
-  }, [activeTab, searchTerm]);
-
-  const fetchStats = async () => {
-    try {
-      const response = await axios.get('/api/moderation/stats');
-      setStats(response.data.stats);
-    } catch (error) {
-      console.error('Failed to fetch stats:', error);
+    // Check if user is admin
+    if (!user.isLoggedIn || !user.isAdmin) {
+      alert('Admin access required');
+      navigate('/');
+      return;
     }
-  };
+    
+    fetchItems();
+  }, [activeTab, user.isLoggedIn, user.isAdmin, navigate]);
 
-  const fetchPendingImages = async () => {
+  const fetchItems = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/moderation/pending');
-      setPendingImages(response.data.images);
-    } catch (error) {
-      console.error('Failed to fetch pending images:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchImages = async () => {
-    try {
-      setLoading(true);
-      let endpoint = '';
-      
-      if (activeTab === 'pending') {
-        endpoint = `/api/moderation/pending?search=${searchTerm}`;
-      } else if (activeTab === 'violations') {
-        return; // Handle violations separately
-      } else {
-        endpoint = `/api/moderation/images?status=${activeTab.toUpperCase()}&search=${searchTerm}`;
-      }
-      
+      const endpoint = activeTab === 'reported' ? '/api/items/reported' : '/api/items/admin/all';
       const response = await axios.get(endpoint);
-      setPendingImages(response.data.images);
+      
+      if (response.data.success) {
+        setItems(response.data.items);
+      }
     } catch (error) {
-      console.error('Failed to fetch images:', error);
+      console.error('Failed to fetch items:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleApprove = async (imageId: string) => {
-    try {
-      await axios.post(`/api/moderation/${imageId}/approve`, {
-        notes: actionNotes
-      });
-      alert('Image approved successfully');
-      setActionNotes('');
-      setSelectedImage(null);
-      setReverseAction(null);
-      fetchImages();
-      fetchStats();
-    } catch (error: any) {
-      alert('Failed to approve image: ' + error.response?.data?.message);
-    }
-  };
+  const handleAction = async (itemId: string, action: 'keep' | 'warn' | 'remove') => {
+    if (!itemId) return;
 
-  const handleReject = async (imageId: string, reasons: string[]) => {
+    const confirmMessages = {
+      keep: 'This will mark the item as safe and clear all reports. Continue?',
+      warn: 'This will warn the user about this item. The item will remain visible. Continue?',
+      remove: 'This will remove the item from the marketplace. Continue?'
+    };
+
+    if (!window.confirm(confirmMessages[action])) {
+      return;
+    }
+
     try {
-      await axios.post(`/api/moderation/${imageId}/reject`, {
-        reasons,
+      setProcessingAction(true);
+      const response = await axios.post(`/api/items/${itemId}/moderate`, {
+        action,
         notes: actionNotes,
-        addViolation: true
+        adminId: user.userId
       });
-      alert('Image rejected and violation recorded');
-      setActionNotes('');
-      setSelectedImage(null);
-      setReverseAction(null);
-      fetchImages();
-      fetchStats();
+
+      if (response.data.success) {
+        alert(`Item ${action === 'keep' ? 'kept active' : action === 'warn' ? 'warned' : 'removed'} successfully!`);
+        setShowDetailsModal(false);
+        setSelectedItem(null);
+        setActionNotes('');
+        fetchItems(); // Refresh the list
+      }
     } catch (error: any) {
-      alert('Failed to reject image: ' + error.response?.data?.message);
+      console.error('Action failed:', error);
+      alert(error.response?.data?.message || 'Failed to perform action');
+    } finally {
+      setProcessingAction(false);
     }
   };
 
-  const handleReverseDecision = async (imageId: string, newStatus: string) => {
-    try {
-      await axios.post(`/api/moderation/${imageId}/reverse`, {
-        newStatus,
-        notes: actionNotes
-      });
-      alert('Decision reversed successfully');
-      setActionNotes('');
-      setSelectedImage(null);
-      setReverseAction(null);
-      fetchImages();
-      fetchStats();
-    } catch (error: any) {
-      alert('Failed to reverse decision: ' + error.response?.data?.message);
-    }
+  const openDetailsModal = (item: Item) => {
+    setSelectedItem(item);
+    setActionNotes(item.moderationNotes || '');
+    setShowDetailsModal(true);
   };
 
-  const getScoreColor = (score: number) => {
-    if (score >= 0.7) return 'text-red-600 font-bold';
-    if (score >= 0.4) return 'text-yellow-600 font-semibold';
-    return 'text-green-600';
+  const getStatusBadge = (status: string) => {
+    const badges = {
+      active: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400',
+      warned: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400',
+      removed: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400'
+    };
+    return badges[status as keyof typeof badges] || badges.active;
   };
-
-  const getScoreLabel = (score: number) => {
-    if (score >= 0.7) return 'HIGH RISK';
-    if (score >= 0.4) return 'MEDIUM';
-    return 'LOW';
-  };
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">
-          Image Moderation Dashboard
-        </h1>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Header */}
+      <header className="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Home
+          </button>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Admin Moderation Dashboard</h1>
+          <div className="w-24"></div>
+        </div>
+      </header>
 
-        {/* Statistics Cards */}
-        {stats && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <button 
-              onClick={() => setActiveTab('pending')}
-              className={`bg-white rounded-lg shadow p-4 text-left transition ${activeTab === 'pending' ? 'ring-2 ring-blue-500' : 'hover:shadow-md'}`}
-            >
-              <div className="text-sm text-gray-500">Pending Review</div>
-              <div className="text-2xl font-bold text-blue-600">
-                {stats.reviewing + stats.flagged}
-              </div>
-            </button>
-            <button 
-              onClick={() => setActiveTab('approved')}
-              className={`bg-white rounded-lg shadow p-4 text-left transition ${activeTab === 'approved' ? 'ring-2 ring-green-500' : 'hover:shadow-md'}`}
-            >
-              <div className="text-sm text-gray-500">Approved</div>
-              <div className="text-2xl font-bold text-green-600">
-                {stats.approved}
-              </div>
-            </button>
-            <button 
-              onClick={() => setActiveTab('rejected')}
-              className={`bg-white rounded-lg shadow p-4 text-left transition ${activeTab === 'rejected' ? 'ring-2 ring-red-500' : 'hover:shadow-md'}`}
-            >
-              <div className="text-sm text-gray-500">Rejected</div>
-              <div className="text-2xl font-bold text-red-600">
-                {stats.rejected}
-              </div>
-            </button>
-            <div className="bg-white rounded-lg shadow p-4">
-              <div className="text-sm text-gray-500">User Reports</div>
-              <div className="text-2xl font-bold text-orange-600">
-                {stats.reportedImages}
-              </div>
-            </div>
-            <div className="bg-white rounded-lg shadow p-4">
-              <div className="text-sm text-gray-500">Users Warned</div>
-              <div className="text-2xl font-bold text-yellow-600">
-                {stats.usersWarned}
-              </div>
-            </div>
-            <div className="bg-white rounded-lg shadow p-4">
-              <div className="text-sm text-gray-500">Suspended</div>
-              <div className="text-2xl font-bold text-orange-600">
-                {stats.usersSuspended}
-              </div>
-            </div>
-            <div className="bg-white rounded-lg shadow p-4">
-              <div className="text-sm text-gray-500">Banned</div>
-              <div className="text-2xl font-bold text-red-700">
-                {stats.usersBanned}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Search Bar */}
-        <div className="mb-6">
-          <input
-            type="text"
-            placeholder="Search by title, user name, or email..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
+      <main className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* Tabs */}
+        <div className="flex gap-4 mb-6 border-b border-gray-200 dark:border-gray-700">
+          <button
+            onClick={() => setActiveTab('reported')}
+            className={`px-6 py-3 font-semibold transition-colors relative ${
+              activeTab === 'reported'
+                ? 'text-indigo-600 dark:text-indigo-400'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+            }`}
+          >
+            Reported Items
+            {activeTab === 'reported' && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 dark:bg-indigo-400"></div>
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab('all')}
+            className={`px-6 py-3 font-semibold transition-colors relative ${
+              activeTab === 'all'
+                ? 'text-indigo-600 dark:text-indigo-400'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+            }`}
+          >
+            All Items
+            {activeTab === 'all' && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 dark:bg-indigo-400"></div>
+            )}
+          </button>
         </div>
 
-        {/* Tab Title */}
-        <h2 className="text-2xl font-semibold mb-4 capitalize">
-          {activeTab === 'pending' ? 'Pending Review' : activeTab} Images
-        </h2>
-
-        {/* Pending Images Grid */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-bold mb-4">
-            Pending Images ({pendingImages.length})
-          </h2>
-
-          {pendingImages.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              No images pending review
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {pendingImages.map((image) => (
-                <div
-                  key={image._id}
-                  className="border rounded-lg p-4 hover:shadow-lg transition cursor-pointer"
-                  onClick={() => setSelectedImage(image)}
-                >
-                  {/* Image Preview */}
-                  <div className="relative mb-3">
+        {/* Items List */}
+        {loading ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+          </div>
+        ) : items.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-gray-500 dark:text-gray-400 text-lg">
+              {activeTab === 'reported' ? 'No reported items' : 'No items found'}
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {items.map((item) => (
+              <div
+                key={item.id}
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700"
+              >
+                <div className="flex gap-4">
+                  {/* Image */}
+                  <div className="w-32 h-32 flex-shrink-0">
                     <img
-                      src={image.imageUrl}
-                      alt={image.itemId?.title || 'Item image'}
-                      className="w-full h-48 object-cover rounded"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x300?text=Image+Not+Available';
-                      }}
+                      src={item.imageUrl || '/placeholder.jpg'}
+                      alt={item.title}
+                      className="w-full h-full object-cover rounded-md"
                     />
-                    {image.reportCount > 0 && (
-                      <span className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">
-                        {image.reportCount} Reports
-                      </span>
-                    )}
                   </div>
 
-                  {/* Item Info */}
-                  <div className="mb-3 pb-3 border-b">
-                    <div className="font-bold text-lg mb-1 truncate">
-                      {image.itemId?.title || 'No title'}
-                    </div>
-                    <div className="text-sm text-gray-600 mb-1">
-                      📂 {image.itemId?.category || 'No category'}
-                    </div>
-                    <div className="text-xs text-gray-700 line-clamp-2 mb-2">
-                      {image.itemId?.description || 'No description'}
-                    </div>
-                  </div>
-
-                  {/* User Info */}
-                  <div className="mb-3 pb-3 border-b bg-blue-50 p-2 rounded">
-                    <div className="text-xs font-semibold text-blue-900 mb-1">👤 Seller Info:</div>
-                    <div className="text-xs text-gray-700">
-                      <div><strong>Name:</strong> {image.itemId?.userName || 'N/A'}</div>
-                      <div><strong>Email:</strong> {image.itemId?.userEmail || 'N/A'}</div>
-                      <div><strong>Phone:</strong> {image.itemId?.userPhone || 'N/A'}</div>
-                    </div>
-                  </div>
-
-                  {/* AI Scores */}
-                  <div className="space-y-1 text-sm">
-                    {Object.entries(image.aiScores || {})
-                      .filter(([key, value]) => value > 0.2)
-                      .slice(0, 3)
-                      .map(([key, value]) => (
-                        <div key={key} className="flex justify-between">
-                          <span className="capitalize">{key}:</span>
-                          <span className={getScoreColor(value)}>
-                            {(value * 100).toFixed(0)}% - {getScoreLabel(value)}
+                  {/* Details */}
+                  <div className="flex-1">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white">{item.title}</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{item.category}</p>
+                        <p className="text-gray-600 dark:text-gray-300 text-sm mt-2">{item.description}</p>
+                        <p className="text-lg font-bold text-indigo-600 dark:text-indigo-400 mt-2">
+                          ₹{item.price.toFixed(2)}
+                        </p>
+                      </div>
+                      <div className="flex flex-col gap-2 items-end">
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadge(item.moderationStatus)}`}>
+                          {item.moderationStatus.toUpperCase()}
+                        </span>
+                        {item.reportCount > 0 && (
+                          <span className="px-3 py-1 rounded-full text-xs font-semibold bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400">
+                            {item.reportCount} Report{item.reportCount > 1 ? 's' : ''}
                           </span>
-                        </div>
-                      ))}
-                  </div>
-
-                  {/* Labels */}
-                  {image.detectedLabels && image.detectedLabels.length > 0 && (
-                    <div className="mt-2">
-                      <div className="text-xs text-gray-500 mb-1">Detected:</div>
-                      <div className="flex flex-wrap gap-1">
-                        {image.detectedLabels.slice(0, 5).map((label, idx) => (
-                          <span
-                            key={idx}
-                            className="text-xs bg-gray-200 px-2 py-0.5 rounded"
-                          >
-                            {label}
-                          </span>
-                        ))}
+                        )}
                       </div>
                     </div>
-                  )}
 
-                  {/* AI Rejection Reasons */}
-                  {image.rejectionReasons && image.rejectionReasons.length > 0 && (
-                    <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded">
-                      <div className="text-xs font-semibold text-red-700 mb-1">⚠️ AI Flagged:</div>
-                      <div className="space-y-1">
-                        {image.rejectionReasons.map((reason, idx) => (
-                          <div key={idx} className="text-xs text-red-600">
-                            • {reason.replace(/_/g, ' ')}
-                          </div>
-                        ))}
-                      </div>
+                    <div className="mt-4 flex gap-3">
+                      <button
+                        onClick={() => openDetailsModal(item)}
+                        className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition text-sm font-medium"
+                      >
+                        View Details & Take Action
+                      </button>
                     </div>
-                  )}
-
-                  {/* AI Notes */}
-                  {image.notes && (
-                    <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded">
-                      <div className="text-xs font-semibold text-yellow-700 mb-1">📝 Note:</div>
-                      <div className="text-xs text-yellow-600">{image.notes}</div>
-                    </div>
-                  )}
+                  </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </main>
 
-        {/* Image Detail Modal */}
-        {selectedImage && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-2xl font-bold">Image Review</h3>
-                  <button
-                    onClick={() => setSelectedImage(null)}
-                    className="text-gray-500 hover:text-gray-700 text-2xl"
-                  >
-                    ×
-                  </button>
-                </div>
+      {/* Details Modal */}
+      {showDetailsModal && selectedItem && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" onClick={() => setShowDetailsModal(false)}>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6">
+              {/* Header */}
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Item Details</h2>
+                <button
+                  onClick={() => setShowDetailsModal(false)}
+                  className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
 
-                {/* Image Preview */}
-                <div className="mb-4">
+              {/* Item Info */}
+              <div className="grid md:grid-cols-2 gap-6 mb-6">
+                <div>
                   <img
-                    src={selectedImage.imageUrl}
-                    alt={selectedImage.itemId?.title || 'Review image'}
-                    className="w-full max-h-96 object-contain rounded border"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = 'https://via.placeholder.com/800x600?text=Image+Not+Available';
-                    }}
+                    src={selectedItem.imageUrl || '/placeholder.jpg'}
+                    alt={selectedItem.title}
+                    className="w-full h-64 object-cover rounded-lg"
                   />
                 </div>
-
-                {/* Item Details */}
-                <div className="mb-4 p-4 bg-gray-50 rounded">
-                  <h4 className="font-bold mb-2">Listing Details</h4>
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div>Title: {selectedImage.itemId?.title}</div>
-                    <div>Category: {selectedImage.itemId?.category}</div>
-                    <div>User: {selectedImage.itemId?.userName}</div>
-                    <div>Email: {selectedImage.itemId?.userEmail}</div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{selectedItem.title}</h3>
+                  <p className="text-gray-600 dark:text-gray-300 mb-4">{selectedItem.description}</p>
+                  <div className="space-y-2 text-sm">
+                    <p><strong>Price:</strong> ₹{selectedItem.price.toFixed(2)}</p>
+                    <p><strong>Category:</strong> {selectedItem.category}</p>
+                    <p><strong>Seller:</strong> {selectedItem.userName}</p>
+                    <p><strong>Email:</strong> {selectedItem.userEmail}</p>
+                    <p><strong>Phone:</strong> {selectedItem.userPhone}</p>
+                    <p><strong>Status:</strong> <span className={`px-2 py-1 rounded text-xs ${getStatusBadge(selectedItem.moderationStatus)}`}>{selectedItem.moderationStatus}</span></p>
                   </div>
                 </div>
+              </div>
 
-                {/* AI Scores */}
-                <div className="mb-4">
-                  <h4 className="font-bold mb-2">AI Moderation Scores</h4>
-                  <div className="grid grid-cols-2 gap-2">
-                    {Object.entries(selectedImage.aiScores || {}).map(
-                      ([key, value]) => (
-                        <div
-                          key={key}
-                          className="flex justify-between items-center p-2 bg-gray-50 rounded"
-                        >
-                          <span className="capitalize">{key}</span>
-                          <span className={getScoreColor(value)}>
-                            {(value * 100).toFixed(1)}%
+              {/* Reports Section */}
+              {selectedItem.reports && selectedItem.reports.length > 0 && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-3">
+                    Reports ({selectedItem.reportCount})
+                  </h3>
+                  <div className="space-y-3">
+                    {selectedItem.reports.map((report, index) => (
+                      <div key={index} className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <p className="font-semibold text-gray-900 dark:text-white">{report.userName}</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">{report.userEmail}</p>
+                          </div>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                            {new Date(report.createdAt).toLocaleDateString()}
                           </span>
                         </div>
-                      )
-                    )}
+                        <p className="text-sm"><strong>Reason:</strong> {report.reason}</p>
+                        {report.description && (
+                          <p className="text-sm mt-1"><strong>Details:</strong> {report.description}</p>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
+              )}
 
-                {/* Detected Labels */}
-                {selectedImage.detectedLabels &&
-                  selectedImage.detectedLabels.length > 0 && (
-                    <div className="mb-4">
-                      <h4 className="font-bold mb-2">Detected Objects/Labels</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedImage.detectedLabels.map((label, idx) => (
-                          <span
-                            key={idx}
-                            className="bg-blue-100 text-blue-800 px-3 py-1 rounded"
-                          >
-                            {label}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+              {/* Admin Notes */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Admin Notes (Optional)
+                </label>
+                <textarea
+                  rows={3}
+                  value={actionNotes}
+                  onChange={(e) => setActionNotes(e.target.value)}
+                  placeholder="Add notes about your decision..."
+                  className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+                />
+              </div>
 
-                {/* Moderator Notes */}
-                <div className="mb-4">
-                  <label className="block font-bold mb-2">Moderator Notes</label>
-                  <textarea
-                    value={actionNotes}
-                    onChange={(e) => setActionNotes(e.target.value)}
-                    className="w-full border rounded p-2"
-                    rows={3}
-                    placeholder="Add notes about your decision..."
-                  />
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex gap-3">
-                  {activeTab === 'pending' && (
-                    <>
-                      <button
-                        onClick={() => handleApprove(selectedImage._id)}
-                        className="flex-1 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 font-semibold"
-                      >
-                        ✓ Approve Image
-                      </button>
-                      <button
-                        onClick={() =>
-                          handleReject(selectedImage._id, ['INAPPROPRIATE'])
-                        }
-                        className="flex-1 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 font-semibold"
-                      >
-                        ✕ Reject & Add Violation
-                      </button>
-                    </>
-                  )}
-                  
-                  {activeTab === 'approved' && (
-                    <button
-                      onClick={() => handleReverseDecision(selectedImage._id, 'REJECTED')}
-                      className="flex-1 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 font-semibold"
-                    >
-                      ✕ Reverse - Reject Image
-                    </button>
-                  )}
-                  
-                  {activeTab === 'rejected' && (
-                    <button
-                      onClick={() => handleReverseDecision(selectedImage._id, 'APPROVED')}
-                      className="flex-1 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 font-semibold"
-                    >
-                      ✓ Reverse - Approve Image
-                    </button>
-                  )}
-                  
-                  <button
-                    onClick={() => setSelectedImage(null)}
-                    className="px-4 py-2 border rounded hover:bg-gray-100"
-                  >
-                    Cancel
-                  </button>
-                </div>
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => handleAction(selectedItem.id, 'keep')}
+                  disabled={processingAction}
+                  className="flex-1 bg-green-600 text-white py-3 px-4 rounded-md hover:bg-green-700 transition font-medium disabled:opacity-50"
+                >
+                  ✓ Keep Active
+                </button>
+                <button
+                  onClick={() => handleAction(selectedItem.id, 'warn')}
+                  disabled={processingAction}
+                  className="flex-1 bg-yellow-600 text-white py-3 px-4 rounded-md hover:bg-yellow-700 transition font-medium disabled:opacity-50"
+                >
+                  ⚠ Warn
+                </button>
+                <button
+                  onClick={() => handleAction(selectedItem.id, 'remove')}
+                  disabled={processingAction}
+                  className="flex-1 bg-red-600 text-white py-3 px-4 rounded-md hover:bg-red-700 transition font-medium disabled:opacity-50"
+                >
+                  ✕ Remove
+                </button>
               </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

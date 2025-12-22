@@ -23,6 +23,38 @@ const itemSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now }
   }],
   
+  // Reports tracking
+  reports: [{
+    userId: { type: String, required: true },
+    userName: { type: String },
+    userEmail: { type: String },
+    reason: { type: String },
+    description: { type: String },
+    createdAt: { type: Date, default: Date.now }
+  }],
+  reportCount: { type: Number, default: 0 },
+  
+  // Reviews and ratings
+  reviews: [{
+    userId: { type: String, required: true },
+    userName: { type: String },
+    rating: { type: Number, required: true, min: 1, max: 5 },
+    comment: { type: String },
+    createdAt: { type: Date, default: Date.now }
+  }],
+  averageRating: { type: Number, default: 0 },
+  reviewCount: { type: Number, default: 0 },
+  
+  // Admin moderation status
+  moderationStatus: { 
+    type: String, 
+    enum: ['active', 'warned', 'removed'], 
+    default: 'active' 
+  },
+  moderationNotes: { type: String },
+  moderatedAt: { type: Date },
+  moderatedBy: { type: String },
+  
   // Analytics
   viewCount: { type: Number, default: 0 },
   unlockCount: { type: Number, default: 0 },
