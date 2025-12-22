@@ -27,6 +27,7 @@ interface Booking {
   buyerPhone?: string;
   sellerId: string;
   message: string;
+  rejectionNote?: string;
   status: string;
   createdAt: string;
 }
@@ -125,6 +126,29 @@ export default function Bookings() {
     } catch (error) {
       console.error('Error rejecting booking:', error);
       alert('Failed to reject booking. Please try again.');
+    } finally {
+      setProcessingBookingId(null);
+    }
+  };
+
+  const handleCancelBooking = async (bookingId: string) => {
+    if (!confirm('Are you sure you want to cancel this booking?')) return;
+
+    try {
+      setProcessingBookingId(bookingId);
+      const token = localStorage.getItem('token');
+      
+      await axios.delete(
+        `${API_URL}/api/booking/${bookingId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Refresh bookings
+      await fetchBookings();
+      alert('Booking cancelled successfully.');
+    } catch (error) {
+      console.error('Error cancelling booking:', error);
+      alert('Failed to cancel booking. Please try again.');
     } finally {
       setProcessingBookingId(null);
     }
@@ -229,9 +253,32 @@ export default function Bookings() {
                           <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
                             Booked on {formatDate(booking.createdAt)}
                           </p>
+
+                          {/* Cancel Button for Pending Bookings */}
+                          {booking.status === 'pending' && (
+                            <button
+                              onClick={() => handleCancelBooking(booking._id)}
+                              disabled={processingBookingId === booking._id}
+                              className="mt-3 w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {processingBookingId === booking._id ? '⏳ Cancelling...' : '🗑️ Cancel Booking'}
+                            </button>
+                          )}
+                          {booking.status === 'rejected' && booking.rejectionNote && (
+                            <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                              <p className="text-xs font-semibold text-red-700 dark:text-red-400">Rejection Reason:</p>
+                              <p className="text-xs text-red-600 dark:text-red-300 mt-1">"{booking.rejectionNote}"</p>
+                            </div>
+                          )}
                         </div>
                         <div className="text-right">
-                          <span className="inline-block px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-semibold rounded-full">
+                          <span className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${
+                            booking.status === 'accepted' 
+                              ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                              : booking.status === 'rejected'
+                              ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                              : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+                          }`}>
                             {booking.status}
                           </span>
                         </div>
