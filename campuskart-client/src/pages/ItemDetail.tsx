@@ -63,11 +63,12 @@ export default function ItemDetail() {
     checkUnlockStatus();
 
     // Initialize socket
-    const newSocket = io(SOCKET_URL);
-    setSocket(newSocket);
+    // TEMPORARILY DISABLED - Socket.io not set up on Render backend yet
+    // const newSocket = io(SOCKET_URL);
+    // setSocket(newSocket);
 
     return () => {
-      newSocket.close();
+      // newSocket.close();
     };
   }, [id]);
 

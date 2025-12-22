@@ -20,13 +20,22 @@ export default function ReportButton({ itemId, itemTitle }: ReportButtonProps) {
     e.preventDefault();
     e.stopPropagation();
     
+    console.log('🔍 Report Submit - Start');
+    console.log('Reason:', reason);
+    console.log('Description:', description);
+    console.log('Item ID:', itemId);
+    console.log('User:', { userId: user.userId, userName: user.username, userEmail: user.email });
+    
     if (!reason) {
+      console.warn('⚠️ No reason selected');
       setMessage('Please select a reason');
       return;
     }
 
     try {
       setLoading(true);
+      console.log('📡 Sending report request...');
+      
       const response = await axios.post(`/api/items/${itemId}/report`, {
         userId: user.userId,
         userName: user.username,
@@ -34,6 +43,8 @@ export default function ReportButton({ itemId, itemTitle }: ReportButtonProps) {
         reason,
         description
       });
+
+      console.log('✅ Report response:', response.data);
 
       if (response.data.success) {
         setMessage('Thank you! Your report has been submitted to the admin.');
@@ -45,9 +56,12 @@ export default function ReportButton({ itemId, itemTitle }: ReportButtonProps) {
         }, 2000);
       }
     } catch (error: any) {
+      console.error('❌ Report error:', error);
+      console.error('Error response:', error.response?.data);
       setMessage(error.response?.data?.message || 'Failed to submit report');
     } finally {
       setLoading(false);
+      console.log('🔍 Report Submit - End');
     }
   };
 

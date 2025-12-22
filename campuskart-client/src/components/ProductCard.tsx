@@ -44,11 +44,12 @@ export default function ProductCard({ item }: ProductCardProps) {
 
   // Initialize socket connection
   useEffect(() => {
-    const newSocket = io(SOCKET_URL);
-    setSocket(newSocket);
+    // TEMPORARILY DISABLED - Socket.io not set up on Render backend yet
+    // const newSocket = io(SOCKET_URL);
+    // setSocket(newSocket);
 
     return () => {
-      newSocket.close();
+      // newSocket.close();
     };
   }, []);
 
