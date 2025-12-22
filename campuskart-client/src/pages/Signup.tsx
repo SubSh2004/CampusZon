@@ -200,6 +200,9 @@ export default function Signup() {
                 <label htmlFor="email" className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">
                   College Email Address
                 </label>
+                <p className="text-xs text-purple-600 dark:text-purple-400 font-medium mb-2">
+                  🏫 Please use your college email to make it work in your campus
+                </p>
                 <input
                   id="email"
                   type="email"

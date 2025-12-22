@@ -78,6 +78,9 @@ export default function Login() {
               <label htmlFor="email" className="block text-sm font-bold text-gray-700 dark:text-gray-300">
                 Email Address
               </label>
+              <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium mb-1">
+                🏫 Please use your college email to make it work in your campus
+              </p>
               <div className="relative group">
                 <input
                   id="email"
