@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { useRecoilValue } from 'recoil';
 import { userAtom } from '../store/user.atom';
@@ -97,9 +98,9 @@ export default function ReportButton({ itemId, itemTitle }: ReportButtonProps) {
         <span className="hidden sm:inline">Report</span>
       </button>
 
-      {showModal && (
+      {showModal && createPortal(
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center p-4 z-[9999]" 
+          className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center p-4 z-[99999999]" 
           onClick={handleModalClose}
           onMouseDown={(e) => e.stopPropagation()}
           style={{ isolation: 'isolate' }}
@@ -187,7 +188,8 @@ export default function ReportButton({ itemId, itemTitle }: ReportButtonProps) {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
