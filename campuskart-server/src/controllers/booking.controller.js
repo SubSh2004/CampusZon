@@ -1,6 +1,7 @@
 import Booking from '../models/booking.model.js';
 import Chat from '../models/chat.model.js';
 import Message from '../models/message.model.js';
+import Notification from '../models/notification.model.js';
 import { sendToUser } from '../socketManager.js';
 
 // Create a booking request
@@ -248,7 +249,7 @@ export const updateBookingStatus = async (req, res) => {
         console.error('Error details:', err.message);
       }
 
-      // Send notification to buyer
+      // Send chat message to buyer
       try {
         const acceptMessage = await Message.create({
           chatId: chat._id,
@@ -265,7 +266,7 @@ export const updateBookingStatus = async (req, res) => {
           $inc: { [`unreadCount.${booking.buyerId}`]: 1 }
         });
 
-        console.log(`✅ Acceptance notification sent to buyer ${booking.buyerId}`);
+        console.log(`✅ Acceptance message sent to buyer ${booking.buyerId}`);
 
         // Send real-time notification
         try {
@@ -276,13 +277,36 @@ export const updateBookingStatus = async (req, res) => {
       } catch (err) {
         console.error('❌ Error creating acceptance message:', err);
       }
+
+      // Create notification for buyer
+      try {
+        const notification = await Notification.create({
+          userId: booking.buyerId.toString(),
+          type: 'BOOKING',
+          title: '🎉 Booking Accepted!',
+          message: `Your booking request for "${booking.itemTitle}" has been accepted by the seller. Check your chats to coordinate!`,
+          itemId: booking.itemId,
+          read: false
+        });
+
+        console.log(`✅ Notification created for buyer ${booking.buyerId}:`, notification._id);
+
+        // Send real-time notification update
+        try {
+          sendToUser(booking.buyerId.toString(), 'newNotification', notification);
+        } catch (err) {
+          console.warn('Failed to send real-time notification:', err);
+        }
+      } catch (err) {
+        console.error('❌ Error creating acceptance notification:', err);
+      }
     }
     
     // Handle rejection
     if (status === 'rejected') {
       booking.rejectionNote = rejectionNote || 'No reason provided';
       
-      // Send notification to buyer
+      // Send chat message to buyer
       const rejectMessage = await Message.create({
         chatId: chat._id,
         senderId: booking.sellerId,
@@ -302,6 +326,29 @@ export const updateBookingStatus = async (req, res) => {
         sendToUser(booking.buyerId.toString(), 'newPrivateMessage', rejectMessage);
       } catch (err) {
         console.warn('Failed to send real-time rejection notification:', err);
+      }
+
+      // Create notification for buyer
+      try {
+        const notification = await Notification.create({
+          userId: booking.buyerId.toString(),
+          type: 'BOOKING',
+          title: '❌ Booking Rejected',
+          message: `Your booking request for "${booking.itemTitle}" was rejected. Reason: ${rejectionNote || 'No reason provided'}`,
+          itemId: booking.itemId,
+          read: false
+        });
+
+        console.log(`✅ Rejection notification created for buyer ${booking.buyerId}:`, notification._id);
+
+        // Send real-time notification update
+        try {
+          sendToUser(booking.buyerId.toString(), 'newNotification', notification);
+        } catch (err) {
+          console.warn('Failed to send real-time rejection notification:', err);
+        }
+      } catch (err) {
+        console.error('❌ Error creating rejection notification:', err);
       }
     }
     
