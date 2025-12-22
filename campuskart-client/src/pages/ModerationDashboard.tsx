@@ -48,6 +48,7 @@ const ModerationDashboard: React.FC = () => {
   const navigate = useNavigate();
   const user = useRecoilValue(userAtom);
   const [activeTab, setActiveTab] = useState<'reported' | 'all'>('reported');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'warned' | 'removed'>('all');
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
@@ -64,7 +65,7 @@ const ModerationDashboard: React.FC = () => {
     }
     
     fetchItems();
-  }, [activeTab, user.isLoggedIn, user.isAdmin, navigate]);
+  }, [activeTab, statusFilter, user.isLoggedIn, user.isAdmin, navigate]);
 
   const fetchItems = async () => {
     try {
@@ -73,10 +74,28 @@ const ModerationDashboard: React.FC = () => {
       const response = await axios.get(endpoint);
       
       if (response.data.success) {
-        setItems(response.data.items);
+        let fetchedItems = response.data.items || [];
+        
+        // Ensure all items have required fields with defaults
+        fetchedItems = fetchedItems.map((item: any) => ({
+          ...item,
+          reports: item.reports || [],
+          reportCount: item.reportCount || 0,
+          reviews: item.reviews || [],
+          moderationStatus: item.moderationStatus || 'active',
+          imageUrls: item.imageUrls || [],
+        }));
+        
+        // Apply status filter if on 'all' tab
+        if (activeTab === 'all' && statusFilter !== 'all') {
+          fetchedItems = fetchedItems.filter((item: Item) => item.moderationStatus === statusFilter);
+        }
+        
+        setItems(fetchedItems);
       }
     } catch (error) {
       console.error('Failed to fetch items:', error);
+      alert('Failed to load items. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -182,6 +201,26 @@ const ModerationDashboard: React.FC = () => {
             )}
           </button>
         </div>
+
+        {/* Status Filter (only show on 'all' tab) */}
+        {activeTab === 'all' && (
+          <div className="mb-6 flex gap-2">
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300 self-center mr-2">Filter by status:</span>
+            {(['all', 'active', 'warned', 'removed'] as const).map((status) => (
+              <button
+                key={status}
+                onClick={() => setStatusFilter(status)}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition ${
+                  statusFilter === status
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                }`}
+              >
+                {status.charAt(0).toUpperCase() + status.slice(1)}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Items List */}
         {loading ? (
@@ -299,14 +338,14 @@ const ModerationDashboard: React.FC = () => {
                   </h3>
                   <div className="space-y-3">
                     {selectedItem.reports.map((report, index) => (
-                      <div key={index} className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                      <div key={`${report.userId}-${index}`} className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
                         <div className="flex justify-between items-start mb-2">
                           <div>
-                            <p className="font-semibold text-gray-900 dark:text-white">{report.userName}</p>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">{report.userEmail}</p>
+                            <p className="font-semibold text-gray-900 dark:text-white">{report.userName || 'Anonymous'}</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">{report.userEmail || 'No email'}</p>
                           </div>
                           <span className="text-xs text-gray-500 dark:text-gray-400">
-                            {new Date(report.createdAt).toLocaleDateString()}
+                            {report.createdAt ? new Date(report.createdAt).toLocaleDateString() : 'Unknown date'}
                           </span>
                         </div>
                         <p className="text-sm"><strong>Reason:</strong> {report.reason}</p>

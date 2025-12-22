@@ -463,7 +463,14 @@ export const getAllItemsForAdmin = async (req, res) => {
     const itemsWithId = items.map(item => ({
       ...item,
       id: item._id.toString(),
-      _id: undefined
+      _id: undefined,
+      reports: item.reports || [],
+      reportCount: item.reportCount || 0,
+      reviews: item.reviews || [],
+      moderationStatus: item.moderationStatus || 'active',
+      imageUrls: item.imageUrls || [],
+      averageRating: item.averageRating || 0,
+      reviewCount: item.reviewCount || 0,
     }));
 
     res.status(200).json({

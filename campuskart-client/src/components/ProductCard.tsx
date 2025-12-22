@@ -257,7 +257,7 @@ export default function ProductCard({ item }: ProductCardProps) {
 
             {/* Report Button */}
             {!isOwnItem && (
-              <div className="mt-2 flex justify-end">
+              <div className="mt-2 flex justify-end" onClick={(e) => e.preventDefault()}>
                 <ReportButton itemId={item.id} itemTitle={item.title} />
               </div>
             )}

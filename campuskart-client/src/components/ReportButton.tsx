@@ -98,6 +98,8 @@ export default function ReportButton({ itemId, itemTitle }: ReportButtonProps) {
                   required
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
                   className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 >
                   <option value="">Select a reason</option>
@@ -118,6 +120,8 @@ export default function ReportButton({ itemId, itemTitle }: ReportButtonProps) {
                   rows={3}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
                   placeholder="Provide more details about why you're reporting this item..."
                   className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
                 />
