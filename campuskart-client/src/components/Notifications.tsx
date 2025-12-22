@@ -12,6 +12,7 @@ interface Booking {
   sellerName: string;
   status: string;
   message: string;
+  rejectionNote?: string;
   read: boolean;
   createdAt: string;
 }
@@ -33,6 +34,7 @@ export default function Notifications() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
+  const [buyerBookingUpdates, setBuyerBookingUpdates] = useState<Booking[]>([]);
   const [moderationNotifications, setModerationNotifications] = useState<ModerationNotification[]>([]);
   const [unreadBookingsCount, setUnreadBookingsCount] = useState(0);
 
@@ -58,19 +60,28 @@ export default function Notifications() {
 
   const fetchNotifications = async () => {
     try {
-      const [bookingResponse, sellerBookingsResponse, modNotificationsResponse] = await Promise.all([
+      const [bookingResponse, sellerBookingsResponse, buyerBookingsResponse, modNotificationsResponse] = await Promise.all([
         axios.get('/api/booking/unread-count'),
         axios.get('/api/booking/seller'),
+        axios.get('/api/booking/buyer'),
         axios.get('/api/notifications?limit=10')
       ]);
 
       const bookCount = bookingResponse.data.unreadCount || 0;
       const modCount = modNotificationsResponse.data.unreadCount || 0;
       
-      setUnreadBookingsCount(bookCount);
-      setUnreadCount(bookCount + modCount);
+      // Get buyer booking updates (accepted/rejected) that are unread
+      const buyerBookings = (buyerBookingsResponse.data.bookings || [])
+        .filter((booking: Booking) => !booking.read && (booking.status === 'accepted' || booking.status === 'rejected'))
+        .slice(0, 3);
+      setBuyerBookingUpdates(buyerBookings);
       
-      // Get recent unread bookings
+      const buyerUpdatesCount = buyerBookings.length;
+      
+      setUnreadBookingsCount(bookCount);
+      setUnreadCount(bookCount + modCount + buyerUpdatesCount);
+      
+      // Get recent unread bookings (for seller - incoming requests)
       const unreadBookings = (sellerBookingsResponse.data.bookings || [])
         .filter((booking: Booking) => !booking.read && booking.status === 'pending')
         .slice(0, 3);
@@ -106,6 +117,29 @@ export default function Notifications() {
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (error) {
       console.error('Error handling booking:', error);
+    }
+  };
+
+  const handleBuyerBookingClick = async (booking: Booking) => {
+    setShowDropdown(false);
+    try {
+      const token = localStorage.getItem('token');
+      
+      // Mark booking as read
+      await axios.put(
+        `${API_URL}/api/booking/${booking._id}/read`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      // Update local state
+      setBuyerBookingUpdates(prev => prev.filter(b => b._id !== booking._id));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+      
+      // Navigate to bookings page
+      navigate('/bookings');
+    } catch (error) {
+      console.error('Error handling buyer booking:', error);
     }
   };
 
@@ -252,6 +286,74 @@ export default function Notifications() {
                   </p>
                 )}
               </div>
+
+              {/* Buyer Booking Updates Section */}
+              {buyerBookingUpdates.length > 0 && (
+                <div className={`p-4 ${theme === 'dark' ? 'bg-gray-750' : 'bg-gray-50'}`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className={`text-sm font-semibold ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                      📬 Your Bookings
+                      {buyerBookingUpdates.length > 0 && (
+                        <span className="ml-2 bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full">
+                          {buyerBookingUpdates.length}
+                        </span>
+                      )}
+                    </h4>
+                    <Link
+                      to="/bookings"
+                      onClick={() => setShowDropdown(false)}
+                      className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+                    >
+                      View All
+                    </Link>
+                  </div>
+                  {buyerBookingUpdates.map(booking => (
+                    <button
+                      key={booking._id}
+                      onClick={() => handleBuyerBookingClick(booking)}
+                      className={`w-full text-left p-2 rounded ${
+                        theme === 'dark' 
+                          ? 'hover:bg-gray-700' 
+                          : 'hover:bg-white'
+                      } transition-colors mb-1 border-l-4 ${
+                        booking.status === 'accepted' 
+                          ? 'border-green-500' 
+                          : 'border-red-500'
+                      }`}
+                    >
+                      <div className="flex items-start gap-2">
+                        <span className="text-lg">
+                          {booking.status === 'accepted' ? '✅' : '❌'}
+                        </span>
+                        <div className="flex-1">
+                          <p className={`font-medium text-sm ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                            Booking {booking.status === 'accepted' ? 'Accepted' : 'Rejected'}
+                          </p>
+                          <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} truncate`}>
+                            Item: {booking.itemTitle}
+                          </p>
+                          <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                            Seller: {booking.sellerName}
+                          </p>
+                          {booking.status === 'rejected' && booking.rejectionNote && (
+                            <p className={`text-xs ${theme === 'dark' ? 'text-red-400' : 'text-red-600'} mt-1 italic`}>
+                              Reason: {booking.rejectionNote}
+                            </p>
+                          )}
+                          <p className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+                            {new Date(booking.createdAt).toLocaleString([], { 
+                              month: 'short', 
+                              day: 'numeric', 
+                              hour: '2-digit', 
+                              minute: '2-digit' 
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
 
               {/* Moderation Notifications Section */}
               {moderationNotifications.length > 0 && (
