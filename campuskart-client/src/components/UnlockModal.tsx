@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import TierComparison from './TierComparison';
 import axios from '../config/axios';
 
@@ -25,7 +26,6 @@ const UnlockModal: React.FC<UnlockModalProps> = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const [freeCredits, setFreeCredits] = useState(0);
-  const [unlockStatus, setUnlockStatus] = useState<any>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -50,7 +50,6 @@ const UnlockModal: React.FC<UnlockModalProps> = ({
       const response = await axios.get(`/api/unlock/items/${itemId}/status`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setUnlockStatus(response.data);
       setFreeCredits(response.data.freeCredits);
     } catch (error) {
       console.error('Error checking unlock status:', error);
@@ -144,12 +143,18 @@ const UnlockModal: React.FC<UnlockModalProps> = ({
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto relative">
+  return createPortal(
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-4 overflow-y-auto"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto relative"
+        onClick={(e) => e.stopPropagation()}
+      >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-2xl font-bold z-10"
+          className="absolute top-4 right-4 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 text-2xl font-bold z-10"
           disabled={loading}
         >
           ×
@@ -163,7 +168,8 @@ const UnlockModal: React.FC<UnlockModalProps> = ({
           />
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
