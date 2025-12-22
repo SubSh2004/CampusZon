@@ -16,7 +16,9 @@ router.use(authenticate);
 
 router.post('/create', createBooking);
 router.get('/seller', getSellerBookings);
+router.get('/booking-requests', getSellerBookings);
 router.get('/buyer', getBuyerBookings);
+router.get('/my-bookings', getBuyerBookings);
 router.put('/:bookingId/status', updateBookingStatus);
 router.put('/:bookingId/read', markBookingAsRead);
 router.get('/unread-count', getUnreadBookingCount);

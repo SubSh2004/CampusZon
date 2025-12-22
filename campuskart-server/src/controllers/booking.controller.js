@@ -105,8 +105,8 @@ export const createBooking = async (req, res) => {
       });
     }
 
-    // Create automatic booking notification message
-    const bookingMessage = `🛒 I want to book your item:\n\n📦 Item: ${itemTitle}\n💰 Price: ₹${itemPrice}${itemCategory ? `\n📂 Category: ${itemCategory}` : ''}\n\n${message ? `Message: ${message}` : 'No additional message'}`;
+    // Create simplified booking notification message
+    const bookingMessage = `📦 You have a booking request for "${itemTitle}"\n\nCheck your Bookings section to see buyer details.`;
 
     const newMessage = await Message.create({
       chatId: chat._id,
@@ -118,7 +118,7 @@ export const createBooking = async (req, res) => {
 
     // Update chat with latest message
     await Chat.findByIdAndUpdate(chat._id, {
-      lastMessage: bookingMessage.substring(0, 100) + (bookingMessage.length > 100 ? '...' : ''),
+      lastMessage: bookingMessage,
       lastMessageTime: new Date(),
       $inc: { [`unreadCount.${sellerId}`]: 1 }
     });
