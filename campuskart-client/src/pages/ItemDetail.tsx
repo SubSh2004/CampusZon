@@ -6,6 +6,7 @@ import { io, Socket } from 'socket.io-client';
 import { SOCKET_URL } from '../config/api';
 import UnlockModal from '../components/UnlockModal';
 import FreeCreditsIndicator from '../components/FreeCreditsIndicator';
+import ReportButton from '../components/ReportButton';
 
 interface Item {
   id: string; // MongoDB ObjectId as string
@@ -299,8 +300,11 @@ export default function ItemDetail() {
               {/* Title */}
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{item.title}</h1>
 
-              {/* Category */}
-              <p className="text-gray-500 dark:text-gray-400 mb-4">{item.category}</p>
+              {/* Category and Report Button */}
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-gray-500 dark:text-gray-400">{item.category}</p>
+                <ReportButton itemId={item.id} itemTitle={item.title} />
+              </div>
 
               {/* Price */}
               <div className="mb-6">
