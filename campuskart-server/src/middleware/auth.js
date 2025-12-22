@@ -31,3 +31,22 @@ export const authenticate = async (req, res, next) => {
 
 // Alias for compatibility with moderation routes
 export const authenticateToken = authenticate;
+
+// Admin-only middleware
+export const isAdmin = async (req, res, next) => {
+  try {
+    // Assumes authenticate middleware has already run and set req.user
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: 'Authentication required' });
+    }
+
+    if (!req.user.isAdmin) {
+      return res.status(403).json({ success: false, message: 'Admin access required' });
+    }
+
+    next();
+  } catch (error) {
+    console.error('Admin check error:', error);
+    res.status(500).json({ success: false, message: 'Error checking admin status' });
+  }
+};
