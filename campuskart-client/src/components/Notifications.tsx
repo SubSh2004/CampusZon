@@ -109,6 +109,43 @@ export default function Notifications() {
     }
   };
 
+  const handleModerationNotificationClick = async (notification: ModerationNotification) => {
+    setShowDropdown(false);
+    
+    // Mark as read
+    if (!notification.read) {
+      try {
+        await axios.put(`/api/notifications/${notification._id}/read`);
+        // Refresh notifications
+        fetchNotifications();
+      } catch (error) {
+        console.error('Error marking notification as read:', error);
+      }
+    }
+    
+    // Navigate to item or profile page
+    if (notification.itemId) {
+      navigate(`/item/${notification.itemId}`);
+    } else {
+      navigate('/profile');
+    }
+  };
+
+  const getNotificationColor = (type: string) => {
+    switch (type) {
+      case 'ITEM_KEPT_ACTIVE':
+      case 'ITEM_APPROVED':
+        return 'text-green-600 dark:text-green-400';
+      case 'ITEM_WARNED':
+        return 'text-yellow-600 dark:text-yellow-400';
+      case 'ITEM_REMOVED':
+      case 'ITEM_REJECTED':
+        return 'text-red-600 dark:text-red-400';
+      default:
+        return 'text-gray-600 dark:text-gray-400';
+    }
+  };
+
   return (
     <div className="relative">
       <button
@@ -223,33 +260,50 @@ export default function Notifications() {
                     🛡️ Item Moderation
                   </h4>
                   {moderationNotifications.map(notification => (
-                    <div
+                    <button
                       key={notification._id}
-                      className={`p-2 rounded ${
-                        theme === 'dark' 
-                          ? 'hover:bg-gray-700' 
-                          : 'hover:bg-white'
-                      } transition-colors mb-1`}
+                      onClick={() => handleModerationNotificationClick(notification)}
+                      className={`w-full text-left p-3 rounded ${
+                        !notification.read 
+                          ? theme === 'dark' 
+                            ? 'bg-gray-700 border-l-4 border-indigo-500' 
+                            : 'bg-white border-l-4 border-indigo-500'
+                          : theme === 'dark' 
+                            ? 'hover:bg-gray-700' 
+                            : 'hover:bg-white'
+                      } transition-colors mb-2`}
                     >
-                      <p className={`font-medium text-sm ${
-                        notification.type === 'ITEM_APPROVED' 
-                          ? 'text-green-600 dark:text-green-400' 
-                          : 'text-red-600 dark:text-red-400'
-                      }`}>
-                        {notification.title}
-                      </p>
-                      <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mt-1`}>
-                        {notification.message}
-                      </p>
-                      <p className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'} mt-1`}>
-                        {new Date(notification.createdAt).toLocaleString([], { 
-                          month: 'short', 
-                          day: 'numeric', 
-                          hour: '2-digit', 
-                          minute: '2-digit' 
-                        })}
-                      </p>
-                    </div>
+                      <div className="flex items-start gap-2">
+                        {notification.imageUrl && (
+                          <img 
+                            src={notification.imageUrl} 
+                            alt="" 
+                            className="w-12 h-12 rounded object-cover flex-shrink-0"
+                          />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className={`font-medium text-sm ${getNotificationColor(notification.type)}`}>
+                            {notification.title}
+                          </p>
+                          <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mt-1 line-clamp-2`}>
+                            {notification.message}
+                          </p>
+                          <div className="flex items-center justify-between mt-1">
+                            <p className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+                              {new Date(notification.createdAt).toLocaleString([], { 
+                                month: 'short', 
+                                day: 'numeric', 
+                                hour: '2-digit', 
+                                minute: '2-digit' 
+                              })}
+                            </p>
+                            {!notification.read && (
+                              <span className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold">NEW</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </button>
                   ))}
                 </div>
               )}

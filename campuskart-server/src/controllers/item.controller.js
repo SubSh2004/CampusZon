@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import Item from '../models/item.mongo.model.js';
 import ImageModeration from '../models/imageModeration.model.js';
 import UserViolation from '../models/userViolation.model.js';
+import Notification from '../models/notification.model.js';
 import imgbbUploader from 'imgbb-uploader';
 import { queueImageModeration } from '../utils/moderationQueue.js';
 import { checkUserCanUpload } from '../utils/enforcementSystem.js';
@@ -509,16 +510,30 @@ export const moderateItem = async (req, res) => {
       });
     }
 
-    // Update moderation status
+    // Prepare notification data
+    let notificationType = 'ITEM_KEPT_ACTIVE';
+    let notificationTitle = '';
+    let notificationMessage = '';
+
+    // Update moderation status and prepare notification
     if (action === 'keep') {
       item.moderationStatus = 'active';
       item.reports = []; // Clear reports
       item.reportCount = 0;
+      notificationType = 'ITEM_KEPT_ACTIVE';
+      notificationTitle = '✅ Your item is active';
+      notificationMessage = `Your item "${item.title}" has been reviewed by an admin and is now active in the marketplace.`;
     } else if (action === 'warn') {
       item.moderationStatus = 'warned';
+      notificationType = 'ITEM_WARNED';
+      notificationTitle = '⚠️ Warning for your item';
+      notificationMessage = `Your item "${item.title}" has received a warning from the admin. ${notes ? 'Reason: ' + notes : 'Please review our community guidelines.'}`;
     } else if (action === 'remove') {
       item.moderationStatus = 'removed';
       item.available = false; // Also mark as unavailable
+      notificationType = 'ITEM_REMOVED';
+      notificationTitle = '❌ Your item was removed';
+      notificationMessage = `Your item "${item.title}" has been removed from the marketplace by an admin. ${notes ? 'Reason: ' + notes : 'It violated our community guidelines.'}`;
     }
 
     item.moderationNotes = notes || '';
@@ -526,6 +541,28 @@ export const moderateItem = async (req, res) => {
     item.moderatedBy = adminId;
 
     await item.save();
+
+    // Create notification for item owner
+    try {
+      await Notification.create({
+        userId: item.userId,
+        type: notificationType,
+        title: notificationTitle,
+        message: notificationMessage,
+        itemId: item._id,
+        imageUrl: item.imageUrl,
+        read: false,
+        metadata: new Map([
+          ['action', action],
+          ['adminNotes', notes || ''],
+          ['itemTitle', item.title]
+        ])
+      });
+      console.log(`✅ Notification sent to user ${item.userId} for ${action} action on item ${item.title}`);
+    } catch (notifError) {
+      console.error('Failed to create notification:', notifError);
+      // Don't fail the request if notification fails
+    }
 
     res.status(200).json({
       success: true,
