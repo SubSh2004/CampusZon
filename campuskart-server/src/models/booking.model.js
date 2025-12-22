@@ -48,6 +48,10 @@ const bookingSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  rejectionNote: {
+    type: String,
+    default: ''
+  },
   read: {
     type: Boolean,
     default: false

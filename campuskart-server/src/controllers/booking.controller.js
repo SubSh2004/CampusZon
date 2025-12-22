@@ -157,7 +157,10 @@ export const getSellerBookings = async (req, res) => {
   try {
     const sellerId = req.user._id.toString();
 
-    const bookings = await Booking.find({ sellerId })
+    const bookings = await Booking.find({ 
+      sellerId,
+      status: { $ne: 'rejected' } // Exclude rejected bookings
+    })
       .populate('buyerId', 'username email phoneNumber hostelName')
       .populate('itemId', 'title price imageUrl imageUrls category')
       .sort({ createdAt: -1 });
@@ -189,10 +192,12 @@ export const getBuyerBookings = async (req, res) => {
 export const updateBookingStatus = async (req, res) => {
   try {
     const { bookingId } = req.params;
-    const { status } = req.body;
+    const { status, rejectionNote } = req.body;
     const userId = req.user._id.toString();
 
-    const booking = await Booking.findById(bookingId);
+    const booking = await Booking.findById(bookingId)
+      .populate('buyerId', 'username')
+      .populate('itemId', 'title');
 
     if (!booking) {
       return res.status(404).json({ success: false, message: 'Booking not found' });
@@ -204,6 +209,56 @@ export const updateBookingStatus = async (req, res) => {
     }
 
     booking.status = status;
+    
+    // Handle acceptance
+    if (status === 'accepted') {
+      // Mark item as unavailable in PostgreSQL
+      try {
+        const { Item } = await import('../db/postgres.js').then(m => m.default);
+        await Item.update(
+          { available: false },
+          { where: { id: booking.itemId } }
+        );
+      } catch (err) {
+        console.error('Error updating item availability:', err);
+      }
+
+      // Send notification to buyer
+      const acceptMessage = await Message.create({
+        chatId: (await Chat.findOne({ participants: { $all: [booking.buyerId, booking.sellerId] } }))._id,
+        senderId: booking.sellerId,
+        senderName: booking.sellerName,
+        receiverId: booking.buyerId,
+        message: `✅ Your booking for "${booking.itemTitle}" has been accepted! The seller will contact you soon.`
+      });
+
+      try {
+        sendToUser(booking.buyerId.toString(), 'newPrivateMessage', acceptMessage);
+      } catch (err) {
+        console.warn('Failed to send real-time acceptance notification:', err);
+      }
+    }
+    
+    // Handle rejection
+    if (status === 'rejected') {
+      booking.rejectionNote = rejectionNote || 'No reason provided';
+      
+      // Send notification to buyer
+      const rejectMessage = await Message.create({
+        chatId: (await Chat.findOne({ participants: { $all: [booking.buyerId, booking.sellerId] } }))._id,
+        senderId: booking.sellerId,
+        senderName: booking.sellerName,
+        receiverId: booking.buyerId,
+        message: `❌ Your booking for "${booking.itemTitle}" was cancelled.\n\nReason: ${rejectionNote || 'No reason provided'}`
+      });
+
+      try {
+        sendToUser(booking.buyerId.toString(), 'newPrivateMessage', rejectMessage);
+      } catch (err) {
+        console.warn('Failed to send real-time rejection notification:', err);
+      }
+    }
+    
     await booking.save();
 
     res.json({ success: true, booking, message: `Booking ${status} successfully` });
