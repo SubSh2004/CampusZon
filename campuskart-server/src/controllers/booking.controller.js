@@ -229,34 +229,46 @@ export const updateBookingStatus = async (req, res) => {
       // Mark item as unavailable in PostgreSQL
       try {
         const { Item } = await import('../db/postgres.js').then(m => m.default);
-        await Item.update(
+        // Extract the actual item ID (booking.itemId could be ObjectId or string)
+        const actualItemId = typeof booking.itemId === 'object' ? booking.itemId.toString() : booking.itemId;
+        
+        const updateResult = await Item.update(
           { available: false },
-          { where: { id: booking.itemId } }
+          { where: { id: actualItemId } }
         );
+        
+        console.log(`✅ Item ${actualItemId} marked as unavailable. Updated rows:`, updateResult[0]);
       } catch (err) {
-        console.error('Error updating item availability:', err);
+        console.error('❌ Error updating item availability:', err);
       }
 
       // Send notification to buyer
-      const acceptMessage = await Message.create({
-        chatId: chat._id,
-        senderId: booking.sellerId,
-        senderName: booking.sellerName,
-        receiverId: booking.buyerId,
-        message: `✅ Your booking for "${booking.itemTitle}" has been accepted! The seller will contact you soon.`
-      });
-
-      // Update chat with latest message
-      await Chat.findByIdAndUpdate(chat._id, {
-        lastMessage: `✅ Booking accepted for "${booking.itemTitle}"`,
-        lastMessageTime: new Date(),
-        $inc: { [`unreadCount.${booking.buyerId}`]: 1 }
-      });
-
       try {
-        sendToUser(booking.buyerId.toString(), 'newPrivateMessage', acceptMessage);
+        const acceptMessage = await Message.create({
+          chatId: chat._id,
+          senderId: booking.sellerId,
+          senderName: booking.sellerName,
+          receiverId: booking.buyerId,
+          message: `✅ Your booking for "${booking.itemTitle}" has been accepted! The seller will contact you soon.`
+        });
+
+        // Update chat with latest message
+        await Chat.findByIdAndUpdate(chat._id, {
+          lastMessage: `✅ Booking accepted for "${booking.itemTitle}"`,
+          lastMessageTime: new Date(),
+          $inc: { [`unreadCount.${booking.buyerId}`]: 1 }
+        });
+
+        console.log(`✅ Acceptance notification sent to buyer ${booking.buyerId}`);
+
+        // Send real-time notification
+        try {
+          sendToUser(booking.buyerId.toString(), 'newPrivateMessage', acceptMessage);
+        } catch (err) {
+          console.warn('Failed to send real-time acceptance notification:', err);
+        }
       } catch (err) {
-        console.warn('Failed to send real-time acceptance notification:', err);
+        console.error('❌ Error creating acceptance message:', err);
       }
     }
     
