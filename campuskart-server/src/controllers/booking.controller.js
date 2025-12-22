@@ -210,6 +210,20 @@ export const updateBookingStatus = async (req, res) => {
 
     booking.status = status;
     
+    // Find or create chat between buyer and seller
+    let chat = await Chat.findOne({
+      participants: { $all: [booking.buyerId, booking.sellerId] }
+    });
+
+    if (!chat) {
+      chat = await Chat.create({
+        participants: [booking.buyerId, booking.sellerId],
+        lastMessage: '',
+        lastMessageTime: new Date(),
+        unreadCount: new Map()
+      });
+    }
+    
     // Handle acceptance
     if (status === 'accepted') {
       // Mark item as unavailable in PostgreSQL
@@ -225,11 +239,18 @@ export const updateBookingStatus = async (req, res) => {
 
       // Send notification to buyer
       const acceptMessage = await Message.create({
-        chatId: (await Chat.findOne({ participants: { $all: [booking.buyerId, booking.sellerId] } }))._id,
+        chatId: chat._id,
         senderId: booking.sellerId,
         senderName: booking.sellerName,
         receiverId: booking.buyerId,
         message: `✅ Your booking for "${booking.itemTitle}" has been accepted! The seller will contact you soon.`
+      });
+
+      // Update chat with latest message
+      await Chat.findByIdAndUpdate(chat._id, {
+        lastMessage: `✅ Booking accepted for "${booking.itemTitle}"`,
+        lastMessageTime: new Date(),
+        $inc: { [`unreadCount.${booking.buyerId}`]: 1 }
       });
 
       try {
@@ -245,11 +266,18 @@ export const updateBookingStatus = async (req, res) => {
       
       // Send notification to buyer
       const rejectMessage = await Message.create({
-        chatId: (await Chat.findOne({ participants: { $all: [booking.buyerId, booking.sellerId] } }))._id,
+        chatId: chat._id,
         senderId: booking.sellerId,
         senderName: booking.sellerName,
         receiverId: booking.buyerId,
         message: `❌ Your booking for "${booking.itemTitle}" was cancelled.\n\nReason: ${rejectionNote || 'No reason provided'}`
+      });
+
+      // Update chat with latest message
+      await Chat.findByIdAndUpdate(chat._id, {
+        lastMessage: `❌ Booking cancelled for "${booking.itemTitle}"`,
+        lastMessageTime: new Date(),
+        $inc: { [`unreadCount.${booking.buyerId}`]: 1 }
       });
 
       try {
