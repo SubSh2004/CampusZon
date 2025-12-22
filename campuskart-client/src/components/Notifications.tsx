@@ -64,13 +64,20 @@ export default function Notifications() {
         axios.get('/api/booking/unread-count'),
         axios.get('/api/booking/seller'),
         axios.get('/api/booking/buyer'),
-        axios.get('/api/notifications?limit=10')
+        axios.get('/api/notifications?limit=20')
       ]);
 
       const bookCount = bookingResponse.data.unreadCount || 0;
-      const modCount = modNotificationsResponse.data.unreadCount || 0;
+      const allNotifications = modNotificationsResponse.data.notifications || [];
       
-      // Get buyer booking updates (accepted/rejected) that are unread
+      // Separate BOOKING type notifications from moderation notifications
+      const bookingNotifications = allNotifications.filter((n: ModerationNotification) => n.type === 'BOOKING');
+      const moderationOnly = allNotifications.filter((n: ModerationNotification) => n.type !== 'BOOKING');
+      
+      const bookingNotifCount = bookingNotifications.filter((n: ModerationNotification) => !n.read).length;
+      const modCount = moderationOnly.filter((n: ModerationNotification) => !n.read).length;
+      
+      // Get buyer booking updates (accepted/rejected) that are unread - OLD SYSTEM (kept for backwards compatibility)
       const buyerBookings = (buyerBookingsResponse.data.bookings || [])
         .filter((booking: Booking) => !booking.read && (booking.status === 'accepted' || booking.status === 'rejected'))
         .slice(0, 3);
@@ -79,7 +86,7 @@ export default function Notifications() {
       const buyerUpdatesCount = buyerBookings.length;
       
       setUnreadBookingsCount(bookCount);
-      setUnreadCount(bookCount + modCount + buyerUpdatesCount);
+      setUnreadCount(bookCount + modCount + buyerUpdatesCount + bookingNotifCount);
       
       // Get recent unread bookings (for seller - incoming requests)
       const unreadBookings = (sellerBookingsResponse.data.bookings || [])
@@ -87,8 +94,26 @@ export default function Notifications() {
         .slice(0, 3);
       setRecentBookings(unreadBookings);
       
-      // Get moderation notifications (both read and unread for recent history)
-      setModerationNotifications(modNotificationsResponse.data.notifications || []);
+      // Set moderation notifications (excluding BOOKING type - those are shown separately)
+      setModerationNotifications(moderationOnly);
+      
+      // Set booking notifications
+      setBuyerBookingUpdates(prev => {
+        // Combine old booking system with new notification system
+        const combined = [...bookingNotifications.map((n: ModerationNotification) => ({
+          _id: n._id,
+          itemTitle: n.message.split('"')[1] || 'Unknown Item',
+          buyerId: '',
+          buyerName: '',
+          sellerName: '',
+          status: n.title.includes('Accepted') ? 'accepted' : 'rejected',
+          message: n.message,
+          rejectionNote: n.title.includes('Rejected') ? n.message.split('Reason: ')[1] : undefined,
+          read: n.read,
+          createdAt: n.createdAt
+        })), ...buyerBookings];
+        return combined.slice(0, 5);
+      });
       
     } catch (error) {
       console.error('Error fetching notifications:', error);
@@ -122,25 +147,34 @@ export default function Notifications() {
 
   const handleBuyerBookingClick = async (booking: Booking) => {
     setShowDropdown(false);
-    try {
-      const token = localStorage.getItem('token');
-      
-      // Mark booking as read
-      await axios.put(
-        `${API_URL}/api/booking/${booking._id}/read`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      
-      // Update local state
-      setBuyerBookingUpdates(prev => prev.filter(b => b._id !== booking._id));
-      setUnreadCount(prev => Math.max(0, prev - 1));
-      
-      // Navigate to bookings page
-      navigate('/bookings');
-    } catch (error) {
-      console.error('Error handling buyer booking:', error);
+    
+    // If this is a new notification-based booking update, delete the notification
+    if (booking._id && booking._id.length === 24) {
+      try {
+        // Check if this is a notification ID (24 chars) vs booking ID
+        const isNotificationId = !booking.buyerId; // Notification-based bookings won't have buyerId
+        
+        if (isNotificationId) {
+          await axios.delete(`/api/notifications/${booking._id}`);
+        } else {
+          // Old system - mark booking as read
+          const token = localStorage.getItem('token');
+          await axios.put(
+            `${API_URL}/api/booking/${booking._id}/read`,
+            {},
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+        }
+        
+        // Refresh notifications
+        fetchNotifications();
+      } catch (error) {
+        console.error('Error handling buyer booking:', error);
+      }
     }
+    
+    // Navigate to bookings page
+    navigate('/bookings');
   };
 
   const handleModerationNotificationClick = async (notification: ModerationNotification) => {
