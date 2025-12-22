@@ -226,20 +226,26 @@ export const updateBookingStatus = async (req, res) => {
     
     // Handle acceptance
     if (status === 'accepted') {
-      // Mark item as unavailable in PostgreSQL
+      // Mark item as unavailable in MongoDB
       try {
-        const { Item } = await import('../db/postgres.js').then(m => m.default);
+        const Item = (await import('../models/item.mongo.model.js')).default;
         // Extract the actual item ID (booking.itemId could be ObjectId or string)
         const actualItemId = typeof booking.itemId === 'object' ? booking.itemId.toString() : booking.itemId;
         
-        const updateResult = await Item.update(
+        const updateResult = await Item.findByIdAndUpdate(
+          actualItemId,
           { available: false },
-          { where: { id: actualItemId } }
+          { new: true }
         );
         
-        console.log(`✅ Item ${actualItemId} marked as unavailable. Updated rows:`, updateResult[0]);
+        if (updateResult) {
+          console.log(`✅ Item ${actualItemId} marked as unavailable. Title: "${updateResult.title}"`);
+        } else {
+          console.error(`❌ Item ${actualItemId} not found in MongoDB`);
+        }
       } catch (err) {
         console.error('❌ Error updating item availability:', err);
+        console.error('Error details:', err.message);
       }
 
       // Send notification to buyer

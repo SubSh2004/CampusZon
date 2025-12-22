@@ -14,7 +14,6 @@ const itemSchema = new mongoose.Schema({
   userHostel: { type: String, required: true },
   userEmail: { type: String, required: true },
   emailDomain: { type: String, required: true },
-  originalPostgresId: { type: Number, index: true, sparse: true },
   
   // Interest tracking
   interestedUsers: [{

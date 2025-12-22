@@ -155,7 +155,7 @@ export const approveImage = async (req, res) => {
       }
     });
     // Send notification to user
-    await Notification.create({
+    const approveNotification = await Notification.create({
       userId: moderation.userId,
       type: 'ITEM_APPROVED',
       title: 'Item Approved!',
@@ -164,26 +164,11 @@ export const approveImage = async (req, res) => {
       imageUrl: moderation.imageUrl,
       read: false
     });
-    // Send notification to user
-    await Notification.create({
-      userId: moderation.userId,
+    
+    console.log(`✅ Notification created for user ${moderation.userId}:`, {
       type: 'ITEM_APPROVED',
-      title: 'Item Approved!',
-      message: `Your item "${item?.title || 'Unknown'}" has been approved and is now live.`,
       itemId: moderation.itemId,
-      imageUrl: moderation.imageUrl,
-      read: false
-    });
-
-    // Send notification to user
-    await Notification.create({
-      userId: moderation.userId,
-      type: 'ITEM_APPROVED',
-      title: 'Item Approved!',
-      message: `Your item "${item?.title || 'Unknown'}" has been approved and is now live.`,
-      itemId: moderation.itemId,
-      imageUrl: moderation.imageUrl,
-      read: false
+      notificationId: approveNotification._id
     });
 
     res.json({
@@ -283,7 +268,7 @@ export const rejectImage = async (req, res) => {
     });
 
     // Send notification to user
-    await Notification.create({
+    const rejectNotification = await Notification.create({
       userId: moderation.userId,
       type: 'ITEM_REJECTED',
       title: 'Item Rejected',
@@ -292,6 +277,13 @@ export const rejectImage = async (req, res) => {
       imageUrl: moderation.imageUrl,
       read: false,
       metadata: new Map([['reasons', reasons]])
+    });
+    
+    console.log(`🚫 Notification created for user ${moderation.userId}:`, {
+      type: 'ITEM_REJECTED',
+      itemId: moderation.itemId,
+      notificationId: rejectNotification._id,
+      reasons
     });
 
     res.json({

@@ -661,7 +661,7 @@ export const unlockItem = async (req, res) => {
     const payment = new Payment({
       userId,
       itemId,
-      type: 'unlock_standard',
+      type: 'unlock_basic',
       amount: 11,
       razorpayOrderId: order.id,
       status: 'pending',
