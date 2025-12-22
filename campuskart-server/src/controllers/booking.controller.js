@@ -274,7 +274,8 @@ export const updateBookingStatus = async (req, res) => {
 
         // Send real-time notification
         try {
-          sendToUser(booking.buyerId.toString(), 'newPrivateMessage', acceptMessage);
+          const buyerIdStr = booking.buyerId._id ? booking.buyerId._id.toString() : booking.buyerId.toString();
+          sendToUser(buyerIdStr, 'newPrivateMessage', acceptMessage);
         } catch (err) {
           console.warn('Failed to send real-time acceptance notification:', err);
         }
@@ -288,8 +289,10 @@ export const updateBookingStatus = async (req, res) => {
           ? booking.itemId._id 
           : booking.itemId;
         
+        const buyerIdStr = booking.buyerId._id ? booking.buyerId._id.toString() : booking.buyerId.toString();
+        
         const notification = await Notification.create({
-          userId: booking.buyerId.toString(),
+          userId: buyerIdStr,
           type: 'BOOKING',
           title: '🎉 Booking Accepted!',
           message: `Your booking request for "${booking.itemTitle}" has been accepted by the seller. Check your chats to coordinate!`,
@@ -301,7 +304,7 @@ export const updateBookingStatus = async (req, res) => {
 
         // Send real-time notification update
         try {
-          sendToUser(booking.buyerId.toString(), 'newNotification', notification);
+          sendToUser(buyerIdStr, 'newNotification', notification);
         } catch (err) {
           console.warn('Failed to send real-time notification:', err);
         }
@@ -331,7 +334,8 @@ export const updateBookingStatus = async (req, res) => {
       });
 
       try {
-        sendToUser(booking.buyerId.toString(), 'newPrivateMessage', rejectMessage);
+        const buyerIdStr = booking.buyerId._id ? booking.buyerId._id.toString() : booking.buyerId.toString();
+        sendToUser(buyerIdStr, 'newPrivateMessage', rejectMessage);
       } catch (err) {
         console.warn('Failed to send real-time rejection notification:', err);
       }
@@ -342,8 +346,10 @@ export const updateBookingStatus = async (req, res) => {
           ? booking.itemId._id 
           : booking.itemId;
         
+        const buyerIdStr = booking.buyerId._id ? booking.buyerId._id.toString() : booking.buyerId.toString();
+        
         const notification = await Notification.create({
-          userId: booking.buyerId.toString(),
+          userId: buyerIdStr,
           type: 'BOOKING',
           title: '❌ Booking Rejected',
           message: `Your booking request for "${booking.itemTitle}" was rejected. Reason: ${rejectionNote || 'No reason provided'}`,
@@ -355,7 +361,7 @@ export const updateBookingStatus = async (req, res) => {
 
         // Send real-time notification update
         try {
-          sendToUser(booking.buyerId.toString(), 'newNotification', notification);
+          sendToUser(buyerIdStr, 'newNotification', notification);
         } catch (err) {
           console.warn('Failed to send real-time rejection notification:', err);
         }
@@ -418,7 +424,8 @@ export const deleteBooking = async (req, res) => {
     }
 
     // Only buyer can cancel their own booking
-    if (booking.buyerId.toString() !== userId) {
+    const buyerIdStr = booking.buyerId._id ? booking.buyerId._id.toString() : booking.buyerId.toString();
+    if (buyerIdStr !== userId) {
       return res.status(403).json({ success: false, message: 'Unauthorized' });
     }
 
