@@ -5,7 +5,7 @@ import { API_URL } from '../config/api';
 
 interface Booking {
   _id: string;
-  itemId: {
+  itemId: string | {
     _id: string;
     title: string;
     price: number;
@@ -13,13 +13,18 @@ interface Booking {
     imageUrls?: string[];
     category: string;
   };
-  buyerId: {
+  itemTitle?: string;
+  itemPrice?: number;
+  buyerId: string | {
     _id: string;
     username: string;
     email: string;
     phoneNumber: string;
     hostelName: string;
   };
+  buyerName?: string;
+  buyerEmail?: string;
+  buyerPhone?: string;
   sellerId: string;
   message: string;
   status: string;
@@ -131,23 +136,32 @@ export default function Bookings() {
                 </div>
               ) : (
                 <div className="grid gap-4">
-                  {itemsBooked.map((booking) => (
+                  {itemsBooked.map((booking) => {
+                    const itemId = typeof booking.itemId === 'object' ? booking.itemId._id : booking.itemId;
+                    const itemTitle = typeof booking.itemId === 'object' ? booking.itemId.title : booking.itemTitle || 'Item';
+                    const itemPrice = typeof booking.itemId === 'object' ? booking.itemId.price : booking.itemPrice || 0;
+                    const itemCategory = typeof booking.itemId === 'object' ? booking.itemId.category : 'General';
+                    const itemImage = typeof booking.itemId === 'object' 
+                      ? ((booking.itemId.imageUrls && booking.itemId.imageUrls[0]) || booking.itemId.imageUrl)
+                      : '/placeholder.png';
+
+                    return (
                     <div key={booking._id} className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow hover:shadow-lg transition-shadow">
                       <div className="flex gap-4">
-                        <Link to={`/item/${booking.itemId._id}`} className="flex-shrink-0">
+                        <Link to={`/item/${itemId}`} className="flex-shrink-0">
                           <img
-                            src={(booking.itemId.imageUrls && booking.itemId.imageUrls[0]) || booking.itemId.imageUrl}
-                            alt={booking.itemId.title}
+                            src={itemImage}
+                            alt={itemTitle}
                             className="w-24 h-24 object-cover rounded-lg"
                           />
                         </Link>
                         <div className="flex-1">
-                          <Link to={`/item/${booking.itemId._id}`} className="text-lg font-semibold text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400">
-                            {booking.itemId.title}
+                          <Link to={`/item/${itemId}`} className="text-lg font-semibold text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400">
+                            {itemTitle}
                           </Link>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">{booking.itemId.category}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">{itemCategory}</p>
                           <p className="text-xl font-bold text-indigo-600 dark:text-indigo-400 mt-1">
-                            ₹{booking.itemId.price}
+                            ₹{itemPrice}
                           </p>
                           {booking.message && (
                             <p className="text-sm text-gray-600 dark:text-gray-300 mt-2 italic">
@@ -165,7 +179,8 @@ export default function Bookings() {
                         </div>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -183,29 +198,42 @@ export default function Bookings() {
                 </div>
               ) : (
                 <div className="grid gap-4">
-                  {bookingRequests.map((booking) => (
+                  {bookingRequests.map((booking) => {
+                    const itemId = typeof booking.itemId === 'object' ? booking.itemId._id : booking.itemId;
+                    const itemTitle = typeof booking.itemId === 'object' ? booking.itemId.title : booking.itemTitle || 'Item';
+                    const itemCategory = typeof booking.itemId === 'object' ? booking.itemId.category : 'General';
+                    const itemImage = typeof booking.itemId === 'object' 
+                      ? ((booking.itemId.imageUrls && booking.itemId.imageUrls[0]) || booking.itemId.imageUrl)
+                      : '/placeholder.png';
+                    
+                    const buyerUsername = typeof booking.buyerId === 'object' ? booking.buyerId.username : booking.buyerName || 'Unknown';
+                    const buyerEmail = typeof booking.buyerId === 'object' ? booking.buyerId.email : booking.buyerEmail || 'N/A';
+                    const buyerPhone = typeof booking.buyerId === 'object' ? booking.buyerId.phoneNumber : booking.buyerPhone || 'N/A';
+                    const buyerHostel = typeof booking.buyerId === 'object' ? booking.buyerId.hostelName : 'N/A';
+
+                    return (
                     <div key={booking._id} className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow hover:shadow-lg transition-shadow">
                       <div className="flex gap-4">
-                        <Link to={`/item/${booking.itemId._id}`} className="flex-shrink-0">
+                        <Link to={`/item/${itemId}`} className="flex-shrink-0">
                           <img
-                            src={(booking.itemId.imageUrls && booking.itemId.imageUrls[0]) || booking.itemId.imageUrl}
-                            alt={booking.itemId.title}
+                            src={itemImage}
+                            alt={itemTitle}
                             className="w-24 h-24 object-cover rounded-lg"
                           />
                         </Link>
                         <div className="flex-1">
-                          <Link to={`/item/${booking.itemId._id}`} className="text-lg font-semibold text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400">
-                            {booking.itemId.title}
+                          <Link to={`/item/${itemId}`} className="text-lg font-semibold text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400">
+                            {itemTitle}
                           </Link>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">{booking.itemId.category}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">{itemCategory}</p>
                           
                           <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                             <p className="text-sm font-semibold text-gray-900 dark:text-white">Interested Buyer:</p>
                             <div className="mt-2 space-y-1 text-sm text-gray-700 dark:text-gray-300">
-                              <p>👤 <strong>{booking.buyerId.username}</strong></p>
-                              <p>📧 {booking.buyerId.email}</p>
-                              <p>📞 {booking.buyerId.phoneNumber}</p>
-                              <p>🏠 {booking.buyerId.hostelName}</p>
+                              <p>👤 <strong>{buyerUsername}</strong></p>
+                              <p>📧 {buyerEmail}</p>
+                              <p>📞 {buyerPhone}</p>
+                              <p>🏠 {buyerHostel}</p>
                             </div>
                             {booking.message && (
                               <p className="text-sm text-gray-600 dark:text-gray-300 mt-2 italic border-t border-blue-200 dark:border-blue-800 pt-2">
@@ -220,7 +248,8 @@ export default function Bookings() {
                         </div>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
