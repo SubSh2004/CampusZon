@@ -18,6 +18,7 @@ export default function ReportButton({ itemId, itemTitle }: ReportButtonProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     
     if (!reason) {
       setMessage('Please select a reason');
@@ -50,6 +51,17 @@ export default function ReportButton({ itemId, itemTitle }: ReportButtonProps) {
     }
   };
 
+  const handleModalClose = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowModal(false);
+  };
+
+  const handleModalContentClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
   if (!user.isLoggedIn) {
     return null;
   }
@@ -72,8 +84,16 @@ export default function ReportButton({ itemId, itemTitle }: ReportButtonProps) {
       </button>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center p-4 z-50" onClick={() => setShowModal(false)}>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center p-4 z-50" 
+          onClick={handleModalClose}
+          onMouseDown={(e) => e.stopPropagation()}
+        >
+          <div 
+            className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6" 
+            onClick={handleModalContentClick}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Report Item</h2>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
               You're reporting: <strong>{itemTitle}</strong>
@@ -89,7 +109,7 @@ export default function ReportButton({ itemId, itemTitle }: ReportButtonProps) {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} onClick={handleModalContentClick} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Reason for reporting *
@@ -100,6 +120,7 @@ export default function ReportButton({ itemId, itemTitle }: ReportButtonProps) {
                   onChange={(e) => setReason(e.target.value)}
                   onClick={(e) => e.stopPropagation()}
                   onMouseDown={(e) => e.stopPropagation()}
+                  onFocus={(e) => e.stopPropagation()}
                   className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 >
                   <option value="">Select a reason</option>
@@ -122,6 +143,7 @@ export default function ReportButton({ itemId, itemTitle }: ReportButtonProps) {
                   onChange={(e) => setDescription(e.target.value)}
                   onClick={(e) => e.stopPropagation()}
                   onMouseDown={(e) => e.stopPropagation()}
+                  onFocus={(e) => e.stopPropagation()}
                   placeholder="Provide more details about why you're reporting this item..."
                   className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
                 />
@@ -131,13 +153,18 @@ export default function ReportButton({ itemId, itemTitle }: ReportButtonProps) {
                 <button
                   type="submit"
                   disabled={loading}
+                  onClick={(e) => e.stopPropagation()}
                   className="flex-1 bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition font-medium disabled:opacity-50"
                 >
                   {loading ? 'Submitting...' : 'Submit Report'}
                 </button>
                 <button
                   type="button"
-                  onClick={() => setShowModal(false)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setShowModal(false);
+                  }}
                   className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-2 px-4 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition font-medium"
                 >
                   Cancel

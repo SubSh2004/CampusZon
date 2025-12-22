@@ -257,7 +257,17 @@ export default function ProductCard({ item }: ProductCardProps) {
 
             {/* Report Button */}
             {!isOwnItem && (
-              <div className="mt-2 flex justify-end" onClick={(e) => e.preventDefault()}>
+              <div 
+                className="mt-2 flex justify-end" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+              >
                 <ReportButton itemId={item.id} itemTitle={item.title} />
               </div>
             )}
