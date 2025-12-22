@@ -165,6 +165,32 @@ export default function Notifications() {
     }
   };
 
+  const handleDeleteNotification = async (e: React.MouseEvent, notificationId: string) => {
+    e.stopPropagation(); // Prevent navigation when clicking delete
+    
+    try {
+      await axios.delete(`/api/notifications/${notificationId}`);
+      // Refresh notifications
+      fetchNotifications();
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+    }
+  };
+
+  const handleClearAllNotifications = async () => {
+    if (!confirm('Are you sure you want to clear all notifications?')) {
+      return;
+    }
+    
+    try {
+      await axios.delete('/api/notifications/clear-all/all');
+      // Refresh notifications
+      fetchNotifications();
+    } catch (error) {
+      console.error('Error clearing notifications:', error);
+    }
+  };
+
   const getNotificationColor = (type: string) => {
     switch (type) {
       case 'ITEM_KEPT_ACTIVE':
@@ -219,11 +245,22 @@ export default function Notifications() {
                 <h3 className={`font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
                   Notifications
                 </h3>
-                {unreadCount > 0 && (
-                  <span className="text-xs bg-indigo-600 text-white px-2 py-1 rounded-full">
-                    {unreadCount} new
-                  </span>
-                )}
+                <div className="flex items-center gap-2">
+                  {unreadCount > 0 && (
+                    <span className="text-xs bg-indigo-600 text-white px-2 py-1 rounded-full">
+                      {unreadCount} new
+                    </span>
+                  )}
+                  {moderationNotifications.length > 0 && (
+                    <button
+                      onClick={handleClearAllNotifications}
+                      className="text-xs text-red-600 dark:text-red-400 hover:underline"
+                      title="Clear all notifications"
+                    >
+                      Clear All
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -373,7 +410,7 @@ export default function Notifications() {
                           : theme === 'dark' 
                             ? 'hover:bg-gray-700' 
                             : 'hover:bg-white'
-                      } transition-colors mb-2`}
+                      } transition-colors mb-2 relative group`}
                     >
                       <div className="flex items-start gap-2">
                         {notification.imageUrl && (
@@ -404,6 +441,19 @@ export default function Notifications() {
                             )}
                           </div>
                         </div>
+                        <button
+                          onClick={(e) => handleDeleteNotification(e, notification._id)}
+                          className={`flex-shrink-0 p-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity ${
+                            theme === 'dark' 
+                              ? 'hover:bg-red-900/30 text-red-400' 
+                              : 'hover:bg-red-100 text-red-600'
+                          }`}
+                          title="Delete notification"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
                       </div>
                     </button>
                   ))}

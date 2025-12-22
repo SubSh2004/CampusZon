@@ -109,4 +109,70 @@ router.put('/read-all', authenticate, async (req, res) => {
   }
 });
 
+/**
+ * Delete a single notification
+ * @route DELETE /api/notifications/:id
+ * @access Private
+ */
+router.delete('/:id', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user._id.toString();
+
+    const notification = await Notification.findOneAndDelete({
+      _id: id,
+      userId
+    });
+
+    if (!notification) {
+      return res.status(404).json({
+        success: false,
+        message: 'Notification not found'
+      });
+    }
+
+    console.log(`🗑️ Deleted notification ${id} for user ${userId}`);
+
+    res.json({
+      success: true,
+      message: 'Notification deleted'
+    });
+  } catch (error) {
+    console.error('Error deleting notification:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete notification',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * Clear all notifications
+ * @route DELETE /api/notifications/clear-all
+ * @access Private
+ */
+router.delete('/clear-all/all', authenticate, async (req, res) => {
+  try {
+    const userId = req.user._id.toString();
+
+    const result = await Notification.deleteMany({ userId });
+
+    console.log(`🗑️ Cleared ${result.deletedCount} notifications for user ${userId}`);
+
+    res.json({
+      success: true,
+      message: `Cleared ${result.deletedCount} notifications`,
+      deletedCount: result.deletedCount
+    });
+  } catch (error) {
+    console.error('Error clearing notifications:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to clear notifications',
+      error: error.message
+    });
+  }
+});
+
 export default router;
