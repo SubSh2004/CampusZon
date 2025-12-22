@@ -257,10 +257,6 @@ export const updateBookingStatus = async (req, res) => {
         console.error('❌ Error updating item availability:', err);
         console.error('Error details:', err.message);
       }
-      } catch (err) {
-        console.error('❌ Error updating item availability:', err);
-        console.error('Error details:', err.message);
-      }
 
       // Send chat message to buyer
       try {
