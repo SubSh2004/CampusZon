@@ -352,7 +352,12 @@ export const verifyPayment = async (req, res) => {
 
     // Create unlock
     const item = await Item.findById(payment.itemId);
-    const tier = payment.metadata.tier;
+    let tier = payment.metadata.tier;
+    
+    // Handle legacy 'standard' tier (convert to 'basic')
+    if (tier === 'standard') {
+      tier = 'basic';
+    }
 
     // If upgrading from basic to premium, deactivate basic unlock
     if (tier === 'premium') {
@@ -566,7 +571,7 @@ export const unlockItem = async (req, res) => {
         userId,
         itemId,
         sellerId: item.userId,
-        tier: 'standard',
+        tier: 'basic',
         amount: 0,
         isFreeCredit: true,
         messageLimit: 999999 // Unlimited messages
@@ -652,7 +657,7 @@ export const unlockItem = async (req, res) => {
       notes: {
         itemId: itemId.toString(),
         userId,
-        tier: 'standard',
+        tier: 'basic',
         itemTitle: item.title
       }
     });
@@ -666,7 +671,7 @@ export const unlockItem = async (req, res) => {
       razorpayOrderId: order.id,
       status: 'pending',
       metadata: {
-        tier: 'standard',
+        tier: 'basic',
         sellerName: item.userName,
         itemTitle: item.title
       }

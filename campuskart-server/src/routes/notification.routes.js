@@ -11,7 +11,7 @@ const router = express.Router();
  */
 router.get('/', authenticate, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id.toString();
     const { limit = 20, unreadOnly = false } = req.query;
     
     console.log(`🔔 Fetching notifications for userId: ${userId}`);
