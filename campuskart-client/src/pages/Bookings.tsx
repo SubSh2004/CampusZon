@@ -36,6 +36,10 @@ export default function Bookings() {
   const [itemsBooked, setItemsBooked] = useState<Booking[]>([]);
   const [bookingRequests, setBookingRequests] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [rejectModalOpen, setRejectModalOpen] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [rejectionNote, setRejectionNote] = useState('');
+  const [processingBookingId, setProcessingBookingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchBookings();
@@ -70,6 +74,60 @@ export default function Bookings() {
       month: 'short',
       year: 'numeric'
     });
+  };
+
+  const handleAcceptBooking = async (bookingId: string) => {
+    try {
+      setProcessingBookingId(bookingId);
+      const token = localStorage.getItem('token');
+      
+      await axios.put(
+        `${API_URL}/api/booking/${bookingId}/status`,
+        { status: 'accepted' },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Refresh bookings
+      await fetchBookings();
+      alert('Booking accepted! Item marked as unavailable.');
+    } catch (error) {
+      console.error('Error accepting booking:', error);
+      alert('Failed to accept booking. Please try again.');
+    } finally {
+      setProcessingBookingId(null);
+    }
+  };
+
+  const handleRejectBooking = (booking: Booking) => {
+    setSelectedBooking(booking);
+    setRejectModalOpen(true);
+  };
+
+  const confirmRejectBooking = async () => {
+    if (!selectedBooking) return;
+
+    try {
+      setProcessingBookingId(selectedBooking._id);
+      const token = localStorage.getItem('token');
+      
+      await axios.put(
+        `${API_URL}/api/booking/${selectedBooking._id}/status`,
+        { status: 'rejected', rejectionNote },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Refresh bookings
+      await fetchBookings();
+      setRejectModalOpen(false);
+      setRejectionNote('');
+      setSelectedBooking(null);
+      alert('Booking rejected and buyer notified.');
+    } catch (error) {
+      console.error('Error rejecting booking:', error);
+      alert('Failed to reject booking. Please try again.');
+    } finally {
+      setProcessingBookingId(null);
+    }
   };
 
   if (loading) {
@@ -245,6 +303,31 @@ export default function Bookings() {
                           <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
                             Requested on {formatDate(booking.createdAt)}
                           </p>
+
+                          {/* Action Buttons */}
+                          {booking.status === 'pending' && (
+                            <div className="flex gap-2 mt-3">
+                              <button
+                                onClick={() => handleAcceptBooking(booking._id)}
+                                disabled={processingBookingId === booking._id}
+                                className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                {processingBookingId === booking._id ? '⏳ Processing...' : '✅ Accept'}
+                              </button>
+                              <button
+                                onClick={() => handleRejectBooking(booking)}
+                                disabled={processingBookingId === booking._id}
+                                className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                ❌ Reject
+                              </button>
+                            </div>
+                          )}
+                          {booking.status === 'accepted' && (
+                            <div className="mt-3 px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-center font-semibold rounded-lg">
+                              ✅ Accepted
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -255,6 +338,44 @@ export default function Bookings() {
             </div>
           )}
         </div>
+
+        {/* Rejection Modal */}
+        {rejectModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Reject Booking Request</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                Please provide a reason for rejecting this booking. The buyer will be notified.
+              </p>
+              <textarea
+                value={rejectionNote}
+                onChange={(e) => setRejectionNote(e.target.value)}
+                placeholder="Enter rejection reason..."
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
+                rows={4}
+              />
+              <div className="flex gap-3 mt-4">
+                <button
+                  onClick={confirmRejectBooking}
+                  disabled={!rejectionNote.trim()}
+                  className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Confirm Rejection
+                </button>
+                <button
+                  onClick={() => {
+                    setRejectModalOpen(false);
+                    setRejectionNote('');
+                    setSelectedBooking(null);
+                  }}
+                  className="flex-1 px-4 py-2 bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-900 dark:text-white font-semibold rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
