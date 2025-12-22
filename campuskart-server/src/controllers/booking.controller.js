@@ -230,8 +230,12 @@ export const updateBookingStatus = async (req, res) => {
       // Mark item as unavailable in MongoDB
       try {
         const Item = (await import('../models/item.mongo.model.js')).default;
-        // Extract the actual item ID (booking.itemId could be ObjectId or string)
-        const actualItemId = typeof booking.itemId === 'object' ? booking.itemId.toString() : booking.itemId;
+        // Extract the actual item ID - handle populated objects correctly
+        const actualItemId = booking.itemId._id 
+          ? booking.itemId._id.toString() 
+          : booking.itemId.toString();
+        
+        console.log(`🔍 Attempting to mark item as unavailable. ItemId:`, actualItemId);
         
         const updateResult = await Item.findByIdAndUpdate(
           actualItemId,
@@ -280,12 +284,16 @@ export const updateBookingStatus = async (req, res) => {
 
       // Create notification for buyer
       try {
+        const notificationItemId = booking.itemId._id 
+          ? booking.itemId._id 
+          : booking.itemId;
+        
         const notification = await Notification.create({
           userId: booking.buyerId.toString(),
           type: 'BOOKING',
           title: '🎉 Booking Accepted!',
           message: `Your booking request for "${booking.itemTitle}" has been accepted by the seller. Check your chats to coordinate!`,
-          itemId: booking.itemId,
+          itemId: notificationItemId,
           read: false
         });
 
@@ -330,12 +338,16 @@ export const updateBookingStatus = async (req, res) => {
 
       // Create notification for buyer
       try {
+        const notificationItemId = booking.itemId._id 
+          ? booking.itemId._id 
+          : booking.itemId;
+        
         const notification = await Notification.create({
           userId: booking.buyerId.toString(),
           type: 'BOOKING',
           title: '❌ Booking Rejected',
           message: `Your booking request for "${booking.itemTitle}" was rejected. Reason: ${rejectionNote || 'No reason provided'}`,
-          itemId: booking.itemId,
+          itemId: notificationItemId,
           read: false
         });
 
