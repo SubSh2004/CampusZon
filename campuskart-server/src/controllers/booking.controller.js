@@ -345,19 +345,19 @@ export const deleteBooking = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Unauthorized' });
     }
 
-    // Only allow cancellation of pending bookings
-    if (booking.status !== 'pending') {
+    // Allow cancellation of pending and rejected bookings only
+    if (booking.status !== 'pending' && booking.status !== 'rejected') {
       return res.status(400).json({ 
         success: false, 
-        message: `Cannot cancel ${booking.status} booking` 
+        message: `Cannot delete ${booking.status} booking` 
       });
     }
 
     await Booking.findByIdAndDelete(bookingId);
 
-    res.json({ success: true, message: 'Booking cancelled successfully' });
+    res.json({ success: true, message: 'Booking deleted successfully' });
   } catch (error) {
     console.error('Error deleting booking:', error);
-    res.status(500).json({ success: false, message: 'Failed to cancel booking' });
+    res.status(500).json({ success: false, message: 'Failed to delete booking' });
   }
 };
