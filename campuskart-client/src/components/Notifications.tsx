@@ -81,12 +81,28 @@ export default function Notifications() {
       const buyerBookings = (buyerBookingsResponse.data.bookings || [])
         .filter((booking: Booking) => !booking.read && (booking.status === 'accepted' || booking.status === 'rejected'))
         .slice(0, 3);
-      setBuyerBookingUpdates(buyerBookings);
       
-      const buyerUpdatesCount = buyerBookings.length;
+      // Combine new notification system with old booking system
+      const combinedBookingUpdates = [
+        ...bookingNotifications.map((n: ModerationNotification) => ({
+          _id: n._id,
+          itemTitle: n.message.split('"')[1] || 'Unknown Item',
+          buyerId: '',
+          buyerName: '',
+          sellerName: 'Seller', // Generic name for notification-based bookings
+          status: n.title.includes('Accepted') ? 'accepted' : 'rejected',
+          message: n.message,
+          rejectionNote: n.title.includes('Rejected') ? n.message.split('Reason: ')[1] : undefined,
+          read: n.read,
+          createdAt: n.createdAt
+        })),
+        ...buyerBookings
+      ].slice(0, 5);
+      
+      setBuyerBookingUpdates(combinedBookingUpdates);
       
       setUnreadBookingsCount(bookCount);
-      setUnreadCount(bookCount + modCount + buyerUpdatesCount + bookingNotifCount);
+      setUnreadCount(bookCount + modCount + bookingNotifCount);
       
       // Get recent unread bookings (for seller - incoming requests)
       const unreadBookings = (sellerBookingsResponse.data.bookings || [])
@@ -96,24 +112,6 @@ export default function Notifications() {
       
       // Set moderation notifications (excluding BOOKING type - those are shown separately)
       setModerationNotifications(moderationOnly);
-      
-      // Set booking notifications
-      setBuyerBookingUpdates(prev => {
-        // Combine old booking system with new notification system
-        const combined = [...bookingNotifications.map((n: ModerationNotification) => ({
-          _id: n._id,
-          itemTitle: n.message.split('"')[1] || 'Unknown Item',
-          buyerId: '',
-          buyerName: '',
-          sellerName: '',
-          status: n.title.includes('Accepted') ? 'accepted' : 'rejected',
-          message: n.message,
-          rejectionNote: n.title.includes('Rejected') ? n.message.split('Reason: ')[1] : undefined,
-          read: n.read,
-          createdAt: n.createdAt
-        })), ...buyerBookings];
-        return combined.slice(0, 5);
-      });
       
     } catch (error) {
       console.error('Error fetching notifications:', error);
@@ -403,9 +401,11 @@ export default function Notifications() {
                           <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} truncate`}>
                             Item: {booking.itemTitle}
                           </p>
-                          <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                            Seller: {booking.sellerName}
-                          </p>
+                          {booking.sellerName && booking.sellerName !== 'Seller' && (
+                            <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                              Seller: {booking.sellerName}
+                            </p>
+                          )}
                           {booking.status === 'rejected' && booking.rejectionNote && (
                             <p className={`text-xs ${theme === 'dark' ? 'text-red-400' : 'text-red-600'} mt-1 italic`}>
                               Reason: {booking.rejectionNote}
@@ -495,7 +495,7 @@ export default function Notifications() {
               )}
 
               {/* Empty State */}
-              {recentBookings.length === 0 && moderationNotifications.length === 0 && (
+              {recentBookings.length === 0 && buyerBookingUpdates.length === 0 && moderationNotifications.length === 0 && (
                 <div className="p-8 text-center">
                   <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                     No notifications
