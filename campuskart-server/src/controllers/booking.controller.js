@@ -327,3 +327,37 @@ export const getUnreadBookingCount = async (req, res) => {
     res.status(500).json({ success: false, message: 'Failed to fetch unread count' });
   }
 };
+
+// Delete/Cancel booking (buyer only)
+export const deleteBooking = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const userId = req.user._id.toString();
+
+    const booking = await Booking.findById(bookingId);
+
+    if (!booking) {
+      return res.status(404).json({ success: false, message: 'Booking not found' });
+    }
+
+    // Only buyer can cancel their own booking
+    if (booking.buyerId.toString() !== userId) {
+      return res.status(403).json({ success: false, message: 'Unauthorized' });
+    }
+
+    // Only allow cancellation of pending bookings
+    if (booking.status !== 'pending') {
+      return res.status(400).json({ 
+        success: false, 
+        message: `Cannot cancel ${booking.status} booking` 
+      });
+    }
+
+    await Booking.findByIdAndDelete(bookingId);
+
+    res.json({ success: true, message: 'Booking cancelled successfully' });
+  } catch (error) {
+    console.error('Error deleting booking:', error);
+    res.status(500).json({ success: false, message: 'Failed to cancel booking' });
+  }
+};

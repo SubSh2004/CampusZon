@@ -5,7 +5,8 @@ import {
   getBuyerBookings,
   updateBookingStatus,
   markBookingAsRead,
-  getUnreadBookingCount
+  getUnreadBookingCount,
+  deleteBooking
 } from '../controllers/booking.controller.js';
 import { authenticate } from '../middleware/auth.js';
 
@@ -21,6 +22,7 @@ router.get('/buyer', getBuyerBookings);
 router.get('/my-bookings', getBuyerBookings);
 router.put('/:bookingId/status', updateBookingStatus);
 router.put('/:bookingId/read', markBookingAsRead);
+router.delete('/:bookingId', deleteBooking);
 router.get('/unread-count', getUnreadBookingCount);
 
 export default router;
