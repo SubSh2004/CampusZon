@@ -34,6 +34,7 @@ export default function ProductCard({ item }: ProductCardProps) {
   const [bookingMessage, setBookingMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [isUnlocked, setIsUnlocked] = useState(false);
 
   // Use imageUrl directly (it's either a full ImgBB URL or null)
   const imageUrl = (item.imageUrls && item.imageUrls.length > 0 ? item.imageUrls[0] : item.imageUrl) || '/placeholder.jpg';
@@ -41,6 +42,25 @@ export default function ProductCard({ item }: ProductCardProps) {
   
   // Check if current user uploaded this item
   const isOwnItem = currentUser?.email === item.userEmail;
+
+  // Check if item is unlocked
+  useEffect(() => {
+    const checkUnlockStatus = async () => {
+      if (!currentUser?.isLoggedIn || isOwnItem) return;
+      
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`${API_URL}/api/unlock/items/${item.id}/status`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setIsUnlocked(response.data.unlocked);
+      } catch (error) {
+        console.error('Error checking unlock status:', error);
+      }
+    };
+
+    checkUnlockStatus();
+  }, [item.id, currentUser, isOwnItem]);
 
   // Initialize socket connection
   useEffect(() => {
@@ -243,17 +263,34 @@ export default function ProductCard({ item }: ProductCardProps) {
 
             {/* Action Buttons with Gradients */}
             <div className="flex gap-1.5 sm:gap-2 mt-3 sm:mt-4">
-              <Link
-                to={`/item/${item.id}`}
-                className="relative flex-1 group/btn bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 active:from-indigo-700 active:to-purple-700 text-white text-xs sm:text-sm font-bold py-2 px-2 sm:px-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-1 overflow-hidden shadow-md hover:shadow-lg"
-              >
-                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
-                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-                <span className="relative z-10">View Details</span>
-              </Link>
+              {isUnlocked && !isOwnItem ? (
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setShowBookingModal(true);
+                  }}
+                  className="relative flex-1 group/btn bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 active:from-green-700 active:to-emerald-700 text-white text-xs sm:text-sm font-bold py-2 px-2 sm:px-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-1 overflow-hidden shadow-md hover:shadow-lg"
+                >
+                  <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
+                  <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="relative z-10">Book Item</span>
+                </button>
+              ) : (
+                <Link
+                  to={`/item/${item.id}`}
+                  className="relative flex-1 group/btn bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 active:from-indigo-700 active:to-purple-700 text-white text-xs sm:text-sm font-bold py-2 px-2 sm:px-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-1 overflow-hidden shadow-md hover:shadow-lg"
+                >
+                  <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
+                  <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  <span className="relative z-10">View Details</span>
+                </Link>
+              )}
             </div>
 
             {/* Report Button */}

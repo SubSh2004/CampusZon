@@ -415,12 +415,20 @@ export default function ItemDetail() {
                 {/* Action Buttons */}
                 <div className="mt-6 space-y-3">
                   {unlocked ? (
-                    <a
-                      href={`tel:${sellerInfo?.phone || item.userPhone}`}
-                      className="w-full block text-center bg-green-600 dark:bg-green-700 text-white py-3 px-6 rounded-md hover:bg-green-700 dark:hover:bg-green-600 transition font-medium"
-                    >
-                      📞 Call Seller
-                    </a>
+                    <>
+                      <button
+                        onClick={() => setShowBookingModal(true)}
+                        className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-3 px-6 rounded-md transition font-semibold"
+                      >
+                        ✅ Book This Item
+                      </button>
+                      <a
+                        href={`tel:${sellerInfo?.phone || item.userPhone}`}
+                        className="w-full block text-center bg-blue-600 dark:bg-blue-700 text-white py-3 px-6 rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 transition font-medium"
+                      >
+                        📞 Call Seller
+                      </a>
+                    </>
                   ) : (
                     <button
                       onClick={() => setShowUnlockModal(true)}

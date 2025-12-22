@@ -167,6 +167,15 @@ export default function Home() {
                   </svg>
                   Add Item
                 </Link>
+                <Link
+                  to="/bookings"
+                  className="flex items-center gap-1 bg-green-600 dark:bg-green-500 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-green-700 dark:hover:bg-green-600 transition font-medium text-sm whitespace-nowrap"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                  Bookings
+                </Link>
                 <button
                   onClick={logout}
                   className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors text-red-700 dark:text-red-400 text-sm font-medium whitespace-nowrap ml-auto"

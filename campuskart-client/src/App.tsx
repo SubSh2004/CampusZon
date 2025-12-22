@@ -12,6 +12,7 @@ import ForgotPassword from './pages/ForgotPassword'
 import Profile from './pages/Profile'
 import OAuthCallback from './pages/OAuthCallback'
 import ModerationDashboard from './pages/ModerationDashboard'
+import Bookings from './pages/Bookings'
 
 export default function App() {
   const setUser = useSetRecoilState(userAtom);
@@ -93,6 +94,7 @@ export default function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/add-item" element={<AddItem />} />
         <Route path="/item/:id" element={<ItemDetail />} />
+        <Route path="/bookings" element={<Bookings />} />
         <Route path="/oauth-callback" element={<OAuthCallback />} />
         <Route path="/admin/moderation" element={<ModerationDashboard />} />
       </Routes>
