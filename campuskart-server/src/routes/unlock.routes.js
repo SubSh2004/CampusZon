@@ -5,6 +5,7 @@ import {
   checkUnlockStatus,
   unlockBasic,
   unlockPremium,
+  unlockItem,
   verifyPayment,
   getInterestedBuyers,
   getUserUnlocks,
@@ -22,10 +23,11 @@ router.post('/items/:itemId/interest', expressInterest);
 // Check if user has unlocked an item
 router.get('/items/:itemId/status', checkUnlockStatus);
 
-// Unlock basic tier (₹10 or free credit)
-router.post('/items/:itemId/unlock/basic', unlockBasic);
+// NEW: Unified unlock endpoint (₹11 single plan)
+router.post('/items/:itemId/unlock', unlockItem);
 
-// Unlock premium tier (₹25)
+// Legacy routes (kept for backwards compatibility)
+router.post('/items/:itemId/unlock/basic', unlockBasic);
 router.post('/items/:itemId/unlock/premium', unlockPremium);
 
 // Verify payment after Razorpay checkout

@@ -531,3 +531,158 @@ export const incrementMessageCount = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+// NEW: Unified unlock endpoint (₹11 - single tier with full access)
+export const unlockItem = async (req, res) => {
+  try {
+    const { itemId } = req.params;
+    const { useFreeCredit } = req.body;
+    const userId = req.user.id;
+
+    // Check if already unlocked
+    const existingUnlock = await Unlock.findOne({ userId, itemId, active: true });
+    if (existingUnlock) {
+      return res.status(400).json({ message: 'Item already unlocked' });
+    }
+
+    const item = await Item.findById(itemId);
+    if (!item) {
+      return res.status(404).json({ message: 'Item not found' });
+    }
+
+    // Don't allow unlocking own items
+    if (item.userId === userId) {
+      return res.status(400).json({ message: 'Cannot unlock your own item' });
+    }
+
+    const user = await User.findById(userId);
+
+    // Use free credit if requested and available
+    if (useFreeCredit && user.freeUnlockCredits > 0) {
+      // Get seller info
+      const seller = await User.findById(item.userId);
+
+      const unlock = new Unlock({
+        userId,
+        itemId,
+        sellerId: item.userId,
+        tier: 'standard',
+        amount: 0,
+        isFreeCredit: true,
+        messageLimit: 999999 // Unlimited messages
+      });
+
+      await unlock.save();
+
+      // Decrement free credits
+      user.freeUnlockCredits -= 1;
+      user.totalUnlocks += 1;
+      await user.save();
+
+      // Update item analytics
+      item.unlockCount += 1;
+      await item.save();
+
+      // Auto-send purchase interest message to seller
+      try {
+        let chat = await Chat.findOne({
+          participants: { $all: [userId, item.userId] }
+        });
+
+        if (!chat) {
+          chat = await Chat.create({
+            participants: [userId, item.userId],
+            unreadCount: { [userId]: 0, [item.userId]: 0 }
+          });
+        }
+
+        const itemCategory = item.category ? item.category.toLowerCase() : '';
+        const action = itemCategory.includes('rent') ? 'rent' : 'buy';
+        const autoMessage = `Hi! I ${user.username} want to ${action} your "${item.title}" of price ₹${item.price}. Please let me know if it's still available.`;
+        
+        await Message.create({
+          chatId: chat._id,
+          senderId: userId,
+          senderName: user.username,
+          receiverId: item.userId,
+          message: autoMessage
+        });
+
+        await Chat.findByIdAndUpdate(chat._id, {
+          lastMessage: autoMessage,
+          lastMessageTime: new Date(),
+          $inc: { [`unreadCount.${item.userId}`]: 1 }
+        });
+      } catch (msgError) {
+        console.error('Error sending auto-message:', msgError);
+      }
+
+      return res.json({
+        success: true,
+        message: 'Unlocked with free credit!',
+        unlock,
+        remainingCredits: user.freeUnlockCredits,
+        sellerInfo: {
+          name: seller?.username || item.userName,
+          hostel: seller?.hostelName || item.userHostel,
+          email: seller?.email || null,
+          phone: seller?.phoneNumber || null
+        }
+      });
+    }
+
+    // If no free credit, create payment order
+    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+      return res.status(500).json({ 
+        message: 'Payment gateway not configured. Please contact admin.' 
+      });
+    }
+
+    // Create Razorpay order for ₹11
+    const Razorpay = (await import('razorpay')).default;
+    const razorpay = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET
+    });
+
+    const order = await razorpay.orders.create({
+      amount: 1100, // ₹11 in paise
+      currency: 'INR',
+      receipt: `unlock_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      notes: {
+        itemId: itemId.toString(),
+        userId,
+        tier: 'standard',
+        itemTitle: item.title
+      }
+    });
+
+    // Create payment record
+    const payment = new Payment({
+      userId,
+      itemId,
+      type: 'unlock_standard',
+      amount: 11,
+      razorpayOrderId: order.id,
+      status: 'pending',
+      metadata: {
+        tier: 'standard',
+        sellerName: item.userName,
+        itemTitle: item.title
+      }
+    });
+
+    await payment.save();
+
+    res.json({
+      success: true,
+      requiresPayment: true,
+      order,
+      payment: payment._id
+    });
+
+  } catch (error) {
+    console.error('Unlock item error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};

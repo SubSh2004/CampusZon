@@ -57,23 +57,19 @@ const UnlockModal: React.FC<UnlockModalProps> = ({
     }
   };
 
-  const handleUnlock = async (tier: 'basic' | 'premium', useFreeCredit?: boolean) => {
+  const handleUnlock = async (useFreeCredit?: boolean) => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const endpoint = tier === 'basic' 
-        ? `/api/unlock/items/${itemId}/unlock/basic`
-        : `/api/unlock/items/${itemId}/unlock/premium`;
-
       const response = await axios.post(
-        endpoint,
+        `/api/unlock/items/${itemId}/unlock`,
         { useFreeCredit },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       // If free credit used, no payment needed
       if (response.data.success && !response.data.requiresPayment) {
-        onUnlockSuccess(response.data.sellerInfo, tier);
+        onUnlockSuccess(response.data.sellerInfo, 'standard');
         setFreeCredits(response.data.remainingCredits);
         onClose();
         return;
@@ -81,7 +77,7 @@ const UnlockModal: React.FC<UnlockModalProps> = ({
 
       // If payment required, open Razorpay
       if (response.data.requiresPayment) {
-        openRazorpay(response.data.order, response.data.payment, tier);
+        openRazorpay(response.data.order, response.data.payment);
       }
     } catch (error: any) {
       console.error('Unlock error:', error);
@@ -90,16 +86,16 @@ const UnlockModal: React.FC<UnlockModalProps> = ({
     }
   };
 
-  const openRazorpay = (order: any, paymentId: string, tier: string) => {
+  const openRazorpay = (order: any, paymentId: string) => {
     const options = {
       key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_YOUR_KEY',
       amount: order.amount,
       currency: order.currency,
-      name: 'Campus-Kart',
-      description: `Unlock ${tier} tier - ${itemTitle}`,
+      name: 'CampusZon',
+      description: `Unlock seller details - ${itemTitle}`,
       order_id: order.id,
       handler: async (response: any) => {
-        await verifyPayment(response, paymentId, tier);
+        await verifyPayment(response, paymentId);
       },
       prefill: {
         name: localStorage.getItem('username') || '',
@@ -119,7 +115,7 @@ const UnlockModal: React.FC<UnlockModalProps> = ({
     razorpay.open();
   };
 
-  const verifyPayment = async (razorpayResponse: any, paymentId: string, tier: string) => {
+  const verifyPayment = async (razorpayResponse: any, paymentId: string) => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.post(
@@ -134,7 +130,7 @@ const UnlockModal: React.FC<UnlockModalProps> = ({
       );
 
       if (response.data.success) {
-        onUnlockSuccess(response.data.sellerInfo, tier);
+        onUnlockSuccess(response.data.sellerInfo, 'standard');
         onClose();
         alert('✅ Payment successful! You can now contact the seller.');
       }
@@ -161,9 +157,8 @@ const UnlockModal: React.FC<UnlockModalProps> = ({
 
         <div className="p-6">
           <TierComparison
-            onSelectTier={handleUnlock}
+            onUnlock={handleUnlock}
             freeCredits={freeCredits}
-            hasBasicUnlock={unlockStatus?.tier === 'basic'}
             loading={loading}
           />
         </div>

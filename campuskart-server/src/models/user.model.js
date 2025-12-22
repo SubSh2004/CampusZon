@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema({
   },
   freeUnlockCredits: {
     type: Number,
-    default: 3, // Every new user gets 3 free ₹10 unlocks
+    default: 2, // Every new user gets 2 free unlocks
   },
   totalUnlocks: {
     type: Number,

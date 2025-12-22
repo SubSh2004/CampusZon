@@ -349,7 +349,7 @@ export default function ItemDetail() {
                       </button>
                       
                       <p className="text-center text-sm text-green-600 dark:text-green-400 font-semibold mt-3">
-                        🎁 First 3 unlocks FREE!
+                        🎁 New users get 2 free unlocks!
                       </p>
                     </div>
                   </div>
@@ -358,7 +358,7 @@ export default function ItemDetail() {
                   <div className="space-y-3">
                     <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg mb-4 border border-green-200 dark:border-green-800">
                       <p className="text-green-700 dark:text-green-400 text-sm font-medium text-center">
-                        ✅ Contact Unlocked - {unlockTier === 'premium' ? '⭐ Premium' : 'Basic'} Tier
+                        ✅ Full Contact Access Unlocked
                       </p>
                     </div>
 
@@ -382,21 +382,19 @@ export default function ItemDetail() {
                       </div>
                     </div>
 
-                    {unlockTier === 'premium' && (
-                      <>
-                        <div className="flex items-center">
-                          <svg className="w-5 h-5 text-gray-400 dark:text-gray-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                          </svg>
-                          <div>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">Phone</p>
-                            <a href={`tel:${sellerInfo?.phone || item.userPhone}`} className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
-                              {sellerInfo?.phone || item.userPhone}
-                            </a>
-                          </div>
-                        </div>
+                    <div className="flex items-center">
+                      <svg className="w-5 h-5 text-gray-400 dark:text-gray-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                      </svg>
+                      <div>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Phone</p>
+                        <a href={`tel:${sellerInfo?.phone || item.userPhone}`} className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
+                          {sellerInfo?.phone || item.userPhone}
+                        </a>
+                      </div>
+                    </div>
 
-                        <div className="flex items-center">
+                    <div className="flex items-center">
                           <svg className="w-5 h-5 text-gray-400 dark:text-gray-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                           </svg>
@@ -405,48 +403,26 @@ export default function ItemDetail() {
                             <a href={`mailto:${sellerInfo?.email || item.userEmail}`} className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
                               {sellerInfo?.email || item.userEmail}
                             </a>
-                          </div>
-                        </div>
-                      </>
-                    )}
-
-                    {unlockTier === 'basic' && (
-                      <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg border border-yellow-200 dark:border-yellow-800">
-                        <p className="text-yellow-700 dark:text-yellow-400 text-sm">
-                          💡 <strong>Upgrade to Premium</strong> for phone & email access
-                        </p>
                       </div>
-                    )}
+                    </div>
                   </div>
                 )}
 
                 {/* Action Buttons */}
                 <div className="mt-6 space-y-3">
                   {unlocked ? (
-                    <>
-                      {unlockTier === 'basic' && (
-                        <button
-                          onClick={() => setShowUnlockModal(true)}
-                          className="w-full block text-center bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 px-6 rounded-md transition font-semibold"
-                        >
-                          ⬆️ Upgrade to Premium for ₹15 📥 (Get phone & email)
-                        </button>
-                      )}
-                      {unlockTier === 'premium' && (
-                        <a
-                          href={`tel:${sellerInfo?.phone || item.userPhone}`}
-                          className="w-full block text-center bg-gray-600 dark:bg-gray-700 text-white py-3 px-6 rounded-md hover:bg-gray-700 dark:hover:bg-gray-600 transition font-medium"
-                        >
-                          📞 Call Seller
-                        </a>
-                      )}
-                    </>
+                    <a
+                      href={`tel:${sellerInfo?.phone || item.userPhone}`}
+                      className="w-full block text-center bg-green-600 dark:bg-green-700 text-white py-3 px-6 rounded-md hover:bg-green-700 dark:hover:bg-green-600 transition font-medium"
+                    >
+                      📞 Call Seller
+                    </a>
                   ) : (
                     <button
                       onClick={() => setShowUnlockModal(true)}
                       className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 px-6 rounded-md transition font-semibold"
                     >
-                      🔓 Unlock to Contact Seller
+                      🔓 Unlock Contact Details (₹11)
                     </button>
                   )}
                 </div>
