@@ -14,6 +14,7 @@ import bookingRoutes from './routes/booking.routes.js';
 import unlockRoutes from './routes/unlock.routes.js';
 import moderationRoutes from './routes/moderation.routes.js';
 import notificationRoutes from './routes/notification.routes.js';
+import adminRoutes from './routes/admin.routes.js';
 
 // Initialize Express app
 const app = express();
@@ -85,6 +86,7 @@ app.use('/api/booking', bookingRoutes);
 app.use('/api/unlock', unlockRoutes);
 app.use('/api/moderation', moderationRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Basic route
 app.get('/', (req, res) => {
