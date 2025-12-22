@@ -229,25 +229,34 @@ export const updateBookingStatus = async (req, res) => {
     if (status === 'accepted') {
       // Mark item as unavailable in MongoDB
       try {
-        const Item = (await import('../models/item.mongo.model.js')).default;
-        // Extract the actual item ID - handle populated objects correctly
-        const actualItemId = booking.itemId._id 
-          ? booking.itemId._id.toString() 
-          : booking.itemId.toString();
-        
-        console.log(`🔍 Attempting to mark item as unavailable. ItemId:`, actualItemId);
-        
-        const updateResult = await Item.findByIdAndUpdate(
-          actualItemId,
-          { available: false },
-          { new: true }
-        );
-        
-        if (updateResult) {
-          console.log(`✅ Item ${actualItemId} marked as unavailable. Title: "${updateResult.title}"`);
+        // Check if itemId is valid (populate may have failed for old invalid bookings)
+        if (!booking.itemId) {
+          console.warn(`⚠️ Cannot mark item as unavailable - itemId is invalid or missing for booking ${bookingId}`);
         } else {
-          console.error(`❌ Item ${actualItemId} not found in MongoDB`);
+          const Item = (await import('../models/item.mongo.model.js')).default;
+          // Extract the actual item ID - handle populated objects correctly
+          const actualItemId = booking.itemId._id 
+            ? booking.itemId._id.toString() 
+            : booking.itemId.toString();
+          
+          console.log(`🔍 Attempting to mark item as unavailable. ItemId:`, actualItemId);
+          
+          const updateResult = await Item.findByIdAndUpdate(
+            actualItemId,
+            { available: false },
+            { new: true }
+          );
+          
+          if (updateResult) {
+            console.log(`✅ Item ${actualItemId} marked as unavailable. Title: "${updateResult.title}"`);
+          } else {
+            console.error(`❌ Item ${actualItemId} not found in MongoDB`);
+          }
         }
+      } catch (err) {
+        console.error('❌ Error updating item availability:', err);
+        console.error('Error details:', err.message);
+      }
       } catch (err) {
         console.error('❌ Error updating item availability:', err);
         console.error('Error details:', err.message);
@@ -285,9 +294,13 @@ export const updateBookingStatus = async (req, res) => {
 
       // Create notification for buyer
       try {
-        const notificationItemId = booking.itemId._id 
-          ? booking.itemId._id 
-          : booking.itemId;
+        // Handle case where itemId populate failed (invalid ObjectId)
+        let notificationItemId = null;
+        if (booking.itemId) {
+          notificationItemId = booking.itemId._id 
+            ? booking.itemId._id 
+            : booking.itemId;
+        }
         
         const buyerIdStr = booking.buyerId._id ? booking.buyerId._id.toString() : booking.buyerId.toString();
         
@@ -342,9 +355,13 @@ export const updateBookingStatus = async (req, res) => {
 
       // Create notification for buyer
       try {
-        const notificationItemId = booking.itemId._id 
-          ? booking.itemId._id 
-          : booking.itemId;
+        // Handle case where itemId populate failed (invalid ObjectId)
+        let notificationItemId = null;
+        if (booking.itemId) {
+          notificationItemId = booking.itemId._id 
+            ? booking.itemId._id 
+            : booking.itemId;
+        }
         
         const buyerIdStr = booking.buyerId._id ? booking.buyerId._id.toString() : booking.buyerId.toString();
         
