@@ -14,8 +14,7 @@ export default function AddItem() {
     price: '',
     category: '',
   });
-  const [listingType, setListingType] = useState<'For Sale' | 'For Rent' | ''>('');
-  const [images, setImages] = useState<File[]>([]);
+  const [listingType, setListingType] = useState<'For Sale' | 'For Rent' | ''>('');  const [rentalPeriod, setRentalPeriod] = useState<'Per Day' | 'Per Week' | 'Per Month'>('Per Day');  const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -98,8 +97,11 @@ export default function AddItem() {
       data.append('title', formData.title);
       data.append('description', formData.description);
       data.append('price', formData.price);
-      // Combine listing type with category (e.g., "For Sale - Electronics")
-      data.append('category', `${listingType} - ${formData.category}`);
+      // Combine listing type with category and rental period if applicable
+      const categoryString = listingType === 'For Rent' 
+        ? `${listingType} (${rentalPeriod}) - ${formData.category}`
+        : `${listingType} - ${formData.category}`;
+      data.append('category', categoryString);
       
       // Append all images
       images.forEach((img) => {
@@ -209,24 +211,6 @@ export default function AddItem() {
           </div>
 
           <div>
-            <label htmlFor="price" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Price (₹)
-            </label>
-            <input
-              id="price"
-              name="price"
-              type="number"
-              required
-              min="0"
-              step="0.01"
-              value={formData.price}
-              onChange={handleInputChange}
-              className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
-              placeholder="0.00"
-            />
-          </div>
-
-          <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Listing Type
             </label>
@@ -261,6 +245,80 @@ export default function AddItem() {
               </button>
             </div>
           </div>
+
+          {/* Price Field - shown after listing type is selected */}
+          {listingType && (
+            <div>
+              <label htmlFor="price" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                {listingType === 'For Sale' ? 'Price (₹)' : 'Rent Amount (₹)'}
+              </label>
+              <input
+                id="price"
+                name="price"
+                type="number"
+                required
+                min="0"
+                step="0.01"
+                value={formData.price}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
+                placeholder="0.00"
+              />
+            </div>
+          )}
+
+          {/* Rental Period - only shown for rent listings */}
+          {listingType === 'For Rent' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Rental Period
+              </label>
+              <div className="grid grid-cols-3 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setRentalPeriod('Per Day')}
+                  className={`px-4 py-3 rounded-md font-semibold transition-all ${
+                    rentalPeriod === 'Per Day'
+                      ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg transform scale-105'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  <div className="text-center">
+                    <div className="text-lg">📅</div>
+                    <div className="text-sm mt-1">Per Day</div>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRentalPeriod('Per Week')}
+                  className={`px-4 py-3 rounded-md font-semibold transition-all ${
+                    rentalPeriod === 'Per Week'
+                      ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg transform scale-105'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  <div className="text-center">
+                    <div className="text-lg">📆</div>
+                    <div className="text-sm mt-1">Per Week</div>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRentalPeriod('Per Month')}
+                  className={`px-4 py-3 rounded-md font-semibold transition-all ${
+                    rentalPeriod === 'Per Month'
+                      ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg transform scale-105'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  <div className="text-center">
+                    <div className="text-lg">🗓️</div>
+                    <div className="text-sm mt-1">Per Month</div>
+                  </div>
+                </button>
+              </div>
+            </div>
+          )}
 
           <div>
             <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
