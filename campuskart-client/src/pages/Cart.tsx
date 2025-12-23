@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { useRecoilState } from 'recoil';
-import { cartAtom, CartItem } from '../store/cart.atom';
+import { cartAtom } from '../store/cart.atom';
 import { useTheme } from '../context/ThemeContext';
 import { API_URL } from '../config/api';
 
