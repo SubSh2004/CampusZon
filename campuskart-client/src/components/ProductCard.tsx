@@ -1,11 +1,10 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { userAtom } from '../store/user.atom';
 import { cartAtom } from '../store/cart.atom';
-import { API_URL, SOCKET_URL } from '../config/api';
-import { io, Socket } from 'socket.io-client';
+import { API_URL } from '../config/api';
 import ReportButton from './ReportButton';
 
 interface Item {
@@ -32,11 +31,6 @@ export default function ProductCard({ item }: ProductCardProps) {
   const navigate = useNavigate();
   const currentUser = useRecoilValue(userAtom);
   const setCart = useSetRecoilState(cartAtom);
-  const [showBookingModal, setShowBookingModal] = useState(false);
-  const [bookingMessage, setBookingMessage] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [socket, setSocket] = useState<Socket | null>(null);
-  const [isUnlocked, setIsUnlocked] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   // Use imageUrl directly (it's either a full ImgBB URL or null)
@@ -45,143 +39,6 @@ export default function ProductCard({ item }: ProductCardProps) {
   
   // Check if current user uploaded this item
   const isOwnItem = currentUser?.email === item.userEmail;
-
-  // Check if item is unlocked
-  useEffect(() => {
-    const checkUnlockStatus = async () => {
-      if (!currentUser?.isLoggedIn || isOwnItem) return;
-      
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get(`${API_URL}/api/unlock/items/${item.id}/status`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setIsUnlocked(response.data.unlocked);
-      } catch (error) {
-        console.error('Error checking unlock status:', error);
-      }
-    };
-
-    checkUnlockStatus();
-  }, [item.id, currentUser, isOwnItem]);
-
-  // Initialize socket connection
-  useEffect(() => {
-    // TEMPORARILY DISABLED - Socket.io not set up on Render backend yet
-    // const newSocket = io(SOCKET_URL);
-    // setSocket(newSocket);
-
-    return () => {
-      // newSocket.close();
-    };
-  }, []);
-
-  const handleChatClick = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert('Please login to chat');
-        navigate('/login');
-        return;
-      }
-
-      if (!item.userId) {
-        alert('Unable to start chat: Seller information not available');
-        return;
-      }
-
-      // Create or get chat with the seller (correct endpoint)
-      const response = await axios.get(
-        `${API_URL}/api/chat/chat/${item.userId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      
-      if (response.data.success) {
-        // Navigate to chat page with the selected chat
-        navigate('/chat', { state: { selectedChatId: response.data.chat._id } });
-      }
-    } catch (error) {
-      console.error('Error opening chat:', error);
-      alert('Failed to open chat. Please try again.');
-    }
-  };
-
-  const handleContactClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (!item.userPhone) {
-      alert('Phone number not available');
-      return;
-    }
-
-    // Open phone dialer with the seller's number
-    window.location.href = `tel:${item.userPhone}`;
-  };
-
-  const handleBookClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const token = localStorage.getItem('token');
-    if (!token) {
-      alert('Please login to book items');
-      navigate('/login');
-      return;
-    }
-
-    setShowBookingModal(true);
-  };
-
-  const handleBookingSubmit = async () => {
-    if (!item.userId || !item.userName) {
-      console.error('Missing seller info:', { userId: item.userId, userName: item.userName });
-      alert('Seller information is missing. Please refresh the page and try again.');
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-      const token = localStorage.getItem('token');
-      
-      const response = await axios.post(
-        `${API_URL}/api/booking/create`,
-        {
-          itemId: item.id,
-          itemTitle: item.title,
-          itemPrice: item.price,
-          itemCategory: item.category,
-          sellerId: item.userId,
-          sellerName: item.userName,
-          message: bookingMessage
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      if (response.data.success) {
-        // Send real-time notification via socket
-        socket?.emit('sendBookingRequest', {
-          sellerId: item.userId,
-          booking: response.data.booking
-        });
-
-        // The server creates the booking message and notifies the seller directly.
-        // No need to emit 'sendPrivateMessage' from the client (avoids duplicate saves).
-
-        alert('Booking request sent successfully!');
-        setShowBookingModal(false);
-        setBookingMessage('');
-      }
-    } catch (error: any) {
-      console.error('Error booking item:', error);
-      alert(error.response?.data?.message || 'Failed to send booking request');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -301,35 +158,7 @@ export default function ProductCard({ item }: ProductCardProps) {
 
             {/* Action Buttons with Gradients */}
             <div className="flex gap-1.5 sm:gap-2 mt-3 sm:mt-4">
-              {isUnlocked && !isOwnItem ? (
-                <>
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setShowBookingModal(true);
-                    }}
-                    className="relative flex-1 group/btn bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 active:from-green-700 active:to-emerald-700 text-white text-xs sm:text-sm font-bold py-2 px-2 sm:px-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-1 overflow-hidden shadow-md hover:shadow-lg"
-                  >
-                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
-                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span className="relative z-10">Book Now</span>
-                  </button>
-                  <button
-                    onClick={handleAddToCart}
-                    disabled={isAddingToCart}
-                    className="relative group/btn bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 active:from-blue-700 active:to-cyan-700 text-white text-xs sm:text-sm font-bold py-2 px-2 sm:px-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-1 overflow-hidden shadow-md hover:shadow-lg disabled:opacity-50"
-                  >
-                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
-                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                    <span className="relative z-10">{isAddingToCart ? 'Adding...' : 'Add to Cart'}</span>
-                  </button>
-                </>
-              ) : !isOwnItem ? (
+              {!isOwnItem ? (
                 <>
                   <Link
                     to={`/item/${item.id}`}
@@ -340,18 +169,18 @@ export default function ProductCard({ item }: ProductCardProps) {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
-                    <span className="relative z-10">View Details</span>
+                    <span className="relative z-10">View</span>
                   </Link>
                   <button
                     onClick={handleAddToCart}
                     disabled={isAddingToCart}
-                    className="relative group/btn bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 active:from-blue-700 active:to-cyan-700 text-white text-xs sm:text-sm font-bold py-2 px-2 sm:px-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-1 overflow-hidden shadow-md hover:shadow-lg disabled:opacity-50"
+                    className="relative flex-1 group/btn bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 active:from-blue-700 active:to-cyan-700 text-white text-xs sm:text-sm font-bold py-2 px-2 sm:px-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-1 overflow-hidden shadow-md hover:shadow-lg disabled:opacity-50"
                   >
                     <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
                     <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
-                    <span className="relative z-10">{isAddingToCart ? 'Adding...' : 'Cart'}</span>
+                    <span className="relative z-10">{isAddingToCart ? 'Adding...' : 'Add to Cart'}</span>
                   </button>
                 </>
               ) : (
@@ -388,40 +217,6 @@ export default function ProductCard({ item }: ProductCardProps) {
           </div>
         </div>
       </Link>
-
-      {/* Booking Modal */}
-      {showBookingModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setShowBookingModal(false)}>
-          <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-xl max-w-md w-full" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">Book Item</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 sm:mb-4">
-              Send a booking request for <span className="font-semibold">{item.title}</span>
-            </p>
-            <textarea
-              value={bookingMessage}
-              onChange={(e) => setBookingMessage(e.target.value)}
-              placeholder="Add a message (optional)"
-              className="w-full p-2 sm:p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white mb-3 sm:mb-4 min-h-[80px] sm:min-h-[100px] focus:ring-2 focus:ring-indigo-500 outline-none"
-            />
-            <div className="flex gap-2 sm:gap-3">
-              <button
-                onClick={() => setShowBookingModal(false)}
-                className="flex-1 px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600 transition-colors"
-                disabled={isSubmitting}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleBookingSubmit}
-                disabled={isSubmitting}
-                className="flex-1 px-3 sm:px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 active:bg-indigo-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? 'Sending...' : 'Send Request'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }
