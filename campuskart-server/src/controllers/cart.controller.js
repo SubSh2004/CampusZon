@@ -8,7 +8,7 @@ export const getCart = async (req, res) => {
 
     let cart = await Cart.findOne({ userId }).populate({
       path: 'items.itemId',
-      select: 'title description price images sellerId sellerName category condition status'
+      select: 'title description price images userId userName category condition status'
     });
 
     if (!cart) {
@@ -35,8 +35,8 @@ export const getCart = async (req, res) => {
       description: item.itemId.description,
       price: item.itemId.price,
       images: item.itemId.images,
-      sellerId: item.itemId.sellerId,
-      sellerName: item.itemId.sellerName,
+      sellerId: item.itemId.userId,
+      sellerName: item.itemId.userName,
       category: item.itemId.category,
       condition: item.itemId.condition,
       addedAt: item.addedAt
@@ -79,7 +79,7 @@ export const addToCart = async (req, res) => {
     }
 
     // Don't allow adding own items to cart
-    if (item.sellerId.toString() === userId.toString()) {
+    if (item.userId && item.userId.toString() === userId.toString()) {
       return res.status(400).json({
         success: false,
         message: 'You cannot add your own item to cart'
@@ -113,7 +113,7 @@ export const addToCart = async (req, res) => {
     // Populate and return updated cart
     await cart.populate({
       path: 'items.itemId',
-      select: 'title description price images sellerId sellerName category condition status'
+      select: 'title description price images userId userName category condition status'
     });
 
     const cartItems = cart.items
@@ -125,8 +125,8 @@ export const addToCart = async (req, res) => {
         description: item.itemId.description,
         price: item.itemId.price,
         images: item.itemId.images,
-        sellerId: item.itemId.sellerId,
-        sellerName: item.itemId.sellerName,
+        sellerId: item.itemId.userId,
+        sellerName: item.itemId.userName,
         category: item.itemId.category,
         condition: item.itemId.condition,
         addedAt: item.addedAt
@@ -179,7 +179,7 @@ export const removeFromCart = async (req, res) => {
     // Populate and return updated cart
     await cart.populate({
       path: 'items.itemId',
-      select: 'title description price images sellerId sellerName category condition status'
+      select: 'title description price images userId userName category condition status'
     });
 
     const cartItems = cart.items
@@ -191,8 +191,8 @@ export const removeFromCart = async (req, res) => {
         description: item.itemId.description,
         price: item.itemId.price,
         images: item.itemId.images,
-        sellerId: item.itemId.sellerId,
-        sellerName: item.itemId.sellerName,
+        sellerId: item.itemId.userId,
+        sellerName: item.itemId.userName,
         category: item.itemId.category,
         condition: item.itemId.condition,
         addedAt: item.addedAt
