@@ -165,7 +165,7 @@ export default function Cart() {
                     {/* Item Image */}
                     <Link to={`/item/${item.itemId}`} className="flex-shrink-0">
                       <img
-                        src={item.images[0] || '/placeholder.jpg'}
+                        src={(item.images && item.images.length > 0 ? item.images[0] : null) || '/placeholder.jpg'}
                         alt={item.title}
                         className="w-32 h-32 object-cover rounded-lg hover:opacity-90 transition"
                         onError={(e) => {

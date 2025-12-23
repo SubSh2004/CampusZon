@@ -8,7 +8,7 @@ export const getCart = async (req, res) => {
 
     let cart = await Cart.findOne({ userId }).populate({
       path: 'items.itemId',
-      select: 'title description price images userId userName category condition status'
+      select: 'title description price imageUrl imageUrls userId userName category condition status'
     });
 
     if (!cart) {
@@ -34,7 +34,9 @@ export const getCart = async (req, res) => {
       title: item.itemId.title,
       description: item.itemId.description,
       price: item.itemId.price,
-      images: item.itemId.images,
+      images: item.itemId.imageUrls && item.itemId.imageUrls.length > 0 
+        ? item.itemId.imageUrls 
+        : (item.itemId.imageUrl ? [item.itemId.imageUrl] : []),
       sellerId: item.itemId.userId,
       sellerName: item.itemId.userName,
       category: item.itemId.category,
@@ -113,7 +115,7 @@ export const addToCart = async (req, res) => {
     // Populate and return updated cart
     await cart.populate({
       path: 'items.itemId',
-      select: 'title description price images userId userName category condition status'
+      select: 'title description price imageUrl imageUrls userId userName category condition status'
     });
 
     const cartItems = cart.items
@@ -124,7 +126,9 @@ export const addToCart = async (req, res) => {
         title: item.itemId.title,
         description: item.itemId.description,
         price: item.itemId.price,
-        images: item.itemId.images,
+        images: item.itemId.imageUrls && item.itemId.imageUrls.length > 0 
+          ? item.itemId.imageUrls 
+          : (item.itemId.imageUrl ? [item.itemId.imageUrl] : []),
         sellerId: item.itemId.userId,
         sellerName: item.itemId.userName,
         category: item.itemId.category,
@@ -179,7 +183,7 @@ export const removeFromCart = async (req, res) => {
     // Populate and return updated cart
     await cart.populate({
       path: 'items.itemId',
-      select: 'title description price images userId userName category condition status'
+      select: 'title description price imageUrl imageUrls userId userName category condition status'
     });
 
     const cartItems = cart.items
@@ -190,7 +194,9 @@ export const removeFromCart = async (req, res) => {
         title: item.itemId.title,
         description: item.itemId.description,
         price: item.itemId.price,
-        images: item.itemId.images,
+        images: item.itemId.imageUrls && item.itemId.imageUrls.length > 0 
+          ? item.itemId.imageUrls 
+          : (item.itemId.imageUrl ? [item.itemId.imageUrl] : []),
         sellerId: item.itemId.userId,
         sellerName: item.itemId.userName,
         category: item.itemId.category,
