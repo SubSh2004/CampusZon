@@ -283,7 +283,7 @@ export default function Notifications() {
                       {unreadCount} new
                     </span>
                   )}
-                  {moderationNotifications.length > 0 && (
+                  {(recentBookings.length > 0 || buyerBookingUpdates.length > 0 || moderationNotifications.length > 0) && (
                     <button
                       onClick={handleClearAllNotifications}
                       className="text-xs text-red-600 dark:text-red-400 hover:underline"
