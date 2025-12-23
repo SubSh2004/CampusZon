@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom'
 import { useSetRecoilState } from 'recoil'
 import axios from 'axios'
 import { userAtom } from './store/user.atom'
+import { cartAtom } from './store/cart.atom'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
@@ -13,9 +14,11 @@ import Profile from './pages/Profile'
 import OAuthCallback from './pages/OAuthCallback'
 import ModerationDashboard from './pages/ModerationDashboard'
 import Bookings from './pages/Bookings'
+import Cart from './pages/Cart'
 
 export default function App() {
   const setUser = useSetRecoilState(userAtom);
+  const setCart = useSetRecoilState(cartAtom);
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
@@ -49,6 +52,19 @@ export default function App() {
           // Validate token with backend in the background
           await axios.get('/api/user/profile');
           // Token is valid, user state already set
+          
+          // Fetch cart data
+          try {
+            const cartResponse = await axios.get('/api/cart');
+            if (cartResponse.data.success) {
+              setCart({
+                items: cartResponse.data.items,
+                count: cartResponse.data.count
+              });
+            }
+          } catch (cartError) {
+            console.error('Error fetching cart:', cartError);
+          }
         } catch (error: any) {
           // Only clear if it's a 401 (unauthorized) error
           if (error.response?.status === 401) {
@@ -95,6 +111,7 @@ export default function App() {
         <Route path="/add-item" element={<AddItem />} />
         <Route path="/item/:id" element={<ItemDetail />} />
         <Route path="/bookings" element={<Bookings />} />
+        <Route path="/cart" element={<Cart />} />
         <Route path="/oauth-callback" element={<OAuthCallback />} />
         <Route path="/admin/moderation" element={<ModerationDashboard />} />
       </Routes>

@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { useTheme } from '../context/ThemeContext';
+import { useSetRecoilState } from 'recoil';
+import { cartAtom } from '../store/cart.atom';
 import { io, Socket } from 'socket.io-client';
 import { SOCKET_URL } from '../config/api';
 import UnlockModal from '../components/UnlockModal';
@@ -29,6 +31,7 @@ export default function ItemDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { theme } = useTheme();
+  const setCart = useSetRecoilState(cartAtom);
   const [item, setItem] = useState<Item | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -37,6 +40,7 @@ export default function ItemDetail() {
   const [bookingStatus, setBookingStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
   
   // Unlock system state
   const [showUnlockModal, setShowUnlockModal] = useState(false);
@@ -142,6 +146,45 @@ export default function ItemDetail() {
         type: 'error',
         message: err.response?.data?.message || 'Failed to send booking request'
       });
+    }
+  };
+
+  const handleAddToCart = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
+    if (!item) return;
+
+    try {
+      setIsAddingToCart(true);
+      const response = await axios.post(
+        '/api/cart/add',
+        { itemId: item.id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (response.data.success) {
+        setCart({
+          items: response.data.items,
+          count: response.data.count
+        });
+        setBookingStatus({ 
+          type: 'success', 
+          message: '✅ Item added to cart!' 
+        });
+        setTimeout(() => setBookingStatus(null), 3000);
+      }
+    } catch (err: any) {
+      setBookingStatus({
+        type: 'error',
+        message: err.response?.data?.message || 'Failed to add item to cart'
+      });
+      setTimeout(() => setBookingStatus(null), 3000);
+    } finally {
+      setIsAddingToCart(false);
     }
   };
 
@@ -421,6 +464,13 @@ export default function ItemDetail() {
                         className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-3 px-6 rounded-md transition font-semibold"
                       >
                         ✅ Book This Item
+                      </button>
+                      <button
+                        onClick={handleAddToCart}
+                        disabled={isAddingToCart}
+                        className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white py-3 px-6 rounded-md transition font-semibold disabled:opacity-50"
+                      >
+                        {isAddingToCart ? '🔄 Adding...' : '🛒 Add to Cart'}
                       </button>
                       <a
                         href={`tel:${sellerInfo?.phone || item.userPhone}`}

@@ -15,6 +15,7 @@ import unlockRoutes from './routes/unlock.routes.js';
 import moderationRoutes from './routes/moderation.routes.js';
 import notificationRoutes from './routes/notification.routes.js';
 import adminRoutes from './routes/admin.routes.js';
+import cartRoutes from './routes/cart.routes.js';
 
 // Initialize Express app
 const app = express();
@@ -87,6 +88,7 @@ app.use('/api/unlock', unlockRoutes);
 app.use('/api/moderation', moderationRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/cart', cartRoutes);
 
 // Basic route
 app.get('/', (req, res) => {

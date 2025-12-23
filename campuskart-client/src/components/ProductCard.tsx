@@ -1,8 +1,9 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useRecoilValue } from 'recoil';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { userAtom } from '../store/user.atom';
+import { cartAtom } from '../store/cart.atom';
 import { API_URL, SOCKET_URL } from '../config/api';
 import { io, Socket } from 'socket.io-client';
 import ReportButton from './ReportButton';
@@ -30,11 +31,13 @@ interface ProductCardProps {
 export default function ProductCard({ item }: ProductCardProps) {
   const navigate = useNavigate();
   const currentUser = useRecoilValue(userAtom);
+  const setCart = useSetRecoilState(cartAtom);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [bookingMessage, setBookingMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isUnlocked, setIsUnlocked] = useState(false);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   // Use imageUrl directly (it's either a full ImgBB URL or null)
   const imageUrl = (item.imageUrls && item.imageUrls.length > 0 ? item.imageUrls[0] : item.imageUrl) || '/placeholder.jpg';
@@ -180,6 +183,41 @@ export default function ProductCard({ item }: ProductCardProps) {
     }
   };
 
+  const handleAddToCart = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Please login to add items to cart');
+      navigate('/login');
+      return;
+    }
+
+    try {
+      setIsAddingToCart(true);
+      const response = await axios.post(
+        `${API_URL}/api/cart/add`,
+        { itemId: item.id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (response.data.success) {
+        // Update cart state
+        setCart({
+          items: response.data.items,
+          count: response.data.count
+        });
+        alert('✅ Item added to cart!');
+      }
+    } catch (error: any) {
+      console.error('Error adding to cart:', error);
+      alert(error.response?.data?.message || 'Failed to add item to cart');
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
+
   return (
     <>
       <Link to={`/item/${item.id}`} className="block group">
@@ -264,20 +302,58 @@ export default function ProductCard({ item }: ProductCardProps) {
             {/* Action Buttons with Gradients */}
             <div className="flex gap-1.5 sm:gap-2 mt-3 sm:mt-4">
               {isUnlocked && !isOwnItem ? (
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setShowBookingModal(true);
-                  }}
-                  className="relative flex-1 group/btn bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 active:from-green-700 active:to-emerald-700 text-white text-xs sm:text-sm font-bold py-2 px-2 sm:px-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-1 overflow-hidden shadow-md hover:shadow-lg"
-                >
-                  <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
-                  <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="relative z-10">Book Item</span>
-                </button>
+                <>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setShowBookingModal(true);
+                    }}
+                    className="relative flex-1 group/btn bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 active:from-green-700 active:to-emerald-700 text-white text-xs sm:text-sm font-bold py-2 px-2 sm:px-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-1 overflow-hidden shadow-md hover:shadow-lg"
+                  >
+                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
+                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="relative z-10">Book Now</span>
+                  </button>
+                  <button
+                    onClick={handleAddToCart}
+                    disabled={isAddingToCart}
+                    className="relative group/btn bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 active:from-blue-700 active:to-cyan-700 text-white text-xs sm:text-sm font-bold py-2 px-2 sm:px-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-1 overflow-hidden shadow-md hover:shadow-lg disabled:opacity-50"
+                  >
+                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
+                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span className="relative z-10">{isAddingToCart ? 'Adding...' : 'Add to Cart'}</span>
+                  </button>
+                </>
+              ) : !isOwnItem ? (
+                <>
+                  <Link
+                    to={`/item/${item.id}`}
+                    className="relative flex-1 group/btn bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 active:from-indigo-700 active:to-purple-700 text-white text-xs sm:text-sm font-bold py-2 px-2 sm:px-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-1 overflow-hidden shadow-md hover:shadow-lg"
+                  >
+                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
+                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    <span className="relative z-10">View Details</span>
+                  </Link>
+                  <button
+                    onClick={handleAddToCart}
+                    disabled={isAddingToCart}
+                    className="relative group/btn bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 active:from-blue-700 active:to-cyan-700 text-white text-xs sm:text-sm font-bold py-2 px-2 sm:px-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-1 overflow-hidden shadow-md hover:shadow-lg disabled:opacity-50"
+                  >
+                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
+                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span className="relative z-10">{isAddingToCart ? 'Adding...' : 'Cart'}</span>
+                  </button>
+                </>
               ) : (
                 <Link
                   to={`/item/${item.id}`}
@@ -288,7 +364,7 @@ export default function ProductCard({ item }: ProductCardProps) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                   </svg>
-                  <span className="relative z-10">View Details</span>
+                  <span className="relative z-10">View Your Item</span>
                 </Link>
               )}
             </div>
