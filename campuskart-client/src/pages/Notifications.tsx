@@ -148,23 +148,21 @@ export default function Notifications() {
     try {
       await axios.put(`${API_URL}/api/notifications/${notificationId}/read`);
       
-      // Update local state
+      // Immediately update local state and decrement count
+      const notification = moderationNotifications.find(n => n._id === notificationId);
+      if (notification && !notification.read) {
+        setUnreadModerationCount(prev => Math.max(0, prev - 1));
+      }
+      
       setModerationNotifications(prev => prev.map(n => 
         n._id === notificationId ? { ...n, read: true } : n
       ));
-      
-      // Refresh to update counts
-      fetchNotifications();
     } catch (error) {
       console.error('Error marking notification as read:', error);
     }
   };
 
   const handleDeleteNotification = async (notificationId: string, isBooking: boolean) => {
-    if (!confirm('Are you sure you want to delete this notification?')) {
-      return;
-    }
-    
     try {
       if (isBooking) {
         await axios.delete(`${API_URL}/api/notifications/${notificationId}`);
@@ -172,10 +170,43 @@ export default function Notifications() {
         await axios.delete(`${API_URL}/api/notifications/${notificationId}`);
       }
       
-      // Refresh notifications
-      fetchNotifications();
+      // Immediately update local state and counts
+      if (isBooking) {
+        const deletedBooking = [...bookingRequests, ...bookingUpdates].find(b => b._id === notificationId);
+        if (deletedBooking && !deletedBooking.read) {
+          setUnreadBookingsCount(prev => Math.max(0, prev - 1));
+        }
+        setBookingRequests(prev => prev.filter(b => b._id !== notificationId));
+        setBookingUpdates(prev => prev.filter(b => b._id !== notificationId));
+      } else {
+        const deletedNotif = moderationNotifications.find(n => n._id === notificationId);
+        if (deletedNotif && !deletedNotif.read) {
+          setUnreadModerationCount(prev => Math.max(0, prev - 1));
+        }
+        setModerationNotifications(prev => prev.filter(n => n._id !== notificationId));
+      }
     } catch (error) {
       console.error('Error deleting notification:', error);
+    }
+  };
+
+  const handleDeleteBookingRequest = async (bookingId: string) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(
+        `${API_URL}/api/booking/${bookingId}/read`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      // Immediately update local state and counts
+      const deletedBooking = bookingRequests.find(b => b._id === bookingId);
+      if (deletedBooking && !deletedBooking.read) {
+        setUnreadBookingsCount(prev => Math.max(0, prev - 1));
+      }
+      setBookingRequests(prev => prev.filter(b => b._id !== bookingId));
+    } catch (error) {
+      console.error('Error deleting booking request:', error);
     }
   };
 
@@ -339,10 +370,10 @@ export default function Notifications() {
                 </h2>
                 {bookingRequests.length > 0 && (
                   <Link
-                    to="/profile"
+                    to="/bookings"
                     className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
                   >
-                    Manage in Profile →
+                    View in Bookings →
                   </Link>
                 )}
               </div>
@@ -384,21 +415,24 @@ export default function Notifications() {
                           </p>
                         </div>
                         <div className="flex items-center gap-2 ml-4">
-                          {!booking.read && (
-                            <button
-                              onClick={() => handleMarkBookingAsRead(booking._id)}
-                              className={`px-3 py-1.5 text-sm rounded-lg transition ${
-                                theme === 'dark'
-                                  ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                              }`}
-                              title="Mark as read"
-                            >
-                              ✓
-                            </button>
-                          )}
+                          <button
+                            onClick={() => handleDeleteBookingRequest(booking._id)}
+                            className={`px-3 py-1.5 text-sm rounded-lg transition ${
+                              theme === 'dark'
+                                ? 'bg-red-900/30 text-red-400 hover:bg-red-900/50'
+                                : 'bg-red-100 text-red-600 hover:bg-red-200'
+                            }`}
+                            title="Delete notification"
+                          >
+                            Delete
+                          </button>
                           <Link
-                            to="/profile"
+                            to="/bookings"
+                            onClick={() => {
+                              if (!booking.read) {
+                                handleMarkBookingAsRead(booking._id);
+                              }
+                            }}
                             className="px-3 py-1.5 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition"
                           >
                             Manage
@@ -490,9 +524,7 @@ export default function Notifications() {
                             }`}
                             title="Delete notification"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
+                            Delete
                           </button>
                           <Link
                             to="/bookings"
@@ -624,9 +656,7 @@ export default function Notifications() {
                           }`}
                           title="Delete notification"
                         >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
+                          Delete
                         </button>
                         {notification.itemId && (
                           <button
