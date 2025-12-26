@@ -327,13 +327,7 @@ export default function Notifications() {
         const isNotificationBased = booking.isNotification === true;
         const token = localStorage.getItem('token');
         
-        // Update UI immediately for better UX
-        setUnreadBookingsCount(prev => Math.max(0, prev - 1));
-        setBookingUpdates(prev => prev.map(b => 
-          b._id === bookingId ? { ...b, read: true } : b
-        ));
-        
-        // Then make API call
+        // First make API call, then update UI only on success
         if (isNotificationBased) {
           await axios.put(`${API_URL}/api/notifications/${bookingId}/read`);
         } else {
@@ -343,11 +337,16 @@ export default function Notifications() {
             { headers: { Authorization: `Bearer ${token}` } }
           );
         }
+        
+        // Only update UI after successful API call
+        setUnreadBookingsCount(prev => Math.max(0, prev - 1));
+        setBookingUpdates(prev => prev.map(b => 
+          b._id === bookingId ? { ...b, read: true } : b
+        ));
       }
     } catch (error) {
       console.error('Error marking booking update as read:', error);
-      // Refresh on error to get correct state
-      fetchNotifications();
+      alert('Failed to mark as read. Please try again.');
     }
   };
 
