@@ -15,6 +15,7 @@ interface Booking {
   rejectionNote?: string;
   read: boolean;
   createdAt: string;
+  isNotification?: boolean; // Flag to distinguish notification-based from booking-based
 }
 
 interface ModerationNotification {
@@ -224,71 +225,91 @@ export default function Notifications() {
 
   const handleDeleteBookingRequest = async (bookingId: string) => {
     try {
+      const booking = bookingRequests.find(b => b._id === bookingId);
+      if (!booking) return;
+      
       const token = localStorage.getItem('token');
+      
+      // Update UI immediately for better UX
+      const wasUnread = !booking.read;
+      if (wasUnread) {
+        setUnreadBookingsCount(prev => Math.max(0, prev - 1));
+      }
+      setBookingRequests(prev => prev.filter(b => b._id !== bookingId));
+      
+      // Then make API call
       await axios.put(
         `${API_URL}/api/booking/${bookingId}/read`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      
-      // Immediately update local state and counts
-      const deletedBooking = bookingRequests.find(b => b._id === bookingId);
-      if (deletedBooking && !deletedBooking.read) {
-        setUnreadBookingsCount(prev => Math.max(0, prev - 1));
-      }
-      setBookingRequests(prev => prev.filter(b => b._id !== bookingId));
     } catch (error) {
       console.error('Error deleting booking request:', error);
+      // Refresh on error to get correct state
+      fetchNotifications();
     }
   };
 
   const handleDeleteBookingUpdate = async (bookingId: string) => {
     try {
       const booking = bookingUpdates.find(b => b._id === bookingId);
-      const isNotificationBased = booking && !booking.buyerId;
+      if (!booking) return;
+      
+      const isNotificationBased = booking.isNotification === true;
       const token = localStorage.getItem('token');
       
+      // First update UI immediately for better UX
+      const wasUnread = !booking.read;
+      if (wasUnread) {
+        setUnreadBookingsCount(prev => Math.max(0, prev - 1));
+      }
+      setBookingUpdates(prev => prev.filter(b => b._id !== bookingId));
+      
+      // Then make API call
       if (isNotificationBased) {
-        // Delete from notification system
         await axios.delete(`${API_URL}/api/notifications/${bookingId}`);
       } else {
-        // Mark as read for old booking system
         await axios.put(
           `${API_URL}/api/booking/${bookingId}/read`,
           {},
           { headers: { Authorization: `Bearer ${token}` } }
         );
       }
-      
-      // Immediately update local state and counts
-      const deletedBooking = bookingUpdates.find(b => b._id === bookingId);
-      if (deletedBooking && !deletedBooking.read) {
-        setUnreadBookingsCount(prev => Math.max(0, prev - 1));
-      }
-      setBookingUpdates(prev => prev.filter(b => b._id !== bookingId));
     } catch (error) {
       console.error('Error deleting booking update:', error);
+      // Refresh on error to get correct state
+      fetchNotifications();
     }
   };
 
   const handleManageBookingRequest = async (bookingId: string, isUnread: boolean) => {
-    // Mark as read if unread and navigate
+    // Mark as read if unread
     if (isUnread) {
       try {
+        const booking = bookingRequests.find(b => b._id === bookingId);
+        if (!booking) {
+          navigate('/bookings');
+          return;
+        }
+        
         const token = localStorage.getItem('token');
+        
+        // Update UI immediately for better UX
+        setUnreadBookingsCount(prev => Math.max(0, prev - 1));
+        setBookingRequests(prev => prev.map(b => 
+          b._id === bookingId ? { ...b, read: true } : b
+        ));
+        
+        // Then make API call
         await axios.put(
           `${API_URL}/api/booking/${bookingId}/read`,
           {},
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        
-        // Immediately update local state and counts
-        setUnreadBookingsCount(prev => Math.max(0, prev - 1));
-        setBookingRequests(prev => prev.map(b => 
-          b._id === bookingId ? { ...b, read: true } : b
-        ));
       } catch (error) {
         console.error('Error marking booking as read:', error);
+        // Refresh on error to get correct state
+        fetchNotifications();
       }
     }
     // Navigate to bookings page
@@ -296,32 +317,38 @@ export default function Notifications() {
   };
 
   const handleViewBookingUpdate = async (bookingId: string, isUnread: boolean) => {
-    // Mark as read if unread and navigate
+    // Mark as read if unread
     if (isUnread) {
       try {
         const booking = bookingUpdates.find(b => b._id === bookingId);
-        const isNotificationBased = booking && !booking.buyerId;
+        if (!booking) {
+          navigate('/bookings');
+          return;
+        }
         
+        const isNotificationBased = booking.isNotification === true;
+        const token = localStorage.getItem('token');
+        
+        // Update UI immediately for better UX
+        setUnreadBookingsCount(prev => Math.max(0, prev - 1));
+        setBookingUpdates(prev => prev.map(b => 
+          b._id === bookingId ? { ...b, read: true } : b
+        ));
+        
+        // Then make API call
         if (isNotificationBased) {
-          // Mark notification as read
           await axios.put(`${API_URL}/api/notifications/${bookingId}/read`);
         } else {
-          // Mark booking as read
-          const token = localStorage.getItem('token');
           await axios.put(
             `${API_URL}/api/booking/${bookingId}/read`,
             {},
             { headers: { Authorization: `Bearer ${token}` } }
           );
         }
-        
-        // Immediately update local state and counts
-        setUnreadBookingsCount(prev => Math.max(0, prev - 1));
-        setBookingUpdates(prev => prev.map(b => 
-          b._id === bookingId ? { ...b, read: true } : b
-        ));
       } catch (error) {
         console.error('Error marking booking as read:', error);
+        // Refresh on error to get correct state
+        fetchNotifications();
       }
     }
     // Navigate to bookings page
