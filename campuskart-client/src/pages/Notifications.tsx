@@ -86,8 +86,8 @@ export default function Notifications() {
       const buyerBookings = (buyerBookingsResponse.data.bookings || [])
         .filter((booking: Booking) => booking.status === 'accepted' || booking.status === 'rejected');
       
-      // Combine new notification system with old booking system
-      const combinedBookingUpdates = [
+      // Combine new notification system with old booking system and deduplicate
+      const allBookingUpdates = [
         ...bookingNotifications.map((n: ModerationNotification) => ({
           _id: n._id,
           itemTitle: n.message.split('"')[1] || 'Unknown Item',
@@ -98,10 +98,24 @@ export default function Notifications() {
           message: n.message,
           rejectionNote: n.title.includes('Rejected') ? n.message.split('Reason: ')[1] : undefined,
           read: n.read,
-          createdAt: n.createdAt
+          createdAt: n.createdAt,
+          isNotification: true
         })),
-        ...buyerBookings
+        ...buyerBookings.map((b: Booking) => ({ ...b, isNotification: false }))
       ];
+      
+      // Deduplicate by creating a Map with unique item titles and status combinations
+      const uniqueUpdatesMap = new Map();
+      allBookingUpdates.forEach((booking: any) => {
+        const key = `${booking.itemTitle}-${booking.status}`;
+        // Keep the newest one (or the one from notifications system)
+        if (!uniqueUpdatesMap.has(key) || booking.isNotification) {
+          uniqueUpdatesMap.set(key, booking);
+        }
+      });
+      
+      const combinedBookingUpdates = Array.from(uniqueUpdatesMap.values())
+        .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       
       setBookingUpdates(combinedBookingUpdates);
       setUnreadBookingsCount(bookCount + bookingNotifCount);
@@ -208,6 +222,18 @@ export default function Notifications() {
     } catch (error) {
       console.error('Error deleting booking request:', error);
     }
+  };
+
+  const handleViewBookingUpdate = (bookingId: string, isUnread: boolean) => {
+    // Mark as read and decrement count if it's unread
+    if (isUnread) {
+      setUnreadBookingsCount(prev => Math.max(0, prev - 1));
+      setBookingUpdates(prev => prev.map(b => 
+        b._id === bookingId ? { ...b, read: true } : b
+      ));
+    }
+    // Navigate to bookings page
+    navigate('/bookings');
   };
 
   const handleClearAllBookings = async () => {
@@ -526,12 +552,12 @@ export default function Notifications() {
                           >
                             Delete
                           </button>
-                          <Link
-                            to="/bookings"
+                          <button
+                            onClick={() => handleViewBookingUpdate(booking._id, !booking.read)}
                             className="px-3 py-1.5 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition"
                           >
                             View Details
-                          </Link>
+                          </button>
                         </div>
                       </div>
                     </div>
