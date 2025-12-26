@@ -62,21 +62,19 @@ export default function Notifications() {
 
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-      const [bookingResponse, sellerBookingsResponse, buyerBookingsResponse, modNotificationsResponse] = await Promise.all([
+      const [, sellerBookingsResponse, buyerBookingsResponse, modNotificationsResponse] = await Promise.all([
         axios.get(`${API_URL}/api/booking/unread-count`),
         axios.get(`${API_URL}/api/booking/seller`),
         axios.get(`${API_URL}/api/booking/buyer`),
         axios.get(`${API_URL}/api/notifications?limit=100`)
       ]);
 
-      const bookCount = bookingResponse.data.unreadCount || 0;
       const allNotifications = modNotificationsResponse.data.notifications || [];
       
       // Separate BOOKING type notifications from moderation notifications
       const bookingNotifications = allNotifications.filter((n: ModerationNotification) => n.type === 'BOOKING');
       const moderationOnly = allNotifications.filter((n: ModerationNotification) => n.type !== 'BOOKING');
       
-      const bookingNotifCount = bookingNotifications.filter((n: ModerationNotification) => !n.read).length;
       const modCount = moderationOnly.filter((n: ModerationNotification) => !n.read).length;
       
       // Get all seller bookings (incoming requests) and deduplicate by ID
@@ -117,7 +115,7 @@ export default function Notifications() {
       
       // Create a Set of item titles from notifications to avoid duplicates
       const notificationItemTitles = new Set(
-        notificationBasedUpdates.map(n => `${n.itemTitle}-${n.status}`)
+        notificationBasedUpdates.map((n: any) => `${n.itemTitle}-${n.status}`)
       );
       
       // Only include buyer bookings that don't have a corresponding notification
@@ -159,30 +157,6 @@ export default function Notifications() {
       }
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleMarkBookingAsRead = async (bookingId: string) => {
-    try {
-      const token = localStorage.getItem('token');
-      await axios.put(
-        `${API_URL}/api/booking/${bookingId}/read`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      
-      // Update local state
-      setBookingRequests(prev => prev.map(b => 
-        b._id === bookingId ? { ...b, read: true } : b
-      ));
-      setBookingUpdates(prev => prev.map(b => 
-        b._id === bookingId ? { ...b, read: true } : b
-      ));
-      
-      // Refresh to update counts
-      fetchNotifications();
-    } catch (error) {
-      console.error('Error marking booking as read:', error);
     }
   };
 
@@ -268,43 +242,88 @@ export default function Notifications() {
     }
   };
 
-  const handleViewBookingUpdate = async (bookingId: string, isUnread: boolean) => {
-    // Immediately update UI for better UX
-    if (isUnread) {
-      setUnreadBookingsCount(prev => Math.max(0, prev - 1));
-      setBookingUpdates(prev => prev.map(b => 
-        b._id === bookingId ? { ...b, read: true } : b
-      ));
-    }
-    
-    // Then make API call
+  const handleDeleteBookingUpdate = async (bookingId: string) => {
     try {
       const booking = bookingUpdates.find(b => b._id === bookingId);
       const isNotificationBased = booking && !booking.buyerId;
+      const token = localStorage.getItem('token');
       
       if (isNotificationBased) {
-        // Mark notification as read
-        await axios.put(`${API_URL}/api/notifications/${bookingId}/read`);
+        // Delete from notification system
+        await axios.delete(`${API_URL}/api/notifications/${bookingId}`);
       } else {
-        // Mark booking as read
-        const token = localStorage.getItem('token');
+        // Mark as read for old booking system
         await axios.put(
           `${API_URL}/api/booking/${bookingId}/read`,
           {},
           { headers: { Authorization: `Bearer ${token}` } }
         );
       }
+      
+      // Immediately update local state and counts
+      const deletedBooking = bookingUpdates.find(b => b._id === bookingId);
+      if (deletedBooking && !deletedBooking.read) {
+        setUnreadBookingsCount(prev => Math.max(0, prev - 1));
+      }
+      setBookingUpdates(prev => prev.filter(b => b._id !== bookingId));
     } catch (error) {
-      console.error('Error marking booking as read:', error);
-      // Revert on error
-      if (isUnread) {
-        setUnreadBookingsCount(prev => prev + 1);
-        setBookingUpdates(prev => prev.map(b => 
-          b._id === bookingId ? { ...b, read: false } : b
+      console.error('Error deleting booking update:', error);
+    }
+  };
+
+  const handleManageBookingRequest = async (bookingId: string, isUnread: boolean) => {
+    // Mark as read if unread and navigate
+    if (isUnread) {
+      try {
+        const token = localStorage.getItem('token');
+        await axios.put(
+          `${API_URL}/api/booking/${bookingId}/read`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        
+        // Immediately update local state and counts
+        setUnreadBookingsCount(prev => Math.max(0, prev - 1));
+        setBookingRequests(prev => prev.map(b => 
+          b._id === bookingId ? { ...b, read: true } : b
         ));
+      } catch (error) {
+        console.error('Error marking booking as read:', error);
       }
     }
-    
+    // Navigate to bookings page
+    navigate('/bookings');
+  };
+
+  const handleViewBookingUpdate = async (bookingId: string, isUnread: boolean) => {
+    // Mark as read if unread and navigate
+    if (isUnread) {
+      try {
+        const booking = bookingUpdates.find(b => b._id === bookingId);
+        const isNotificationBased = booking && !booking.buyerId;
+        
+        if (isNotificationBased) {
+          // Mark notification as read
+          await axios.put(`${API_URL}/api/notifications/${bookingId}/read`);
+        } else {
+          // Mark booking as read
+          const token = localStorage.getItem('token');
+          await axios.put(
+            `${API_URL}/api/booking/${bookingId}/read`,
+            {},
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+        }
+        
+        // Immediately update local state and counts
+        setUnreadBookingsCount(prev => Math.max(0, prev - 1));
+        setBookingUpdates(prev => prev.map(b => 
+          b._id === bookingId ? { ...b, read: true } : b
+        ));
+      } catch (error) {
+        console.error('Error marking booking as read:', error);
+      }
+    }
     // Navigate to bookings page
     navigate('/bookings');
   };
@@ -563,17 +582,12 @@ export default function Notifications() {
                           >
                             Delete
                           </button>
-                          <Link
-                            to="/bookings"
-                            onClick={() => {
-                              if (!booking.read) {
-                                handleMarkBookingAsRead(booking._id);
-                              }
-                            }}
+                          <button
+                            onClick={() => handleManageBookingRequest(booking._id, !booking.read)}
                             className="px-3 py-1.5 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition"
                           >
                             Manage
-                          </Link>
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -655,7 +669,7 @@ export default function Notifications() {
                         </div>
                         <div className="flex items-center gap-2 ml-4">
                           <button
-                            onClick={() => handleDeleteNotification(booking._id, true)}
+                            onClick={() => handleDeleteBookingUpdate(booking._id)}
                             className={`px-3 py-1.5 text-sm rounded-lg transition ${
                               theme === 'dark'
                                 ? 'bg-red-900/30 text-red-400 hover:bg-red-900/50'
