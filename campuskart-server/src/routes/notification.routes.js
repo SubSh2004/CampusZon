@@ -52,7 +52,7 @@ router.get('/', authenticate, async (req, res) => {
 router.put('/:id/read', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user.userId;
+    const userId = req.user._id.toString();
 
     const notification = await Notification.findOneAndUpdate(
       { _id: id, userId },
@@ -88,7 +88,7 @@ router.put('/:id/read', authenticate, async (req, res) => {
  */
 router.put('/read-all', authenticate, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id.toString();
 
     await Notification.updateMany(
       { userId, read: false },
