@@ -101,27 +101,38 @@ export default function Notifications() {
         .filter((booking: Booking) => booking.status === 'accepted' || booking.status === 'rejected');
       
       // Combine new notification system with old booking system and deduplicate
+      const notificationBasedUpdates = bookingNotifications.map((n: ModerationNotification) => ({
+        _id: n._id,
+        itemTitle: n.message.split('"')[1] || 'Unknown Item',
+        buyerId: '',
+        buyerName: '',
+        sellerName: 'Seller',
+        status: n.title.includes('Accepted') ? 'accepted' : 'rejected',
+        message: n.message,
+        rejectionNote: n.title.includes('Rejected') ? n.message.split('Reason: ')[1] : undefined,
+        read: n.read,
+        createdAt: n.createdAt,
+        isNotification: true
+      }));
+      
+      // Create a Set of item titles from notifications to avoid duplicates
+      const notificationItemTitles = new Set(
+        notificationBasedUpdates.map(n => `${n.itemTitle}-${n.status}`)
+      );
+      
+      // Only include buyer bookings that don't have a corresponding notification
+      const uniqueBuyerBookings = buyerBookings
+        .filter((b: Booking) => !notificationItemTitles.has(`${b.itemTitle}-${b.status}`))
+        .map((b: Booking) => ({ ...b, isNotification: false }));
+      
       const allBookingUpdates = [
-        ...bookingNotifications.map((n: ModerationNotification) => ({
-          _id: n._id,
-          itemTitle: n.message.split('"')[1] || 'Unknown Item',
-          buyerId: '',
-          buyerName: '',
-          sellerName: 'Seller',
-          status: n.title.includes('Accepted') ? 'accepted' : 'rejected',
-          message: n.message,
-          rejectionNote: n.title.includes('Rejected') ? n.message.split('Reason: ')[1] : undefined,
-          read: n.read,
-          createdAt: n.createdAt,
-          isNotification: true
-        })),
-        ...buyerBookings.map((b: Booking) => ({ ...b, isNotification: false }))
+        ...notificationBasedUpdates,
+        ...uniqueBuyerBookings
       ];
       
-      // Deduplicate by ID to prevent duplicates
+      // Further deduplicate by _id to ensure no exact duplicates
       const uniqueUpdatesMap = new Map();
       allBookingUpdates.forEach((booking: any) => {
-        // Use _id as unique key to prevent exact duplicates
         if (!uniqueUpdatesMap.has(booking._id)) {
           uniqueUpdatesMap.set(booking._id, booking);
         }
