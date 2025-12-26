@@ -15,6 +15,7 @@ import OAuthCallback from './pages/OAuthCallback'
 import ModerationDashboard from './pages/ModerationDashboard'
 import Bookings from './pages/Bookings'
 import Cart from './pages/Cart'
+import Notifications from './pages/Notifications'
 
 export default function App() {
   const setUser = useSetRecoilState(userAtom);
@@ -112,6 +113,7 @@ export default function App() {
         <Route path="/item/:id" element={<ItemDetail />} />
         <Route path="/bookings" element={<Bookings />} />
         <Route path="/cart" element={<Cart />} />
+        <Route path="/notifications" element={<Notifications />} />
         <Route path="/oauth-callback" element={<OAuthCallback />} />
         <Route path="/admin/moderation" element={<ModerationDashboard />} />
       </Routes>

@@ -8,7 +8,11 @@ A full-stack campus marketplace application for students to buy, sell, and rent 
 - 📦 **Item Listings**: Create, browse, and manage items
 - 💬 **Real-time Chat**: Private messaging with Socket.IO
 - 📅 **Booking System**: Request and manage item bookings
-- 🔔 **Notifications**: Real-time booking and message alerts
+- 🔔 **Notifications**: Real-time booking and message alerts with dedicated notification page
+  - Separate tabs for booking and moderation notifications
+  - Mark as read/unread functionality
+  - Delete individual notifications
+  - Clear all notifications option
 - 🌙 **Dark Mode**: Full dark mode support
 - 🏫 **Campus-based**: Automatic filtering by college email domain
 
@@ -146,6 +150,10 @@ VITE_SOCKET_URL=http://localhost:5000
 - Chat with sellers
 - Book items
 - Get real-time notifications
+- View and manage all notifications in dedicated page
+  - Booking requests (incoming)
+  - Booking updates (accepted/rejected)
+  - Item moderation updates
 - View contact information
 - Manage your listings
 
