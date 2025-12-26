@@ -317,13 +317,10 @@ export default function Notifications() {
     navigate('/bookings');
   };
 
-  const handleViewBookingUpdate = async (bookingId: string) => {
+  const handleMarkBookingUpdateAsRead = async (bookingId: string) => {
     try {
       const booking = bookingUpdates.find(b => b._id === bookingId);
-      if (!booking) {
-        navigate('/bookings');
-        return;
-      }
+      if (!booking) return;
       
       // Only mark as read if it's unread
       if (!booking.read) {
@@ -348,12 +345,14 @@ export default function Notifications() {
         }
       }
     } catch (error) {
-      console.error('Error marking booking as read:', error);
+      console.error('Error marking booking update as read:', error);
       // Refresh on error to get correct state
       fetchNotifications();
     }
-    
-    // Navigate to bookings page
+  };
+
+  const handleViewBookingUpdate = () => {
+    // Just navigate to bookings page
     navigate('/bookings');
   };
 
@@ -708,8 +707,21 @@ export default function Notifications() {
                           >
                             Delete
                           </button>
+                          {!booking.read && (
+                            <button
+                              onClick={() => handleMarkBookingUpdateAsRead(booking._id)}
+                              className={`px-3 py-1.5 text-sm rounded-lg transition ${
+                                theme === 'dark'
+                                  ? 'bg-blue-900/30 text-blue-400 hover:bg-blue-900/50'
+                                  : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
+                              }`}
+                              title="Mark as read"
+                            >
+                              Mark as Read
+                            </button>
+                          )}
                           <button
-                            onClick={() => handleViewBookingUpdate(booking._id)}
+                            onClick={() => handleViewBookingUpdate()}
                             className="px-3 py-1.5 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition"
                           >
                             View Details
