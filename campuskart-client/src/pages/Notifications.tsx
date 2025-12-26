@@ -79,10 +79,22 @@ export default function Notifications() {
       const bookingNotifCount = bookingNotifications.filter((n: ModerationNotification) => !n.read).length;
       const modCount = moderationOnly.filter((n: ModerationNotification) => !n.read).length;
       
-      // Get all seller bookings (incoming requests)
-      const sellerBookings = (sellerBookingsResponse.data.bookings || [])
+      // Get all seller bookings (incoming requests) and deduplicate by ID
+      const allSellerBookings = (sellerBookingsResponse.data.bookings || [])
         .filter((booking: Booking) => booking.status === 'pending');
-      setBookingRequests(sellerBookings);
+      
+      // Deduplicate by ID
+      const uniqueBookingRequestsMap = new Map();
+      allSellerBookings.forEach((booking: Booking) => {
+        if (!uniqueBookingRequestsMap.has(booking._id)) {
+          uniqueBookingRequestsMap.set(booking._id, booking);
+        }
+      });
+      
+      const uniqueSellerBookings = Array.from(uniqueBookingRequestsMap.values())
+        .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      
+      setBookingRequests(uniqueSellerBookings);
       
       // Get buyer booking updates (accepted/rejected)
       const buyerBookings = (buyerBookingsResponse.data.bookings || [])
@@ -106,13 +118,12 @@ export default function Notifications() {
         ...buyerBookings.map((b: Booking) => ({ ...b, isNotification: false }))
       ];
       
-      // Deduplicate by creating a Map with unique item titles and status combinations
+      // Deduplicate by ID to prevent duplicates
       const uniqueUpdatesMap = new Map();
       allBookingUpdates.forEach((booking: any) => {
-        const key = `${booking.itemTitle}-${booking.status}`;
-        // Keep the newest one (or the one from notifications system)
-        if (!uniqueUpdatesMap.has(key) || booking.isNotification) {
-          uniqueUpdatesMap.set(key, booking);
+        // Use _id as unique key to prevent exact duplicates
+        if (!uniqueUpdatesMap.has(booking._id)) {
+          uniqueUpdatesMap.set(booking._id, booking);
         }
       });
       
@@ -243,33 +254,42 @@ export default function Notifications() {
   };
 
   const handleViewBookingUpdate = async (bookingId: string, isUnread: boolean) => {
-    // Mark as read and decrement count if it's unread
+    // Immediately update UI for better UX
     if (isUnread) {
-      try {
-        const booking = bookingUpdates.find(b => b._id === bookingId);
-        const isNotificationBased = booking && !booking.buyerId;
-        
-        if (isNotificationBased) {
-          // Mark notification as read
-          await axios.put(`${API_URL}/api/notifications/${bookingId}/read`);
-        } else {
-          // Mark booking as read
-          const token = localStorage.getItem('token');
-          await axios.put(
-            `${API_URL}/api/booking/${bookingId}/read`,
-            {},
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-        }
-        
-        setUnreadBookingsCount(prev => Math.max(0, prev - 1));
+      setUnreadBookingsCount(prev => Math.max(0, prev - 1));
+      setBookingUpdates(prev => prev.map(b => 
+        b._id === bookingId ? { ...b, read: true } : b
+      ));
+    }
+    
+    // Then make API call
+    try {
+      const booking = bookingUpdates.find(b => b._id === bookingId);
+      const isNotificationBased = booking && !booking.buyerId;
+      
+      if (isNotificationBased) {
+        // Mark notification as read
+        await axios.put(`${API_URL}/api/notifications/${bookingId}/read`);
+      } else {
+        // Mark booking as read
+        const token = localStorage.getItem('token');
+        await axios.put(
+          `${API_URL}/api/booking/${bookingId}/read`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      }
+    } catch (error) {
+      console.error('Error marking booking as read:', error);
+      // Revert on error
+      if (isUnread) {
+        setUnreadBookingsCount(prev => prev + 1);
         setBookingUpdates(prev => prev.map(b => 
-          b._id === bookingId ? { ...b, read: true } : b
+          b._id === bookingId ? { ...b, read: false } : b
         ));
-      } catch (error) {
-        console.error('Error marking booking as read:', error);
       }
     }
+    
     // Navigate to bookings page
     navigate('/bookings');
   };
