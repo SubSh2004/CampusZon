@@ -322,20 +322,26 @@ export default function Notifications() {
       const booking = bookingUpdates.find(b => b._id === bookingId);
       if (!booking) return;
       
+      console.log('Marking as read:', { bookingId, booking, isNotification: booking.isNotification });
+      
       // Only mark as read if it's unread
       if (!booking.read) {
         const isNotificationBased = booking.isNotification === true;
         const token = localStorage.getItem('token');
         
+        console.log('Making API call:', { isNotificationBased, endpoint: isNotificationBased ? `/api/notifications/${bookingId}/read` : `/api/booking/${bookingId}/read` });
+        
         // First make API call, then update UI only on success
         if (isNotificationBased) {
-          await axios.put(`${API_URL}/api/notifications/${bookingId}/read`);
+          const response = await axios.put(`${API_URL}/api/notifications/${bookingId}/read`);
+          console.log('Notification API response:', response);
         } else {
-          await axios.put(
+          const response = await axios.put(
             `${API_URL}/api/booking/${bookingId}/read`,
             {},
             { headers: { Authorization: `Bearer ${token}` } }
           );
+          console.log('Booking API response:', response);
         }
         
         // Only update UI after successful API call
@@ -344,9 +350,10 @@ export default function Notifications() {
           b._id === bookingId ? { ...b, read: true } : b
         ));
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error marking booking update as read:', error);
-      alert('Failed to mark as read. Please try again.');
+      console.error('Error details:', { message: error.message, response: error.response?.data, status: error.response?.status });
+      alert(`Failed to mark as read. Error: ${error.response?.data?.error || error.message}`);
     }
   };
 
