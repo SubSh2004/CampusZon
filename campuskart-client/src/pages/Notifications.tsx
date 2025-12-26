@@ -29,11 +29,13 @@ interface ModerationNotification {
 }
 
 type NotificationTab = 'booking' | 'moderation';
+type BookingSubTab = 'incoming' | 'updates';
 
 export default function Notifications() {
   const navigate = useNavigate();
   const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState<NotificationTab>('booking');
+  const [bookingSubTab, setBookingSubTab] = useState<BookingSubTab>('incoming');
   const [loading, setLoading] = useState(true);
   
   // Booking notifications
@@ -178,8 +180,24 @@ export default function Notifications() {
 
   const handleDeleteNotification = async (notificationId: string, isBooking: boolean) => {
     try {
+      const token = localStorage.getItem('token');
+      
       if (isBooking) {
-        await axios.delete(`${API_URL}/api/notifications/${notificationId}`);
+        // Check if it's a notification-based booking or regular booking
+        const booking = bookingUpdates.find(b => b._id === notificationId);
+        const isNotificationBased = booking && !booking.buyerId;
+        
+        if (isNotificationBased) {
+          // Delete from notification system
+          await axios.delete(`${API_URL}/api/notifications/${notificationId}`);
+        } else {
+          // Mark as read for old booking system
+          await axios.put(
+            `${API_URL}/api/booking/${notificationId}/read`,
+            {},
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+        }
       } else {
         await axios.delete(`${API_URL}/api/notifications/${notificationId}`);
       }
@@ -224,13 +242,33 @@ export default function Notifications() {
     }
   };
 
-  const handleViewBookingUpdate = (bookingId: string, isUnread: boolean) => {
+  const handleViewBookingUpdate = async (bookingId: string, isUnread: boolean) => {
     // Mark as read and decrement count if it's unread
     if (isUnread) {
-      setUnreadBookingsCount(prev => Math.max(0, prev - 1));
-      setBookingUpdates(prev => prev.map(b => 
-        b._id === bookingId ? { ...b, read: true } : b
-      ));
+      try {
+        const booking = bookingUpdates.find(b => b._id === bookingId);
+        const isNotificationBased = booking && !booking.buyerId;
+        
+        if (isNotificationBased) {
+          // Mark notification as read
+          await axios.put(`${API_URL}/api/notifications/${bookingId}/read`);
+        } else {
+          // Mark booking as read
+          const token = localStorage.getItem('token');
+          await axios.put(
+            `${API_URL}/api/booking/${bookingId}/read`,
+            {},
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+        }
+        
+        setUnreadBookingsCount(prev => Math.max(0, prev - 1));
+        setBookingUpdates(prev => prev.map(b => 
+          b._id === bookingId ? { ...b, read: true } : b
+        ));
+      } catch (error) {
+        console.error('Error marking booking as read:', error);
+      }
     }
     // Navigate to bookings page
     navigate('/bookings');
@@ -309,9 +347,6 @@ export default function Notifications() {
     );
   }
 
-  const totalBookingNotifications = bookingRequests.length + bookingUpdates.length;
-
-
   return (
     <div className={`min-h-screen ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'} py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-300`}>
       <div className="max-w-6xl mx-auto">
@@ -383,7 +418,48 @@ export default function Notifications() {
         {/* Booking Notifications Tab */}
         {activeTab === 'booking' && (
           <div className="space-y-6">
+            {/* Sub-tabs for Booking Section */}
+            <div className={`border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
+              <div className="flex gap-4">
+                <button
+                  onClick={() => setBookingSubTab('incoming')}
+                  className={`px-4 py-2 font-medium border-b-2 transition ${
+                    bookingSubTab === 'incoming'
+                      ? 'border-green-600 text-green-600 dark:text-green-400'
+                      : theme === 'dark'
+                        ? 'border-transparent text-gray-400 hover:text-gray-300'
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  📨 Incoming Requests
+                  {bookingRequests.length > 0 && (
+                    <span className="ml-2 bg-green-600 text-white text-xs px-2 py-0.5 rounded-full">
+                      {bookingRequests.length}
+                    </span>
+                  )}
+                </button>
+                <button
+                  onClick={() => setBookingSubTab('updates')}
+                  className={`px-4 py-2 font-medium border-b-2 transition ${
+                    bookingSubTab === 'updates'
+                      ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                      : theme === 'dark'
+                        ? 'border-transparent text-gray-400 hover:text-gray-300'
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  📬 Your Booking Updates
+                  {bookingUpdates.length > 0 && (
+                    <span className="ml-2 bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full">
+                      {bookingUpdates.length}
+                    </span>
+                  )}
+                </button>
+              </div>
+            </div>
+
             {/* Incoming Booking Requests */}
+            {bookingSubTab === 'incoming' && (
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h2 className={`text-xl font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
@@ -476,8 +552,10 @@ export default function Notifications() {
                 </div>
               )}
             </div>
+            )}
 
             {/* Your Booking Updates */}
+            {bookingSubTab === 'updates' && (
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h2 className={`text-xl font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
@@ -571,24 +649,6 @@ export default function Notifications() {
                 </div>
               )}
             </div>
-
-            {/* Empty State for All Booking Notifications */}
-            {totalBookingNotifications === 0 && (
-              <div className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-md p-12 text-center`}>
-                <div className="text-6xl mb-4">📦</div>
-                <h2 className={`text-2xl font-semibold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                  No booking notifications
-                </h2>
-                <p className={`mb-6 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                  You'll see booking requests and updates here
-                </p>
-                <Link
-                  to="/"
-                  className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition"
-                >
-                  Browse Items
-                </Link>
-              </div>
             )}
           </div>
         )}
