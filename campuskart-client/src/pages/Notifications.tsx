@@ -282,16 +282,16 @@ export default function Notifications() {
     }
   };
 
-  const handleManageBookingRequest = async (bookingId: string, isUnread: boolean) => {
-    // Mark as read if unread
-    if (isUnread) {
-      try {
-        const booking = bookingRequests.find(b => b._id === bookingId);
-        if (!booking) {
-          navigate('/bookings');
-          return;
-        }
-        
+  const handleManageBookingRequest = async (bookingId: string) => {
+    try {
+      const booking = bookingRequests.find(b => b._id === bookingId);
+      if (!booking) {
+        navigate('/bookings');
+        return;
+      }
+      
+      // Only mark as read if it's unread
+      if (!booking.read) {
         const token = localStorage.getItem('token');
         
         // Update UI immediately for better UX
@@ -306,26 +306,27 @@ export default function Notifications() {
           {},
           { headers: { Authorization: `Bearer ${token}` } }
         );
-      } catch (error) {
-        console.error('Error marking booking as read:', error);
-        // Refresh on error to get correct state
-        fetchNotifications();
       }
+    } catch (error) {
+      console.error('Error marking booking as read:', error);
+      // Refresh on error to get correct state
+      fetchNotifications();
     }
+    
     // Navigate to bookings page
     navigate('/bookings');
   };
 
-  const handleViewBookingUpdate = async (bookingId: string, isUnread: boolean) => {
-    // Mark as read if unread
-    if (isUnread) {
-      try {
-        const booking = bookingUpdates.find(b => b._id === bookingId);
-        if (!booking) {
-          navigate('/bookings');
-          return;
-        }
-        
+  const handleViewBookingUpdate = async (bookingId: string) => {
+    try {
+      const booking = bookingUpdates.find(b => b._id === bookingId);
+      if (!booking) {
+        navigate('/bookings');
+        return;
+      }
+      
+      // Only mark as read if it's unread
+      if (!booking.read) {
         const isNotificationBased = booking.isNotification === true;
         const token = localStorage.getItem('token');
         
@@ -345,12 +346,13 @@ export default function Notifications() {
             { headers: { Authorization: `Bearer ${token}` } }
           );
         }
-      } catch (error) {
-        console.error('Error marking booking as read:', error);
-        // Refresh on error to get correct state
-        fetchNotifications();
       }
+    } catch (error) {
+      console.error('Error marking booking as read:', error);
+      // Refresh on error to get correct state
+      fetchNotifications();
     }
+    
     // Navigate to bookings page
     navigate('/bookings');
   };
@@ -610,7 +612,7 @@ export default function Notifications() {
                             Delete
                           </button>
                           <button
-                            onClick={() => handleManageBookingRequest(booking._id, !booking.read)}
+                            onClick={() => handleManageBookingRequest(booking._id)}
                             className="px-3 py-1.5 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition"
                           >
                             Manage
@@ -707,7 +709,7 @@ export default function Notifications() {
                             Delete
                           </button>
                           <button
-                            onClick={() => handleViewBookingUpdate(booking._id, !booking.read)}
+                            onClick={() => handleViewBookingUpdate(booking._id)}
                             className="px-3 py-1.5 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition"
                           >
                             View Details
