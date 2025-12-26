@@ -142,7 +142,11 @@ export default function Notifications() {
         .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       
       setBookingUpdates(combinedBookingUpdates);
-      setUnreadBookingsCount(bookCount + bookingNotifCount);
+      
+      // Calculate unread count from actual displayed data (after deduplication)
+      const unreadRequestsCount = uniqueSellerBookings.filter((b: Booking) => !b.read).length;
+      const unreadUpdatesCount = combinedBookingUpdates.filter((b: any) => !b.read).length;
+      setUnreadBookingsCount(unreadRequestsCount + unreadUpdatesCount);
       
       // Set moderation notifications (excluding BOOKING type)
       setModerationNotifications(moderationOnly);
