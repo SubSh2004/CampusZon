@@ -60,7 +60,8 @@ const Payment: React.FC = () => {
 
   const autoBookItem = async (token: string) => {
     try {
-      await axios.post(
+      console.log('🎫 Auto-booking item:', paymentDetails.itemId);
+      const response = await axios.post(
         '/api/bookings',
         {
           itemId: paymentDetails.itemId,
@@ -68,10 +69,12 @@ const Payment: React.FC = () => {
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      console.log('Item auto-booked successfully');
-    } catch (error) {
-      console.error('Auto-booking error:', error);
+      console.log('✅ Item auto-booked successfully:', response.data);
+      return true;
+    } catch (error: any) {
+      console.error('❌ Auto-booking error:', error.response?.data || error.message);
       // Don't throw error - payment was successful, booking is bonus
+      return false;
     }
   };
 
@@ -113,7 +116,9 @@ const Payment: React.FC = () => {
 
       // Auto-book the item after successful payment
       if (response.data.success) {
-        await autoBookItem(token);
+        console.log('💳 Payment verified, auto-booking item...');
+        const booked = await autoBookItem(token);
+        console.log('📋 Booking result:', booked ? 'Success' : 'Failed');
       }
 
       return response.data;
