@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 import TierComparison from './TierComparison';
 import axios from '../config/axios';
 
@@ -8,6 +9,8 @@ interface UnlockModalProps {
   onClose: () => void;
   itemId: string;
   itemTitle: string;
+  itemPrice?: number;
+  sellerName?: string;
   onUnlockSuccess: (sellerInfo: any, tier: string) => void;
 }
 
@@ -22,27 +25,19 @@ const UnlockModal: React.FC<UnlockModalProps> = ({
   onClose, 
   itemId, 
   itemTitle,
+  itemPrice = 0,
+  sellerName = 'Seller',
   onUnlockSuccess 
 }) => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [freeCredits, setFreeCredits] = useState(0);
 
   useEffect(() => {
     if (isOpen) {
       checkUnlockStatus();
-      loadRazorpayScript();
     }
   }, [isOpen, itemId]);
-
-  const loadRazorpayScript = () => {
-    if (document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]')) {
-      return;
-    }
-    const script = document.createElement('script');
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    script.async = true;
-    document.body.appendChild(script);
-  };
 
   const checkUnlockStatus = async () => {
     try {
@@ -84,69 +79,25 @@ const UnlockModal: React.FC<UnlockModalProps> = ({
       setLoading(false);
     }
   };
-
-  const openRazorpay = (order: any, paymentId: string) => {
-    const options = {
-      key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_YOUR_KEY',
-      amount: order.amount,
-      currency: order.currency,
-      name: 'CampusZon',
-      description: `Unlock seller details - ${itemTitle}`,
-      order_id: order.id,
-      handler: async (response: any) => {
-        await verifyPayment(response, paymentId);
-      },
-      prefill: {
-        name: localStorage.getItem('username') || '',
-        email: localStorage.getItem('email') || '',
-      },
-      theme: {
-        color: '#3b82f6',
-      },
-      modal: {
-        ondismiss: () => {
-          setLoading(false);
-        }
-      }
-    };
-
-    const razorpay = new window.Razorpay(options);
-    razorpay.open();
-  };
-
-  const verifyPayment = async (razorpayResponse: any, paymentId: string) => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(
-        '/api/unlock/payment/verify',
-        {
-          razorpay_order_id: razorpayResponse.razorpay_order_id,
-          razorpay_payment_id: razorpayResponse.razorpay_payment_id,
-          razorpay_signature: razorpayResponse.razorpay_signature,
-          paymentId
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      if (response.data.success) {
-        onUnlockSuccess(response.data.sellerInfo, 'standard');
+navigate to custom payment page
+      if (response.data.requiresPayment) {
         onClose();
-        alert('✅ Payment successful! You can now contact the seller.');
+        navigate('/payment', {
+          state: {
+            itemId,
+            itemTitle,
+            itemPrice,
+            sellerName,
+            amount: 11, // Unlock fee
+            tier: 'standard'
+          }
+        });
+        setLoading(false);
+        return;
       }
     } catch (error: any) {
-      console.error('Payment verification error:', error);
-      alert(error.response?.data?.message || 'Payment verification failed');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (!isOpen) return null;
-
-  return createPortal(
-    <div 
-      className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-4 overflow-y-auto"
-      onClick={onClose}
+      console.error('Unlock error:', error);
+      alert(error.response?.data?.message || 'Failed to unlock. Please try again.');onClose}
     >
       <div 
         className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto relative"

@@ -565,6 +565,8 @@ export default function ItemDetail() {
           onClose={() => setShowUnlockModal(false)}
           itemId={item.id}
           itemTitle={item.title}
+          itemPrice={item.price}
+          sellerName={item.userName}
           onUnlockSuccess={handleUnlockSuccess}
         />
       )}
