@@ -27,6 +27,8 @@ const allowedOrigins = [
   'http://localhost:3002',
   'https://campus-kart-navy.vercel.app', // Old domain (kept for transition)
   'https://campus-zon-navy.vercel.app', // New CampusZon domain
+  'https://campuszon.tech', // Custom domain
+  'https://www.campuszon.tech', // Custom domain with www
   process.env.FRONTEND_URL
 ].filter(Boolean); // Remove undefined values
 
