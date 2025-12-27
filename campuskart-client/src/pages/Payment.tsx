@@ -24,12 +24,6 @@ const Payment: React.FC = () => {
   const paymentDetails = location.state as PaymentDetails;
 
   const [loading, setLoading] = useState(false);
-  const [paymentMethods, setPaymentMethods] = useState({
-    card: true,
-    upi: true,
-    netbanking: true,
-    wallet: true,
-  });
   const [userDetails, setUserDetails] = useState({
     name: localStorage.getItem('username') || '',
     email: localStorage.getItem('email') || '',
@@ -130,7 +124,7 @@ const Payment: React.FC = () => {
       );
 
       // Auto-book the item after successful payment
-      if (response.data.success) {
+      if (response.data.success && token) {
         console.log('💳 Payment verified, auto-booking item...');
         const sellerInfo = response.data.sellerInfo;
         const booked = await autoBookItem(token, sellerInfo);
@@ -208,13 +202,10 @@ const Payment: React.FC = () => {
         config: {
           display: {
             blocks: {
-              card: { name: 'Pay using Card', instruments: paymentMethods.card ? [] : undefined },
-              upi: { name: 'UPI', instruments: paymentMethods.upi ? [] : undefined },
-              netbanking: {
-                name: 'Netbanking',
-                instruments: paymentMethods.netbanking ? [] : undefined,
-              },
-              wallet: { name: 'Wallet', instruments: paymentMethods.wallet ? [] : undefined },
+              card: { name: 'Pay using Card' },
+              upi: { name: 'UPI' },
+              netbanking: { name: 'Netbanking' },
+              wallet: { name: 'Wallet' },
             },
             sequence: ['block.card', 'block.upi', 'block.netbanking', 'block.wallet'],
             preferences: {
