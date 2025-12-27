@@ -16,6 +16,10 @@ import ModerationDashboard from './pages/ModerationDashboard'
 import Bookings from './pages/Bookings'
 import Cart from './pages/Cart'
 import Notifications from './pages/Notifications'
+import Payment from './pages/Payment'
+import PaymentSuccess from './pages/PaymentSuccess'
+import PaymentFailed from './pages/PaymentFailed'
+import PaymentHistory from './pages/PaymentHistory'
 
 export default function App() {
   const setUser = useSetRecoilState(userAtom);
@@ -114,6 +118,10 @@ export default function App() {
         <Route path="/bookings" element={<Bookings />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/notifications" element={<Notifications />} />
+        <Route path="/payment" element={<Payment />} />
+        <Route path="/payment-success" element={<PaymentSuccess />} />
+        <Route path="/payment-failed" element={<PaymentFailed />} />
+        <Route path="/payment-history" element={<PaymentHistory />} />
         <Route path="/oauth-callback" element={<OAuthCallback />} />
         <Route path="/admin/moderation" element={<ModerationDashboard />} />
       </Routes>
