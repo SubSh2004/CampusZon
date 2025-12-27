@@ -58,15 +58,30 @@ const Payment: React.FC = () => {
     });
   };
 
-  const autoBookItem = async (token: string) => {
+  const autoBookItem = async (token: string, sellerData: any) => {
     try {
-      console.log('🎫 Auto-booking item:', paymentDetails.itemId);
+      console.log('🎫 Auto-booking item:', {
+        itemId: paymentDetails.itemId,
+        itemTitle: paymentDetails.itemTitle,
+        itemPrice: paymentDetails.itemPrice,
+        sellerId: sellerData?._id,
+        sellerName: sellerData?.username || paymentDetails.sellerName
+      });
+      
+      const bookingPayload = {
+        itemId: paymentDetails.itemId,
+        itemTitle: paymentDetails.itemTitle,
+        itemPrice: paymentDetails.itemPrice,
+        sellerId: sellerData?._id,
+        sellerName: sellerData?.username || paymentDetails.sellerName,
+        message: `I want to purchase "${paymentDetails.itemTitle}" for ₹${paymentDetails.itemPrice}. Payment completed successfully.`,
+      };
+      
+      console.log('📤 Sending booking request with payload:', bookingPayload);
+      
       const response = await axios.post(
         '/api/bookings',
-        {
-          itemId: paymentDetails.itemId,
-          message: `I want to purchase "${paymentDetails.itemTitle}" for ₹${paymentDetails.itemPrice}. Payment completed successfully.`,
-        },
+        bookingPayload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       console.log('✅ Item auto-booked successfully:', response.data);
@@ -117,8 +132,9 @@ const Payment: React.FC = () => {
       // Auto-book the item after successful payment
       if (response.data.success) {
         console.log('💳 Payment verified, auto-booking item...');
-        const booked = await autoBookItem(token);
-        console.log('📋 Booking result:', booked ? 'Success' : 'Failed');
+        const sellerInfo = response.data.sellerInfo;
+        const booked = await autoBookItem(token, sellerInfo);
+        console.log('📋 Booking result:', booked ? 'Success ✅' : 'Failed ❌');
       }
 
       return response.data;
