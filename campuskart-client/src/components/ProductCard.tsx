@@ -33,6 +33,7 @@ export default function ProductCard({ item }: ProductCardProps) {
   const setCart = useSetRecoilState(cartAtom);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isUnlocked, setIsUnlocked] = useState(false);
+  const [isBooking, setIsBooking] = useState(false);
 
   // Use imageUrl directly (it's either a full ImgBB URL or null)
   const imageUrl = (item.imageUrls && item.imageUrls.length > 0 ? item.imageUrls[0] : item.imageUrl) || '/placeholder.jpg';
@@ -90,6 +91,45 @@ export default function ProductCard({ item }: ProductCardProps) {
       alert(error.response?.data?.message || 'Failed to add item to cart');
     } finally {
       setIsAddingToCart(false);
+    }
+  };
+
+  const handleBookItem = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Please login to book items');
+      navigate('/login');
+      return;
+    }
+
+    try {
+      setIsBooking(true);
+      const response = await axios.post(
+        `${API_URL}/api/bookings`,
+        {
+          itemId: item.id,
+          itemTitle: item.title,
+          itemPrice: item.price,
+          itemCategory: item.category,
+          sellerId: item.userId,
+          sellerName: item.userName,
+          message: `I want to purchase "${item.title}" for ₹${item.price}. I have unlocked this item.`
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (response.data.success) {
+        alert('✅ Booking request sent successfully!');
+        navigate('/bookings');
+      }
+    } catch (error: any) {
+      console.error('Error booking item:', error);
+      alert(error.response?.data?.message || 'Failed to book item');
+    } finally {
+      setIsBooking(false);
     }
   };
 
@@ -178,32 +218,31 @@ export default function ProductCard({ item }: ProductCardProps) {
             <div className="flex gap-1.5 sm:gap-2 mt-3 sm:mt-4">
               {!isOwnItem ? (
                 <>
-                  <Link
-                    to={`/item/${item.id}`}
-                    className={`relative flex-1 group/btn ${
-                      isUnlocked 
-                        ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 active:from-green-700 active:to-emerald-700' 
-                        : 'bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 active:from-indigo-700 active:to-purple-700'
-                    } text-white text-xs sm:text-sm font-bold py-2 px-2 sm:px-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-1 overflow-hidden shadow-md hover:shadow-lg`}
-                  >
-                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
-                    {isUnlocked ? (
-                      <>
-                        <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
-                        </svg>
-                        <span className="relative z-10">Unlocked</span>
-                      </>
-                    ) : (
-                      <>
-                        <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                        <span className="relative z-10">View</span>
-                      </>
-                    )}
-                  </Link>
+                  {isUnlocked ? (
+                    <button
+                      onClick={handleBookItem}
+                      disabled={isBooking}
+                      className="relative flex-1 group/btn bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 active:from-green-700 active:to-emerald-700 text-white text-xs sm:text-sm font-bold py-2 px-2 sm:px-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-1 overflow-hidden shadow-md hover:shadow-lg disabled:opacity-50"
+                    >
+                      <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
+                      <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                      </svg>
+                      <span className="relative z-10">{isBooking ? 'Booking...' : 'Book Item'}</span>
+                    </button>
+                  ) : (
+                    <Link
+                      to={`/item/${item.id}`}
+                      className="relative flex-1 group/btn bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 active:from-indigo-700 active:to-purple-700 text-white text-xs sm:text-sm font-bold py-2 px-2 sm:px-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-1 overflow-hidden shadow-md hover:shadow-lg"
+                    >
+                      <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
+                      <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      <span className="relative z-10">View</span>
+                    </Link>
+                  )}
                   <button
                     onClick={handleAddToCart}
                     disabled={isAddingToCart}
