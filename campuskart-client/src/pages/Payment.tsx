@@ -58,6 +58,23 @@ const Payment: React.FC = () => {
     });
   };
 
+  const autoBookItem = async (token: string) => {
+    try {
+      await axios.post(
+        '/api/bookings',
+        {
+          itemId: paymentDetails.itemId,
+          message: `I want to purchase "${paymentDetails.itemTitle}" for ₹${paymentDetails.itemPrice}. Payment completed successfully.`,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      console.log('Item auto-booked successfully');
+    } catch (error) {
+      console.error('Auto-booking error:', error);
+      // Don't throw error - payment was successful, booking is bonus
+    }
+  };
+
   const createOrder = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -93,6 +110,11 @@ const Payment: React.FC = () => {
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+
+      // Auto-book the item after successful payment
+      if (response.data.success) {
+        await autoBookItem(token);
+      }
 
       return response.data;
     } catch (error: any) {
@@ -290,39 +312,6 @@ const Payment: React.FC = () => {
                   placeholder="Enter your phone number"
                 />
               </div>
-            </div>
-          </div>
-
-          {/* Payment Methods */}
-          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Payment Methods
-            </h3>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { key: 'card', label: '💳 Card', icon: '💳' },
-                { key: 'upi', label: 'UPI', icon: '📱' },
-                { key: 'netbanking', label: 'Net Banking', icon: '🏦' },
-                { key: 'wallet', label: 'Wallet', icon: '👛' },
-              ].map((method) => (
-                <button
-                  key={method.key}
-                  onClick={() =>
-                    setPaymentMethods({
-                      ...paymentMethods,
-                      [method.key]: !paymentMethods[method.key as keyof typeof paymentMethods],
-                    })
-                  }
-                  className={`p-3 rounded-lg border-2 transition-all ${
-                    paymentMethods[method.key as keyof typeof paymentMethods]
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                      : 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500'
-                  }`}
-                >
-                  <span className="text-2xl mr-2">{method.icon}</span>
-                  <span className="font-medium">{method.label}</span>
-                </button>
-              ))}
             </div>
           </div>
 
