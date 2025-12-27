@@ -66,20 +66,11 @@ const UnlockModal: React.FC<UnlockModalProps> = ({
         onUnlockSuccess(response.data.sellerInfo, 'standard');
         setFreeCredits(response.data.remainingCredits);
         onClose();
+        setLoading(false);
         return;
       }
 
-      // If payment required, open Razorpay
-      if (response.data.requiresPayment) {
-        openRazorpay(response.data.order, response.data.payment);
-      }
-    } catch (error: any) {
-      console.error('Unlock error:', error);
-      alert(error.response?.data?.message || 'Failed to unlock. Please try again.');
-      setLoading(false);
-    }
-  };
-navigate to custom payment page
+      // If payment required, navigate to custom payment page
       if (response.data.requiresPayment) {
         onClose();
         navigate('/payment', {
@@ -97,7 +88,17 @@ navigate to custom payment page
       }
     } catch (error: any) {
       console.error('Unlock error:', error);
-      alert(error.response?.data?.message || 'Failed to unlock. Please try again.');onClose}
+      alert(error.response?.data?.message || 'Failed to unlock. Please try again.');
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return createPortal(
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-4 overflow-y-auto"
+      onClick={onClose}
     >
       <div 
         className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto relative"
