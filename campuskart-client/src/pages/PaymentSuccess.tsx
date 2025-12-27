@@ -191,8 +191,12 @@ const PaymentSuccess: React.FC = () => {
           <button
             onClick={() => navigate('/bookings')}
             className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg
-                     shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
+                     shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200
+                     flex items-center justify-center"
           >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
             View My Bookings
           </button>
           <button
@@ -225,8 +229,8 @@ const PaymentSuccess: React.FC = () => {
                 Next Steps
               </h3>
               <p className="text-sm text-blue-800 dark:text-blue-300">
-                A confirmation email has been sent to your registered email address. You can now
-                contact the seller to arrange the purchase or rental.
+                ✅ Payment successful! The item has been automatically booked for you. A confirmation email has been sent. 
+                You can now contact the seller to arrange the purchase or rental. Check your bookings to see the details.
               </p>
             </div>
           </div>
