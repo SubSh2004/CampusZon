@@ -1,109 +1,65 @@
 import React, { useState, useEffect } from 'react';
 import axios from '../config/axios';
 
-interface PaymentRecord {
-  _id: string;
-  itemId: {
-    _id: string;
+interface UnlockRecord {
+  unlockId: string;
+  tier?: string;
+  amount: number;
+  isFreeCredit?: boolean;
+  unlockedAt: string;
+  messageCount?: number;
+  messageLimit?: number;
+  item?: {
+    id: string;
     title: string;
     price: number;
-  };
-  type: string;
-  amount: number;
-  currency: string;
-  razorpayOrderId: string;
-  razorpayPaymentId: string | null;
-  status: 'pending' | 'completed' | 'failed' | 'refunded';
-  metadata: {
-    tier?: string;
-    sellerName?: string;
-    itemTitle?: string;
-  };
-  createdAt: string;
-  updatedAt: string;
+    imageUrl?: string;
+  } | null;
 }
 
 const PaymentHistory: React.FC = () => {
-  const [payments, setPayments] = useState<PaymentRecord[]>([]);
+  const [unlocks, setUnlocks] = useState<UnlockRecord[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'completed' | 'pending' | 'failed'>('all');
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    fetchPaymentHistory();
+    fetchUnlocks();
   }, []);
 
-  const fetchPaymentHistory = async () => {
+  const fetchUnlocks = async () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get('/api/unlock/user/unlocks', {
         headers: { Authorization: `Bearer ${token}` },
       });
-
-      // Transform unlock data to payment-like structure
-      // You might need to create a separate endpoint for payments
-      setPayments(response.data.unlocks || []);
+      setUnlocks(response.data.unlocks || []);
     } catch (error) {
-      console.error('Error fetching payment history:', error);
+      console.error('Error fetching unlocks:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200';
-      case 'pending':
-        return 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200';
-      case 'failed':
-        return 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200';
-      case 'refunded':
-        return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200';
-      default:
-        return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200';
-    }
+  const getTierLabel = (tier?: string) => {
+    if (!tier) return 'Unlock';
+    if (tier === 'basic') return 'Basic Unlock';
+    if (tier === 'premium') return 'Premium Unlock';
+    return tier.charAt(0).toUpperCase() + tier.slice(1) + ' Unlock';
   };
 
-  const getTypeLabel = (type: string) => {
-    switch (type) {
-      case 'unlock_basic':
-        return 'Basic Unlock';
-      case 'unlock_premium':
-        return 'Premium Unlock';
-      case 'transaction':
-        return 'Transaction';
-      case 'featured_listing':
-        return 'Featured Listing';
-      default:
-        return type;
-    }
-  };
-
-  const filteredPayments = payments
-    .filter((payment) => {
-      if (filter === 'all') return true;
-      return payment.status === filter;
-    })
-    .filter((payment) => {
-      if (!searchTerm) return true;
-      const search = searchTerm.toLowerCase();
-      return (
-        payment.metadata?.itemTitle?.toLowerCase().includes(search) ||
-        payment.metadata?.sellerName?.toLowerCase().includes(search) ||
-        payment.razorpayPaymentId?.toLowerCase().includes(search) ||
-        payment.razorpayOrderId?.toLowerCase().includes(search)
-      );
-    });
+  const filteredUnlocks = unlocks.filter((unlock) => {
+    if (!searchTerm) return true;
+    const search = searchTerm.toLowerCase();
+    return (
+      unlock.item?.title?.toLowerCase().includes(search) ||
+      unlock.tier?.toLowerCase().includes(search)
+    );
+  });
 
   const stats = {
-    total: payments.length,
-    completed: payments.filter((p) => p.status === 'completed').length,
-    pending: payments.filter((p) => p.status === 'pending').length,
-    failed: payments.filter((p) => p.status === 'failed').length,
-    totalSpent: payments
-      .filter((p) => p.status === 'completed')
-      .reduce((sum, p) => sum + p.amount, 0),
+    total: unlocks.length,
+    totalSpent: unlocks.reduce((sum, u) => sum + (u.amount || 0), 0),
+    freeCredits: unlocks.filter((u) => u.isFreeCredit).length,
   };
 
   if (loading) {
@@ -111,7 +67,7 @@ const PaymentHistory: React.FC = () => {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading payment history...</p>
+          <p className="text-gray-600 dark:text-gray-400">Loading unlock history...</p>
         </div>
       </div>
     );
@@ -119,74 +75,40 @@ const PaymentHistory: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Payment History
+            Unlock History
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            View all your transactions and payment details
+            View all your unlocks and credits
           </p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Payments</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Unlocks</div>
             <div className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</div>
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Completed</div>
-            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-              {stats.completed}
-            </div>
-          </div>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Pending</div>
-            <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-              {stats.pending}
-            </div>
-          </div>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Failed</div>
-            <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-              {stats.failed}
-            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Free Credits Used</div>
+            <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.freeCredits}</div>
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Spent</div>
-            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-              ₹{stats.totalSpent}
-            </div>
+            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">₹{stats.totalSpent}</div>
           </div>
         </div>
 
-        {/* Filters and Search */}
+        {/* Search */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow mb-6 p-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            {/* Filter Buttons */}
-            <div className="flex flex-wrap gap-2">
-              {['all', 'completed', 'pending', 'failed'].map((status) => (
-                <button
-                  key={status}
-                  onClick={() => setFilter(status as any)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                    filter === status
-                      ? 'bg-blue-600 text-white shadow-lg'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                  }`}
-                >
-                  {status.charAt(0).toUpperCase() + status.slice(1)}
-                </button>
-              ))}
-            </div>
-
-            {/* Search */}
             <div className="relative flex-1 max-w-md">
               <input
                 type="text"
-                placeholder="Search by item, seller, or payment ID..."
+                placeholder="Search by item or tier..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full px-4 py-2 pl-10 border border-gray-300 dark:border-gray-600 rounded-lg
@@ -210,8 +132,8 @@ const PaymentHistory: React.FC = () => {
           </div>
         </div>
 
-        {/* Payment List */}
-        {filteredPayments.length === 0 ? (
+        {/* Unlock List */}
+        {filteredUnlocks.length === 0 ? (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center">
             <svg
               className="w-16 h-16 text-gray-400 mx-auto mb-4"
@@ -227,19 +149,19 @@ const PaymentHistory: React.FC = () => {
               />
             </svg>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-              No payments found
+              No unlocks found
             </h3>
             <p className="text-gray-600 dark:text-gray-400">
-              {searchTerm || filter !== 'all'
-                ? 'Try adjusting your filters or search term'
-                : "You haven't made any payments yet"}
+              {searchTerm
+                ? 'Try adjusting your search term'
+                : "You haven't unlocked any items yet"}
             </p>
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredPayments.map((payment) => (
+            {filteredUnlocks.map((unlock) => (
               <div
-                key={payment._id}
+                key={unlock.unlockId}
                 className="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow overflow-hidden"
               >
                 <div className="p-6">
@@ -266,25 +188,15 @@ const PaymentHistory: React.FC = () => {
                         </div>
                         <div className="flex-1">
                           <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
-                            {payment.metadata?.itemTitle || 'Unknown Item'}
+                            {unlock.item?.title || 'Unknown Item'}
                           </h3>
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                            Seller: {payment.metadata?.sellerName || 'Unknown'}
-                          </p>
-                          <div className="flex flex-wrap gap-2 text-xs">
-                            <span
-                              className={`px-2 py-1 rounded-full font-medium ${getStatusColor(
-                                payment.status
-                              )}`}
-                            >
-                              {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
-                            </span>
+                          <div className="flex flex-wrap gap-2 text-xs mt-1">
                             <span className="px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 font-medium">
-                              {getTypeLabel(payment.type)}
+                              {getTierLabel(unlock.tier)}
                             </span>
-                            {payment.metadata?.tier && (
+                            {unlock.isFreeCredit && (
                               <span className="px-2 py-1 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 font-medium">
-                                {payment.metadata.tier}
+                                Free Credit
                               </span>
                             )}
                           </div>
@@ -292,13 +204,13 @@ const PaymentHistory: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Right: Payment Details */}
+                    {/* Right: Unlock Details */}
                     <div className="lg:text-right space-y-2">
                       <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                        ₹{payment.amount}
+                        ₹{unlock.amount}
                       </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400">
-                        {new Date(payment.createdAt).toLocaleDateString('en-IN', {
+                        {new Date(unlock.unlockedAt).toLocaleDateString('en-IN', {
                           year: 'numeric',
                           month: 'short',
                           day: 'numeric',
@@ -306,11 +218,6 @@ const PaymentHistory: React.FC = () => {
                           minute: '2-digit',
                         })}
                       </div>
-                      {payment.razorpayPaymentId && (
-                        <div className="text-xs text-gray-500 dark:text-gray-400 font-mono">
-                          ID: {payment.razorpayPaymentId.slice(0, 20)}...
-                        </div>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -336,29 +243,31 @@ const PaymentHistory: React.FC = () => {
                     </summary>
                     <div className="mt-4 space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">Order ID:</span>
+                        <span className="text-gray-600 dark:text-gray-400">Unlock ID:</span>
                         <span className="text-gray-900 dark:text-white font-mono text-xs">
-                          {payment.razorpayOrderId}
+                          {unlock.unlockId}
                         </span>
                       </div>
-                      {payment.razorpayPaymentId && (
+                      {unlock.item && (
                         <div className="flex justify-between">
-                          <span className="text-gray-600 dark:text-gray-400">Payment ID:</span>
+                          <span className="text-gray-600 dark:text-gray-400">Item ID:</span>
                           <span className="text-gray-900 dark:text-white font-mono text-xs">
-                            {payment.razorpayPaymentId}
+                            {unlock.item.id}
                           </span>
                         </div>
                       )}
-                      <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">Currency:</span>
-                        <span className="text-gray-900 dark:text-white">{payment.currency}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">Last Updated:</span>
-                        <span className="text-gray-900 dark:text-white">
-                          {new Date(payment.updatedAt).toLocaleString('en-IN')}
-                        </span>
-                      </div>
+                      {unlock.messageLimit && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600 dark:text-gray-400">Message Limit:</span>
+                          <span className="text-gray-900 dark:text-white">{unlock.messageLimit}</span>
+                        </div>
+                      )}
+                      {unlock.messageCount !== undefined && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600 dark:text-gray-400">Messages Used:</span>
+                          <span className="text-gray-900 dark:text-white">{unlock.messageCount}</span>
+                        </div>
+                      )}
                     </div>
                   </details>
                 </div>
