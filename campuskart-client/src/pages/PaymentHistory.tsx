@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from '../config/axios';
 
 interface UnlockRecord {
@@ -21,6 +22,7 @@ const PaymentHistory: React.FC = () => {
   const [unlocks, setUnlocks] = useState<UnlockRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchUnlocks();
@@ -76,6 +78,16 @@ const PaymentHistory: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
       <div className="max-w-3xl mx-auto">
+        {/* Back Button */}
+        <button
+          onClick={() => navigate(-1)}
+          className="mb-4 flex items-center text-blue-600 dark:text-blue-400 hover:underline focus:outline-none"
+        >
+          <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Back
+        </button>
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
