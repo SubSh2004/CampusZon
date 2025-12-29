@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRecoilValue } from 'recoil';
 import axios from 'axios';
 import { userAtom } from '../store/user.atom';
@@ -32,11 +32,40 @@ export default function ProductsList({ searchQuery = '', selectedCategory = 'All
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const observer = useRef<IntersectionObserver | null>(null);
+  
+  // Ref for the last item to trigger infinite scroll
+  const lastItemRef = useCallback((node: HTMLDivElement | null) => {
+    if (loadingMore) return;
+    if (observer.current) observer.current.disconnect();
+    
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        setPage(prevPage => prevPage + 1);
+      }
+    });
+    
+    if (node) observer.current.observe(node);
+  }, [loadingMore, hasMore]);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setItems([]);
+    setPage(1);
+    setHasMore(true);
+  }, [searchQuery, selectedCategory, listingTypeFilter, availabilityFilter, user.email]);
 
   useEffect(() => {
     const fetchItems = async () => {
       try {
-        setLoading(true);
+        if (page === 1) {
+          setLoading(true);
+        } else {
+          setLoadingMore(true);
+        }
         
         // Extract email domain from user email
         let emailDomain = '';
@@ -51,21 +80,23 @@ export default function ProductsList({ searchQuery = '', selectedCategory = 'All
           return;
         }
         
-        const response = await axios.get(`/api/items?emailDomain=${emailDomain}`);
+        const response = await axios.get(`/api/items?emailDomain=${emailDomain}&page=${page}&limit=20`);
         
         if (response.data.success) {
-          setItems(response.data.items);
+          setItems(prev => page === 1 ? response.data.items : [...prev, ...response.data.items]);
+          setHasMore(response.data.pagination.hasMore);
         }
       } catch (err: any) {
         console.error('Error fetching items:', err);
         setError(err.response?.data?.message || 'Failed to load items. Please try again later.');
       } finally {
         setLoading(false);
+        setLoadingMore(false);
       }
     };
 
     fetchItems();
-  }, [user.email]);
+  }, [user.email, page]);
 
   if (loading) {
     return (
@@ -145,10 +176,35 @@ export default function ProductsList({ searchQuery = '', selectedCategory = 'All
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
-      {filteredItems.map((item) => (
-        <ProductCard key={item.id} item={item} />
-      ))}
-    </div>
+    <>
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
+        {filteredItems.map((item, index) => {
+          // Attach ref to last item for infinite scroll
+          if (filteredItems.length === index + 1) {
+            return (
+              <div key={item.id} ref={lastItemRef}>
+                <ProductCard item={item} />
+              </div>
+            );
+          } else {
+            return <ProductCard key={item.id} item={item} />;
+          }
+        })}
+      </div>
+      
+      {/* Loading more indicator */}
+      {loadingMore && (
+        <div className="flex justify-center items-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 dark:border-indigo-400"></div>
+        </div>
+      )}
+      
+      {/* No more items message */}
+      {!hasMore && filteredItems.length > 0 && (
+        <div className="text-center py-8 text-gray-500 dark:text-gray-400 text-sm">
+          No more items to load
+        </div>
+      )}
+    </>
   );
 }

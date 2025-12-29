@@ -115,10 +115,10 @@ export const createItem = async (req, res) => {
   }
 };
 
-// Get all items (filtered by email domain)
+// Get all items (filtered by email domain) with pagination
 export const getAllItems = async (req, res) => {
   try {
-    const { emailDomain } = req.query;
+    const { emailDomain, page = 1, limit = 20 } = req.query;
     
     if (!emailDomain) {
       return res.status(400).json({
@@ -127,23 +127,44 @@ export const getAllItems = async (req, res) => {
       });
     }
 
+    // Convert to numbers
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+
     // Query MongoDB for items matching the domain with active moderation status
     const items = await Item.find({ 
       emailDomain,
-      moderationStatus: { $in: ['active', 'warned'] } // Show active and warned items
-    }).sort({ createdAt: -1 }).lean();
+      moderationStatus: { $in: ['active', 'warned'] }
+    })
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limitNum)
+    .lean();
+
+    // Get total count for pagination info
+    const totalItems = await Item.countDocuments({ 
+      emailDomain,
+      moderationStatus: { $in: ['active', 'warned'] }
+    });
 
     // Convert _id to id for frontend compatibility
     const itemsWithId = items.map(item => ({
       ...item,
-      id: item._id.toString(), // Convert ObjectId to string and add as 'id'
-      _id: undefined // Remove the original _id field
+      id: item._id.toString(),
+      _id: undefined
     }));
 
     res.status(200).json({
       success: true,
       count: itemsWithId.length,
       items: itemsWithId,
+      pagination: {
+        currentPage: pageNum,
+        totalPages: Math.ceil(totalItems / limitNum),
+        totalItems,
+        hasMore: pageNum * limitNum < totalItems
+      }
     });
   } catch (error) {
     console.error('Get items error:', error);

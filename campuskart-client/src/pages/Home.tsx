@@ -9,8 +9,6 @@ import { getOrganizationName } from '../utils/domainMapper';
 import ProductsList from '../components/ProductsList';
 import Notifications from '../components/Notifications';
 import SearchWithAutoComplete from '../components/SearchWithAutoComplete';
-import { generateSuggestions } from '../utils/searchUtils';
-import axios from 'axios';
 
 export default function Home() {
   const user = useRecoilValue(userAtom);
@@ -22,7 +20,6 @@ export default function Home() {
   const [listingTypeFilter, setListingTypeFilter] = useState('All');
   const [availabilityFilter, setAvailabilityFilter] = useState('All');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [allItems, setAllItems] = useState<any[]>([]);
   const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
   const filterRef = useRef<HTMLDivElement>(null);
   
@@ -37,39 +34,6 @@ export default function Home() {
     'Sports',
     'Other'
   ];
-
-  // Fetch all items for generating suggestions
-  useEffect(() => {
-    const fetchItems = async () => {
-      try {
-        if (!user.email) return;
-        
-        const emailDomain = user.email.split('@')[1] || '';
-        if (!emailDomain) return;
-        
-        const response = await axios.get(`/api/items?emailDomain=${emailDomain}`);
-        if (response.data.success) {
-          setAllItems(response.data.items);
-          console.log('Fetched items for suggestions:', response.data.items.length);
-        }
-      } catch (err) {
-        console.error('Error fetching items for suggestions:', err);
-      }
-    };
-
-    fetchItems();
-  }, [user.email]);
-
-  // Generate search suggestions based on current query
-  useEffect(() => {
-    if (searchQuery.trim() && allItems.length > 0) {
-      const suggestions = generateSuggestions(allItems, searchQuery, 8);
-      console.log('Generated suggestions:', suggestions);
-      setSearchSuggestions(suggestions);
-    } else {
-      setSearchSuggestions([]);
-    }
-  }, [searchQuery, allItems]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
