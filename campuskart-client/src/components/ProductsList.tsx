@@ -80,7 +80,7 @@ export default function ProductsList({ searchQuery = '', selectedCategory = 'All
           return;
         }
         
-        const response = await axios.get(`/api/items?emailDomain=${emailDomain}&page=${page}&limit=20`);
+        const response = await axios.get(`/api/items?emailDomain=${emailDomain}&page=${page}&limit=8`);
         
         if (response.data.success) {
           setItems(prev => page === 1 ? response.data.items : [...prev, ...response.data.items]);

@@ -1,5 +1,6 @@
 {
   "css.lint.unknownAtRules": "ignore",
   "editor.experimentalGpuAcceleration": "on",
-  "terminal.integrated.gpuAcceleration": "on"
+  "terminal.integrated.gpuAcceleration": "on",
+  "CodeGPT.apiKey": "Anthropic"
 }

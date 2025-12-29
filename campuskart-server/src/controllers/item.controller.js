@@ -118,7 +118,7 @@ export const createItem = async (req, res) => {
 // Get all items (filtered by email domain) with pagination
 export const getAllItems = async (req, res) => {
   try {
-    const { emailDomain, page = 1, limit = 20 } = req.query;
+    const { emailDomain, page = 1, limit = 8 } = req.query;
     
     if (!emailDomain) {
       return res.status(400).json({
