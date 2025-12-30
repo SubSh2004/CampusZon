@@ -2,7 +2,7 @@
  * Search utilities for fuzzy matching and suggestions
  */
 
-interface SearchableItem {
+interface Item {
   title: string;
   description: string;
   category: string;
@@ -68,7 +68,7 @@ function characterSimilarity(str1: string, str2: string): number {
  * Fuzzy search that finds items matching the query
  * Returns items sorted by relevance
  */
-export function fuzzySearch<T extends SearchableItem>(items: T[], query: string, threshold: number = 0.3): T[] {
+export function fuzzySearch(items: Item[], query: string, threshold: number = 0.3): Item[] {
   if (!query.trim()) return items;
   
   const scoredItems = items.map(item => {
@@ -104,7 +104,7 @@ export function fuzzySearch<T extends SearchableItem>(items: T[], query: string,
 /**
  * Generate search suggestions based on existing items
  */
-export function generateSuggestions(items: SearchableItem[], query: string, maxSuggestions: number = 8): string[] {
+export function generateSuggestions(items: Item[], query: string, maxSuggestions: number = 8): string[] {
   if (!query.trim()) return [];
   
   const queryLower = query.toLowerCase();

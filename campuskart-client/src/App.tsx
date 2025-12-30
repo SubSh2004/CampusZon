@@ -99,17 +99,14 @@ export default function App() {
 
   if (!isInitialized) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-primary-50/30 to-steel-50/50 dark:from-neutral-950 dark:via-primary-950/30 dark:to-steel-950/50 flex items-center justify-center">
-        <div className="relative">
-          <div className="absolute inset-0 bg-primary-400/30 dark:bg-primary-600/30 rounded-full blur-2xl opacity-50 animate-pulse"></div>
-          <div className="relative animate-spin rounded-full h-16 w-16 border-4 border-transparent border-t-primary-500 border-r-steel-400"></div>
-        </div>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-primary-50/30 to-steel-50/50 dark:from-neutral-950 dark:via-primary-950/30 dark:to-steel-950/50 transition-colors duration-500">
+    <div className="min-h-screen bg-gray-50">
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
