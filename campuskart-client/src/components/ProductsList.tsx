@@ -192,10 +192,24 @@ export default function ProductsList({ searchQuery = '', selectedCategory = 'All
         })}
       </div>
       
-      {/* Loading more indicator */}
+      {/* Loading more indicator with rolling logo */}
       {loadingMore && (
-        <div className="flex justify-center items-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 dark:border-indigo-400"></div>
+        <div className="flex flex-col items-center py-8">
+          <img
+            src="/logo-icon.jpg"
+            alt="CampusZon loading"
+            className="h-14 w-14 animate-bounce-slow drop-shadow-lg"
+            style={{ animation: 'rollDown 1.2s cubic-bezier(0.4,0,0.2,1) infinite' }}
+          />
+          <style>{`
+            @keyframes rollDown {
+              0% { transform: translateY(-20px) rotate(-20deg); opacity: 0.7; }
+              30% { transform: translateY(0) rotate(0deg); opacity: 1; }
+              60% { transform: translateY(10px) rotate(10deg); opacity: 1; }
+              100% { transform: translateY(-20px) rotate(-20deg); opacity: 0.7; }
+            }
+          `}</style>
+          <span className="mt-2 text-indigo-600 dark:text-indigo-400 font-medium text-sm tracking-wide">Loading more items...</span>
         </div>
       )}
       
