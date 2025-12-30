@@ -133,32 +133,61 @@ export default function ProductCard({ item }: ProductCardProps) {
     }
   };
 
+  const getCategoryBadgeClass = () => {
+    const categoryLower = item.category.toLowerCase();
+    if (categoryLower.includes('electronics')) return 'badge-electronics';
+    if (categoryLower.includes('books')) return 'badge-books';
+    if (categoryLower.includes('furniture')) return 'badge-furniture';
+    if (categoryLower.includes('clothing')) return 'badge-clothing';
+    if (categoryLower.includes('sports')) return 'badge-sports';
+    return 'badge-other';
+  };
+
+  const getCategoryIcon = () => {
+    const categoryLower = item.category.toLowerCase();
+    if (categoryLower.includes('electronics')) return '💻';
+    if (categoryLower.includes('books')) return '📚';
+    if (categoryLower.includes('furniture')) return '🛋️';
+    if (categoryLower.includes('clothing')) return '👕';
+    if (categoryLower.includes('sports')) return '⚽';
+    return '🎁';
+  };
+
   return (
     <>
       <Link to={`/item/${item.id}`} className="block group">
-        <div className="relative bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 overflow-hidden transition-all duration-200 hover:shadow-lg hover:border-gray-300 dark:hover:border-slate-700">
+        <div className="relative glass-card glass-card-hover overflow-hidden transition-all duration-500 hover:shadow-glass-lg hover:-translate-y-2 animate-scale-in">
           
-          {/* "Uploaded by you" badge above image */}
+          {/* "Uploaded by you" badge */}
           {isOwnItem && (
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-semibold px-3 py-1.5 text-center">
-              ✨ Uploaded by you
+            <div className="glass border-b border-neutral-200/30 dark:border-neutral-700/30 text-primary-600 dark:text-primary-400 text-xs font-bold px-4 py-2 text-center">
+              <span className="flex items-center justify-center gap-1.5">
+                <span>✨</span>
+                <span>Your Listing</span>
+              </span>
             </div>
           )}
           
-          <div className="aspect-w-16 aspect-h-12 bg-gray-100 dark:bg-slate-800 relative overflow-hidden">
-            <img
-              src={imageUrl}
-              alt={item.title}
-              className="w-full h-40 sm:h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x300?text=No+Image';
-              }}
-            />
+          {/* Image Container with Glass Overlay */}
+          <div className="relative bg-gradient-to-br from-neutral-100/50 to-neutral-200/50 dark:from-neutral-800/50 dark:to-neutral-900/50 overflow-hidden">
+            <div className="aspect-w-16 aspect-h-12">
+              <img
+                src={imageUrl}
+                alt={item.title}
+                className="w-full h-40 sm:h-48 object-cover group-hover:scale-110 transition-transform duration-700"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x300?text=No+Image';
+                }}
+              />
+            </div>
             
-            {/* Image Count Indicator */}
+            {/* Glass Overlay on Hover */}
+            <div className="absolute inset-0 frosted opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
+            {/* Image Count Badge */}
             {imageCount > 1 && (
               <div className="absolute bottom-3 right-3 z-20">
-                <span className="backdrop-blur-md bg-black/70 text-white text-xs font-semibold px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1">
+                <span className="glass text-neutral-700 dark:text-neutral-200 text-xs font-bold px-3 py-1.5 rounded-xl shadow-glass flex items-center gap-1.5">
                   <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
                   </svg>
@@ -170,102 +199,105 @@ export default function ProductCard({ item }: ProductCardProps) {
             {/* Availability Badge */}
             <div className="absolute top-3 right-3 z-20">
               {item.available ? (
-                <span className="bg-green-600 text-white text-xs font-semibold px-2 sm:px-3 py-1 rounded shadow-sm">
+                <span className="glass text-emerald-700 dark:text-emerald-300 text-xs font-bold px-3 py-1.5 rounded-xl shadow-glass border border-emerald-300/50 dark:border-emerald-700/50 flex items-center gap-1">
+                  <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
                   Available
                 </span>
               ) : (
-                <span className="relative bg-gradient-to-r from-red-400 to-rose-500 text-white text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-lg">
-                  <span className="absolute inset-0 bg-red-400 rounded-full blur-md opacity-50"></span>
-                  <span className="relative">✕ Sold Out</span>
+                <span className="glass text-red-700 dark:text-red-300 text-xs font-bold px-3 py-1.5 rounded-xl shadow-glass border border-red-300/50 dark:border-red-700/50 flex items-center gap-1">
+                  <span>✕</span>
+                  Sold
                 </span>
               )}
             </div>
             
-            {/* Category Badge on Image */}
+            {/* Category Badge */}
             <div className="absolute top-3 left-3 z-20">
-              <span className="backdrop-blur-md bg-white/90 dark:bg-gray-800/90 text-indigo-600 dark:text-indigo-400 text-xs font-semibold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-lg border border-indigo-200 dark:border-indigo-700">
-                {item.category}
+              <span className={`glass text-xs font-bold px-3 py-1.5 rounded-xl shadow-glass border ${getCategoryBadgeClass()} flex items-center gap-1.5`}>
+                <span>{getCategoryIcon()}</span>
+                <span>{item.category}</span>
               </span>
             </div>
           </div>
-          <div className="p-3 sm:p-4 relative z-20">
-            <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-1 line-clamp-1 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-indigo-600 group-hover:to-purple-600 dark:group-hover:from-indigo-400 dark:group-hover:to-purple-400 transition-all duration-300">
+          {/* Card Content */}
+          <div className="p-4 sm:p-5 relative z-20">
+            <h3 className="text-base sm:text-lg font-display font-bold text-neutral-900 dark:text-white mb-2 line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-all duration-300 leading-tight">
               {item.title}
             </h3>
             
-            {/* Category Badge in Card Content */}
-            <div className="mb-2">
-              <span className="inline-block bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800">
-                📂 {item.category}
-              </span>
-            </div>
-            
-            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+            <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mb-4 line-clamp-2 leading-relaxed">
               {item.description}
             </p>
             
-            {/* Price with Gradient Background */}
-            <div className="flex items-center justify-between mt-2 sm:mt-3 mb-3">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg blur-sm opacity-30 group-hover:opacity-50 transition-opacity"></div>
-                <span className="relative text-xl sm:text-2xl font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
-                  ₹{parseFloat(item.price.toString()).toFixed(2)}
-                </span>
+            {/* Price Tag with Glass Effect */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="relative group/price">
+                <div className="absolute -inset-1 bg-primary-400/20 dark:bg-primary-600/20 rounded-xl blur-md group-hover/price:blur-lg transition-all"></div>
+                <div className="relative px-4 py-2 glass rounded-xl shadow-glass border border-primary-200/50 dark:border-primary-700/50">
+                  <span className="text-xs text-neutral-500 dark:text-neutral-400 font-medium block">Price</span>
+                  <span className="text-xl sm:text-2xl font-display font-extrabold text-primary-600 dark:text-primary-400">
+                    ₹{parseFloat(item.price.toString()).toFixed(2)}
+                  </span>
+                </div>
               </div>
             </div>
 
-            {/* Action Buttons with Gradients */}
-            <div className="flex gap-1.5 sm:gap-2 mt-3 sm:mt-4">
+            {/* Action Buttons with Glass Effect */}
+            <div className="flex gap-2 mt-4">
               {!isOwnItem ? (
                 <>
                   {isUnlocked ? (
                     <button
                       onClick={handleBookItem}
                       disabled={isBooking}
-                      className="relative flex-1 group/btn bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 active:from-green-700 active:to-emerald-700 text-white text-xs sm:text-sm font-bold py-2 px-2 sm:px-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-1 overflow-hidden shadow-md hover:shadow-lg disabled:opacity-50"
+                      className="flex-1 glass rounded-xl py-2.5 px-3 text-xs sm:text-sm font-bold text-emerald-700 dark:text-emerald-300 shadow-glass hover:shadow-glass-hover transition-all hover:scale-105 disabled:opacity-50 border border-emerald-300/50 dark:border-emerald-700/50"
                     >
-                      <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
-                      <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                      </svg>
-                      <span className="relative z-10">{isBooking ? 'Booking...' : 'Book Item'}</span>
+                      <span className="flex items-center justify-center gap-1.5">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                        </svg>
+                        {isBooking ? '...' : 'Book'}
+                      </span>
                     </button>
                   ) : (
                     <Link
                       to={`/item/${item.id}`}
-                      className="relative flex-1 group/btn bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 active:from-indigo-700 active:to-purple-700 text-white text-xs sm:text-sm font-bold py-2 px-2 sm:px-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-1 overflow-hidden shadow-md hover:shadow-lg"
+                      className="flex-1 btn-primary rounded-xl py-2.5 px-3 text-xs sm:text-sm text-center"
                     >
-                      <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
-                      <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                      <span className="relative z-10">View</span>
+                      <span className="flex items-center justify-center gap-1.5">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        View
+                      </span>
                     </Link>
                   )}
                   <button
                     onClick={handleAddToCart}
                     disabled={isAddingToCart}
-                    className="relative flex-1 group/btn bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 active:from-blue-700 active:to-cyan-700 text-white text-xs sm:text-sm font-bold py-2 px-2 sm:px-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-1 overflow-hidden shadow-md hover:shadow-lg disabled:opacity-50"
+                    className="flex-1 glass rounded-xl py-2.5 px-3 text-xs sm:text-sm font-bold text-primary-700 dark:text-primary-300 shadow-glass hover:shadow-glass-hover transition-all hover:scale-105 disabled:opacity-50 border border-primary-300/50 dark:border-primary-700/50"
                   >
-                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
-                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                    <span className="relative z-10">{isAddingToCart ? 'Adding...' : 'Add to Cart'}</span>
+                    <span className="flex items-center justify-center gap-1.5">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                      {isAddingToCart ? '...' : 'Cart'}
+                    </span>
                   </button>
                 </>
               ) : (
                 <Link
                   to={`/item/${item.id}`}
-                  className="relative flex-1 group/btn bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 active:from-indigo-700 active:to-purple-700 text-white text-xs sm:text-sm font-bold py-2 px-2 sm:px-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-1 overflow-hidden shadow-md hover:shadow-lg"
+                  className="flex-1 btn-primary rounded-xl py-2.5 px-3 text-xs sm:text-sm text-center"
                 >
-                  <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
-                  <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
-                  <span className="relative z-10">View Your Item</span>
+                  <span className="flex items-center justify-center gap-1.5">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    Manage
+                  </span>
                 </Link>
               )}
             </div>

@@ -4,8 +4,7 @@ import axios from 'axios';
 import { useTheme } from '../context/ThemeContext';
 import { useSetRecoilState } from 'recoil';
 import { cartAtom } from '../store/cart.atom';
-import { io, Socket } from 'socket.io-client';
-import { SOCKET_URL } from '../config/api';
+import { Socket } from 'socket.io-client';
 import UnlockModal from '../components/UnlockModal';
 import FreeCreditsIndicator from '../components/FreeCreditsIndicator';
 import ReportButton from '../components/ReportButton';
@@ -38,7 +37,7 @@ export default function ItemDetail() {
   const [bookingMessage, setBookingMessage] = useState('');
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [bookingStatus, setBookingStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-  const [socket, setSocket] = useState<Socket | null>(null);
+  const [socket] = useState<Socket | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   
@@ -46,7 +45,6 @@ export default function ItemDetail() {
   const [showUnlockModal, setShowUnlockModal] = useState(false);
   const [unlocked, setUnlocked] = useState(false);
   const [sellerInfo, setSellerInfo] = useState<any>(null);
-  const [unlockTier, setUnlockTier] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchItem = async () => {
@@ -88,7 +86,6 @@ export default function ItemDetail() {
       
       if (response.data.unlocked) {
         setUnlocked(true);
-        setUnlockTier(response.data.tier);
         // Seller info is already in item, just mark as unlocked
       }
     } catch (error) {
@@ -96,9 +93,8 @@ export default function ItemDetail() {
     }
   };
 
-  const handleUnlockSuccess = (seller: any, tier: string) => {
+  const handleUnlockSuccess = (seller: any) => {
     setSellerInfo(seller);
-    setUnlockTier(tier);
     setUnlocked(true);
   };
 
