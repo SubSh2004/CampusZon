@@ -54,192 +54,57 @@ body {
 @layer components {
   /* Glassmorphism Components */
   .glass {
-    background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    @apply bg-white/60 dark:bg-neutral-900/60 backdrop-blur-xl border border-white/20 dark:border-neutral-700/30 shadow-glass;
   }
 
-  .dark .glass {
-    background: rgba(43, 43, 43, 0.6);
-    border: 1px solid rgba(85, 85, 85, 0.3);
-  }
-
-  .glass-hover:hover {
-    background: rgba(255, 255, 255, 0.7);
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25);
-  }
-
-  .dark .glass-hover:hover {
-    background: rgba(43, 43, 43, 0.7);
+  .glass-hover {
+    @apply hover:bg-white/70 dark:hover:bg-neutral-900/70 hover:shadow-glass-hover transition-all duration-300;
   }
 
   .glass-card {
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(229, 228, 226, 0.5);
-    border-radius: 1rem;
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-  }
-
-  .dark .glass-card {
-    background: rgba(43, 43, 43, 0.8);
-    border: 1px solid rgba(85, 85, 85, 0.5);
+    @apply bg-white/80 dark:bg-neutral-900/80 backdrop-blur-2xl border border-neutral-200/50 dark:border-neutral-700/50 rounded-2xl shadow-glass;
   }
 
   /* Button Styles */
   .btn-primary {
-    background: #2D68C4;
-    color: white;
-    font-weight: 600;
-    padding: 0.625rem 1.5rem;
-    border-radius: 0.75rem;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s;
-  }
-
-  .btn-primary:hover {
-    background: #2555A3;
-    box-shadow: 0 0 20px rgba(45, 104, 196, 0.3);
-    transform: scale(1.05);
+    @apply bg-primary-400 hover:bg-primary-500 active:bg-primary-600 text-white font-semibold px-6 py-2.5 rounded-xl shadow-lg hover:shadow-glow-sm transition-all duration-300 hover:scale-105;
   }
 
   .btn-secondary {
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(4px);
-    color: #555555;
-    font-weight: 600;
-    padding: 0.625rem 1.5rem;
-    border-radius: 0.75rem;
-    border: 1px solid #E5E4E2;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s;
-  }
-
-  .dark .btn-secondary {
-    background: rgba(64, 64, 64, 0.8);
-    color: #E5E4E2;
-    border-color: #555555;
-  }
-
-  .btn-secondary:hover {
-    background: white;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  }
-
-  .dark .btn-secondary:hover {
-    background: #404040;
+    @apply bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-200 font-semibold px-6 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-md hover:shadow-lg transition-all duration-300;
   }
 
   .btn-glass {
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(12px);
-    color: #555555;
-    font-weight: 600;
-    padding: 0.625rem 1.5rem;
-    border-radius: 0.75rem;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-    transition: all 0.3s;
-  }
-
-  .dark .btn-glass {
-    background: rgba(64, 64, 64, 0.2);
-    color: #E5E4E2;
-    border-color: rgba(85, 85, 85, 0.3);
-  }
-
-  .btn-glass:hover {
-    background: rgba(255, 255, 255, 0.3);
-  }
-
-  .dark .btn-glass:hover {
-    background: rgba(64, 64, 64, 0.3);
+    @apply bg-white/20 dark:bg-neutral-800/20 backdrop-blur-md hover:bg-white/30 dark:hover:bg-neutral-800/30 text-neutral-700 dark:text-neutral-200 font-semibold px-6 py-2.5 rounded-xl border border-white/30 dark:border-neutral-700/30 shadow-glass transition-all duration-300;
   }
 
   /* Category Badge Styles */
   .badge-category {
-    padding: 0.375rem 0.75rem;
-    border-radius: 0.75rem;
-    font-size: 0.75rem;
-    font-weight: 700;
-    border-width: 2px;
-    backdrop-filter: blur(4px);
-    transition: all 0.3s;
+    @apply px-3 py-1.5 rounded-xl text-xs font-bold border-2 backdrop-blur-sm transition-all duration-300;
   }
 
   .badge-electronics {
-    background: rgba(139, 92, 246, 0.1);
-    color: #7C3AED;
-    border-color: rgba(196, 181, 253, 0.5);
-  }
-
-  .dark .badge-electronics {
-    background: rgba(139, 92, 246, 0.2);
-    color: #C4B5FD;
-    border-color: rgba(109, 40, 217, 0.5);
+    @apply bg-purple-500/10 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-300/50 dark:border-purple-700/50;
   }
 
   .badge-books {
-    background: rgba(245, 158, 11, 0.1);
-    color: #D97706;
-    border-color: rgba(252, 211, 77, 0.5);
-  }
-
-  .dark .badge-books {
-    background: rgba(245, 158, 11, 0.2);
-    color: #FCD34D;
-    border-color: rgba(180, 83, 9, 0.5);
+    @apply bg-amber-500/10 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-300/50 dark:border-amber-700/50;
   }
 
   .badge-furniture {
-    background: rgba(16, 185, 129, 0.1);
-    color: #059669;
-    border-color: rgba(167, 243, 208, 0.5);
-  }
-
-  .dark .badge-furniture {
-    background: rgba(16, 185, 129, 0.2);
-    color: #A7F3D0;
-    border-color: rgba(4, 120, 87, 0.5);
+    @apply bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-300/50 dark:border-emerald-700/50;
   }
 
   .badge-clothing {
-    background: rgba(236, 72, 153, 0.1);
-    color: #DB2777;
-    border-color: rgba(251, 207, 232, 0.5);
-  }
-
-  .dark .badge-clothing {
-    background: rgba(236, 72, 153, 0.2);
-    color: #FBCFE8;
-    border-color: rgba(157, 23, 77, 0.5);
+    @apply bg-pink-500/10 dark:bg-pink-500/20 text-pink-700 dark:text-pink-300 border-pink-300/50 dark:border-pink-700/50;
   }
 
   .badge-sports {
-    background: rgba(59, 130, 246, 0.1);
-    color: #2563EB;
-    border-color: rgba(191, 219, 254, 0.5);
-  }
-
-  .dark .badge-sports {
-    background: rgba(59, 130, 246, 0.2);
-    color: #BFDBFE;
-    border-color: rgba(29, 78, 216, 0.5);
+    @apply bg-blue-500/10 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 border-blue-300/50 dark:border-blue-700/50;
   }
 
   .badge-other {
-    background: rgba(128, 128, 128, 0.1);
-    color: #555555;
-    border-color: rgba(192, 190, 186, 0.5);
-  }
-
-  .dark .badge-other {
-    background: rgba(128, 128, 128, 0.2);
-    color: #C0BEBA;
-    border-color: rgba(85, 85, 85, 0.5);
+    @apply bg-neutral-500/10 dark:bg-neutral-500/20 text-neutral-700 dark:text-neutral-300 border-neutral-300/50 dark:border-neutral-700/50;
   }
 }
 
@@ -258,24 +123,12 @@ body {
 
   /* Text Gradient */
   .text-gradient {
-    background: linear-gradient(to right, #2D68C4, #91A3B0, #1E4482);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
+    @apply bg-gradient-to-r from-primary-400 via-steel-500 to-primary-600 bg-clip-text text-transparent;
   }
 
   /* Frosted Glass Effect */
   .frosted {
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    background: rgba(255, 255, 255, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-  }
-
-  .dark .frosted {
-    background: rgba(43, 43, 43, 0.3);
-    border: 1px solid rgba(85, 85, 85, 0.2);
+    @apply backdrop-blur-2xl bg-white/30 dark:bg-neutral-900/30 border border-white/20 dark:border-neutral-700/20;
   }
 }
 
