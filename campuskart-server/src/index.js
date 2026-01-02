@@ -5,6 +5,7 @@ dotenv.config();
 import express from 'express';
 import cors from 'cors';
 import session from 'express-session';
+import MongoStore from 'connect-mongo';
 import passport, { configurePassport } from './config/passport.js';
 import { connectMongoDB } from './db/mongo.js';
 import userRoutes from './routes/user.routes.js';
@@ -51,17 +52,38 @@ app.use(cors({
 app.use(express.json());
 app.use(express.static('public'));
 
+const mongoUrl = process.env.MONGODB_URI || process.env.MONGO_URI;
+
+if (!mongoUrl) {
+  console.error('CRITICAL: MONGODB_URI or MONGO_URI must be defined for sessions.');
+  process.exit(1);
+}
+
 // Session middleware for Passport
 if (!process.env.JWT_SECRET) {
   console.error('CRITICAL: JWT_SECRET is not defined. Server cannot start securely.');
   process.exit(1);
 }
 
+app.set('trust proxy', 1);
+
 app.use(
   session({
     secret: process.env.JWT_SECRET,
     resave: false,
     saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl,
+      collectionName: 'sessions',
+      ttl: 60 * 60 * 24 * 7, // 7 days
+      autoRemove: 'native'
+    }),
+    cookie: {
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      httpOnly: true,
+      maxAge: 60 * 60 * 24 * 7 * 1000
+    }
   })
 );
 
