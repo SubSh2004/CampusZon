@@ -51,12 +51,12 @@ export default function ProductsList({ searchQuery = '', selectedCategory = 'All
     if (node) observer.current.observe(node);
   }, [loadingMore, hasMore]);
 
-  // Reset pagination when filters change
+  // Reset pagination only when the logged-in user changes
   useEffect(() => {
     setItems([]);
     setPage(1);
     setHasMore(true);
-  }, [searchQuery, selectedCategory, listingTypeFilter, availabilityFilter, user.email]);
+  }, [user.email]);
 
   useEffect(() => {
     const fetchItems = async () => {
