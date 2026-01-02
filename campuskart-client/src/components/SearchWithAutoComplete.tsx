@@ -20,12 +20,6 @@ export default function SearchWithAutoComplete({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Debug: Log suggestions when they change
-  useEffect(() => {
-    console.log('SearchWithAutoComplete - suggestions:', suggestions);
-    console.log('SearchWithAutoComplete - showSuggestions:', showSuggestions);
-  }, [suggestions, showSuggestions]);
-
   // Close suggestions when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {

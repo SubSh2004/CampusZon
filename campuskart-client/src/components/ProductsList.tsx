@@ -25,9 +25,10 @@ interface ProductsListProps {
   selectedCategory?: string;
   listingTypeFilter?: string;
   availabilityFilter?: string;
+  onItemsFetched?: (items: Item[]) => void;
 }
 
-export default function ProductsList({ searchQuery = '', selectedCategory = 'All', listingTypeFilter = 'All', availabilityFilter = 'All' }: ProductsListProps) {
+export default function ProductsList({ searchQuery = '', selectedCategory = 'All', listingTypeFilter = 'All', availabilityFilter = 'All', onItemsFetched }: ProductsListProps) {
   const user = useRecoilValue(userAtom);
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
@@ -76,6 +77,8 @@ export default function ProductsList({ searchQuery = '', selectedCategory = 'All
         // If no domain or not logged in, show message
         if (!emailDomain) {
           setError('Please login to view items from your campus.');
+          setItems([]);
+          onItemsFetched?.([]);
           setLoading(false);
           return;
         }
@@ -83,7 +86,11 @@ export default function ProductsList({ searchQuery = '', selectedCategory = 'All
         const response = await axios.get(`/api/items?emailDomain=${emailDomain}&page=${page}&limit=8`);
         
         if (response.data.success) {
-          setItems(prev => page === 1 ? response.data.items : [...prev, ...response.data.items]);
+          setItems(prev => {
+            const updatedItems = page === 1 ? response.data.items : [...prev, ...response.data.items];
+            onItemsFetched?.(updatedItems);
+            return updatedItems;
+          });
           setHasMore(response.data.pagination.hasMore);
         }
       } catch (err: any) {
@@ -96,7 +103,7 @@ export default function ProductsList({ searchQuery = '', selectedCategory = 'All
     };
 
     fetchItems();
-  }, [user.email, page]);
+  }, [user.email, page, onItemsFetched]);
 
   if (loading) {
     return (

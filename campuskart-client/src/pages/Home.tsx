@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useRecoilValue } from 'recoil';
 import { userAtom } from '../store/user.atom';
@@ -9,6 +9,13 @@ import { getOrganizationName } from '../utils/domainMapper';
 import ProductsList from '../components/ProductsList';
 import Notifications from '../components/Notifications';
 import SearchWithAutoComplete from '../components/SearchWithAutoComplete';
+import { generateSuggestions } from '../utils/searchUtils';
+
+type SuggestionSourceItem = {
+  title: string;
+  description: string;
+  category: string;
+};
 
 export default function Home() {
   const user = useRecoilValue(userAtom);
@@ -21,6 +28,7 @@ export default function Home() {
   const [availabilityFilter, setAvailabilityFilter] = useState('All');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
+  const [itemsForSuggestions, setItemsForSuggestions] = useState<SuggestionSourceItem[]>([]);
   const filterRef = useRef<HTMLDivElement>(null);
   
   const organizationName = user.email ? getOrganizationName(user.email) : '';
@@ -44,6 +52,18 @@ export default function Home() {
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchSuggestions([]);
+      return;
+    }
+    setSearchSuggestions(generateSuggestions(itemsForSuggestions, searchQuery));
+  }, [itemsForSuggestions, searchQuery]);
+
+  const handleItemsFetched = useCallback((items: SuggestionSourceItem[]) => {
+    setItemsForSuggestions(items);
   }, []);
 
   const activeFiltersCount = (selectedCategory !== 'All' ? 1 : 0) + (listingTypeFilter !== 'All' ? 1 : 0) + (availabilityFilter !== 'All' ? 1 : 0);
@@ -398,7 +418,13 @@ export default function Home() {
           )}
         </div>
         
-        <ProductsList searchQuery={searchQuery} selectedCategory={selectedCategory} listingTypeFilter={listingTypeFilter} availabilityFilter={availabilityFilter} />
+        <ProductsList
+          searchQuery={searchQuery}
+          selectedCategory={selectedCategory}
+          listingTypeFilter={listingTypeFilter}
+          availabilityFilter={availabilityFilter}
+          onItemsFetched={handleItemsFetched}
+        />
       </main>
 
       {/* Clean Footer */}
