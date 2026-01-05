@@ -28,9 +28,9 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Hostel name is required'],
     trim: true,
   },
-  freeUnlockCredits: {
+  unlockTokens: {
     type: Number,
-    default: 2, // Every new user gets 2 free unlocks
+    default: 2, // Every new user gets 2 free unlock tokens
   },
   totalUnlocks: {
     type: Number,

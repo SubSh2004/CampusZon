@@ -17,30 +17,13 @@ const unlockSchema = new mongoose.Schema({
     required: true,
     index: true
   },
-  tier: {
-    type: String,
-    enum: ['basic', 'premium'],
-    required: true
-  },
-  amount: {
+  tokensUsed: {
     type: Number,
-    required: true
+    default: 1 // 1 token per unlock
   },
-  isFreeCredit: {
+  wasFreeToken: {
     type: Boolean,
     default: false
-  },
-  paymentId: {
-    type: String,
-    default: null
-  },
-  messageCount: {
-    type: Number,
-    default: 0
-  },
-  messageLimit: {
-    type: Number,
-    default: 10 // Basic tier limit - COMBINED total for both users
   },
   active: {
     type: Boolean,
