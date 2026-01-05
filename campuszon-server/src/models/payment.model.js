@@ -9,11 +9,11 @@ const paymentSchema = new mongoose.Schema({
   itemId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Item',
-    required: true
+    required: false
   },
   type: {
     type: String,
-    enum: ['unlock_basic', 'unlock_premium', 'transaction', 'featured_listing'],
+    enum: ['unlock_basic', 'unlock_premium', 'transaction', 'featured_listing', 'token_purchase'],
     required: true
   },
   amount: {
@@ -45,7 +45,9 @@ const paymentSchema = new mongoose.Schema({
   metadata: {
     tier: String,
     sellerName: String,
-    itemTitle: String
+    itemTitle: String,
+    tokens: Number,
+    packageName: String
   }
 }, {
   timestamps: true
