@@ -315,25 +315,32 @@ export default function Home() {
 
       {/* Token Purchase Modal */}
       {showTokenModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
-            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
-              <div>
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Top Up Tokens</h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Current balance: <span className="font-semibold text-indigo-600 dark:text-indigo-400">{tokens} tokens</span></p>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowTokenModal(false)}>
+          <div className="bg-white dark:bg-slate-800 rounded-2xl max-w-6xl w-full max-h-[95vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="sticky top-0 z-10 bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-700 dark:to-purple-700 text-white p-4 sm:p-6 rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
+                    🎫 Top Up Tokens
+                  </h2>
+                  <p className="text-sm sm:text-base text-indigo-100 mt-1">
+                    You have <span className="font-bold text-white">{tokens}</span> {tokens === 1 ? 'token' : 'tokens'}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowTokenModal(false)}
+                  className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
-              <button
-                onClick={() => setShowTokenModal(false)}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-              >
-                <svg className="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
             </div>
-            <div className="overflow-y-auto max-h-[calc(90vh-100px)]">
-              <TokenPurchase onSelectPackage={handlePurchaseToken} currentTokens={tokens} />
-            </div>
+            
+            {/* Content */}
+            <TokenPurchase onSelectPackage={handlePurchaseToken} currentTokens={tokens} />
           </div>
         </div>
       )}
