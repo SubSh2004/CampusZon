@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import TierComparison from './TierComparison';
 import axios from '../config/axios';
 
 interface UnlockModalProps {
@@ -11,7 +10,7 @@ interface UnlockModalProps {
   itemTitle: string;
   itemPrice?: number;
   sellerName?: string;
-  onUnlockSuccess: (sellerInfo: any, tier: string) => void;
+  onUnlockSuccess: (sellerInfo: any) => void;
 }
 
 declare global {
@@ -31,64 +30,58 @@ const UnlockModal: React.FC<UnlockModalProps> = ({
 }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [freeCredits, setFreeCredits] = useState(0);
+  const [tokenBalance, setTokenBalance] = useState(0);
 
   useEffect(() => {
     if (isOpen) {
-      checkUnlockStatus();
+      checkTokenBalance();
     }
-  }, [isOpen, itemId]);
+  }, [isOpen]);
 
-  const checkUnlockStatus = async () => {
+  const checkTokenBalance = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`/api/unlock/items/${itemId}/status`, {
+      const response = await axios.get('/api/tokens/balance', {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setFreeCredits(response.data.freeCredits);
+      setTokenBalance(response.data.currentTokens);
     } catch (error) {
-      console.error('Error checking unlock status:', error);
+      console.error('Error checking token balance:', error);
     }
   };
 
-  const handleUnlock = async (useFreeCredit?: boolean) => {
+  const handleUnlock = async () => {
+    if (tokenBalance < 1) {
+      alert('⚠️ Insufficient tokens! Please top up to unlock.');
+      onClose();
+      navigate('/');
+      return;
+    }
+
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
       const response = await axios.post(
         `/api/unlock/items/${itemId}/unlock`,
-        { useFreeCredit },
+        {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // If free credit used, no payment needed
-      if (response.data.success && !response.data.requiresPayment) {
-        onUnlockSuccess(response.data.sellerInfo, 'standard');
-        setFreeCredits(response.data.remainingCredits);
+      if (response.data.success) {
+        onUnlockSuccess(response.data.sellerInfo);
         onClose();
-        setLoading(false);
-        return;
-      }
-
-      // If payment required, navigate to custom payment page
-      if (response.data.requiresPayment) {
-        onClose();
-        navigate('/payment', {
-          state: {
-            itemId,
-            itemTitle,
-            itemPrice,
-            sellerName,
-            amount: 11, // Unlock fee
-            tier: 'standard'
-          }
-        });
-        setLoading(false);
-        return;
+        alert(`✅ Item unlocked! You have ${response.data.remainingTokens} tokens left.`);
       }
     } catch (error: any) {
       console.error('Unlock error:', error);
-      alert(error.response?.data?.message || 'Failed to unlock. Please try again.');
+      const message = error.response?.data?.message || 'Failed to unlock. Please try again.';
+      alert(message);
+      
+      if (message.includes('Insufficient tokens')) {
+        onClose();
+        navigate('/');
+      }
+    } finally {
       setLoading(false);
     }
   };
@@ -97,27 +90,109 @@ const UnlockModal: React.FC<UnlockModalProps> = ({
 
   return createPortal(
     <div 
-      className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-4 overflow-y-auto"
+      className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-4"
       onClick={onClose}
     >
       <div 
-        className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto relative"
+        className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 text-2xl font-bold z-10"
-          disabled={loading}
-        >
-          ×
-        </button>
-
         <div className="p-6">
-          <TierComparison
-            onUnlock={handleUnlock}
-            freeCredits={freeCredits}
-            loading={loading}
-          />
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Unlock Item</h2>
+            <button
+              onClick={onClose}
+              className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 text-2xl"
+              disabled={loading}
+            >
+              ×
+            </button>
+          </div>
+
+          {/* Token Balance */}
+          <div className="mb-6 p-4 bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-3xl">🎫</span>
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Your Token Balance</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{tokenBalance} tokens</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Item Info */}
+          <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Unlocking</p>
+            <p className="font-semibold text-gray-900 dark:text-white">{itemTitle}</p>
+          </div>
+
+          {/* What you'll get */}
+          <div className="mb-6">
+            <p className="font-semibold text-gray-900 dark:text-white mb-3">You'll get access to:</p>
+            <ul className="space-y-2">
+              <li className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                <span className="text-green-500">✓</span> Seller's full name
+              </li>
+              <li className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                <span className="text-green-500">✓</span> Phone number
+              </li>
+              <li className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                <span className="text-green-500">✓</span> Email address
+              </li>
+              <li className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                <span className="text-green-500">✓</span> Hostel & room details
+              </li>
+              <li className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                <span className="text-green-500">✓</span> Direct chat access
+              </li>
+            </ul>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="space-y-3">
+            <button
+              onClick={handleUnlock}
+              disabled={loading || tokenBalance < 1}
+              className={`w-full py-3 rounded-lg font-semibold transition-all ${
+                loading || tokenBalance < 1
+                  ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white transform hover:scale-105'
+              }`}
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Unlocking...
+                </span>
+              ) : tokenBalance < 1 ? (
+                '⚠️ Insufficient Tokens'
+              ) : (
+                '🎫 Unlock with 1 Token'
+              )}
+            </button>
+
+            {tokenBalance < 1 && (
+              <button
+                onClick={() => { onClose(); navigate('/'); }}
+                className="w-full py-3 rounded-lg font-semibold bg-green-600 hover:bg-green-700 text-white transition"
+              >
+                Top Up Tokens
+              </button>
+            )}
+          </div>
+
+          {/* Info */}
+          <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-4">
+            {tokenBalance >= 1 
+              ? `After unlock, you'll have ${tokenBalance - 1} token(s) remaining`
+              : 'You need tokens to unlock seller details'}
+          </p>
         </div>
       </div>
     </div>,

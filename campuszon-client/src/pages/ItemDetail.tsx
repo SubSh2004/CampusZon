@@ -47,6 +47,8 @@ export default function ItemDetail() {
   const [unlocked, setUnlocked] = useState(false);
   const [sellerInfo, setSellerInfo] = useState<any>(null);
   const [unlockTier, setUnlockTier] = useState<string | null>(null);
+  const [tokenBalance, setTokenBalance] = useState<number>(0);
+  const [showInsufficientTokens, setShowInsufficientTokens] = useState(false);
 
   useEffect(() => {
     const fetchItem = async () => {
@@ -66,6 +68,9 @@ export default function ItemDetail() {
 
     // Check unlock status
     checkUnlockStatus();
+    
+    // Fetch token balance
+    fetchTokenBalance();
 
     // Initialize socket
     // TEMPORARILY DISABLED - Socket.io not set up on Render backend yet
@@ -76,6 +81,20 @@ export default function ItemDetail() {
       // newSocket.close();
     };
   }, [id]);
+
+  const fetchTokenBalance = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+      const response = await axios.get('/api/tokens/balance', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setTokenBalance(response.data.currentTokens);
+    } catch (error) {
+      console.error('Error fetching token balance:', error);
+    }
+  };
 
   const checkUnlockStatus = async () => {
     const token = localStorage.getItem('token');
@@ -88,18 +107,31 @@ export default function ItemDetail() {
       
       if (response.data.unlocked) {
         setUnlocked(true);
-        setUnlockTier(response.data.tier);
         // Seller info is already in item, just mark as unlocked
+      }
+      
+      // Also get token balance from the response
+      if (response.data.unlockTokens !== undefined) {
+        setTokenBalance(response.data.unlockTokens);
       }
     } catch (error) {
       console.error('Error checking unlock status:', error);
     }
   };
 
-  const handleUnlockSuccess = (seller: any, tier: string) => {
+  const handleUnlockSuccess = (seller: any) => {
     setSellerInfo(seller);
-    setUnlockTier(tier);
     setUnlocked(true);
+    fetchTokenBalance(); // Refresh token balance
+  };
+
+  const handleUnlockClick = () => {
+    if (tokenBalance === 0) {
+      setShowInsufficientTokens(true);
+      setTimeout(() => setShowInsufficientTokens(false), 4000);
+    } else {
+      setShowUnlockModal(true);
+    }
   };
 
   const handleBookItem = async () => {
@@ -234,7 +266,13 @@ export default function ItemDetail() {
             <img src="/logo-icon.jpg" alt="CampusZon" className="w-8 h-8 rounded-full object-cover" />
             <span className="text-lg font-bold text-gray-900 dark:text-white">Item Details</span>
           </div>
-          <div className="w-28"></div> {/* Spacer for centering */}
+          <div className="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2 rounded-lg shadow-lg">
+            <span className="text-2xl">🎫</span>
+            <div className="text-right">
+              <p className="text-xs opacity-90">Tokens</p>
+              <p className="text-lg font-bold">{tokenBalance}</p>
+            </div>
+          </div>
         </div>
       </header>
 
@@ -388,15 +426,30 @@ export default function ItemDetail() {
                         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Unlock to see name, phone & email</p>
                       </div>
                       
+                      {showInsufficientTokens && (
+                        <div className="mb-3 p-3 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-lg">
+                          <p className="text-red-700 dark:text-red-400 text-sm font-semibold text-center">
+                            ⚠️ Insufficient tokens! Please top up to unlock.
+                          </p>
+                          <button
+                            onClick={() => navigate('/')}
+                            className="w-full mt-2 bg-red-600 hover:bg-red-700 text-white text-sm py-2 rounded-lg transition"
+                          >
+                            Go to Home & Top Up
+                          </button>
+                        </div>
+                      )}
+                      
                       <button
-                        onClick={() => setShowUnlockModal(true)}
-                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition-all transform hover:scale-105 shadow-lg"
+                        onClick={handleUnlockClick}
+                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition-all transform hover:scale-105 shadow-lg flex items-center justify-center gap-2"
                       >
-                        🔓 Unlock Contact Details
+                        <span className="text-xl">🎫</span>
+                        🔓 Unlock with 1 Token
                       </button>
                       
                       <p className="text-center text-sm text-green-600 dark:text-green-400 font-semibold mt-3">
-                        🎁 New users get 2 free unlocks!
+                        🎁 New users get 2 free tokens!
                       </p>
                     </div>
                   </div>
