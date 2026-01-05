@@ -104,52 +104,35 @@ const TokensSection: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-700 dark:to-purple-700 rounded-xl p-6 shadow-lg animate-pulse">
-        <div className="h-20 bg-white/20 rounded"></div>
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-700 dark:to-purple-700 rounded-lg p-3 shadow animate-pulse">
+        <div className="h-12 bg-white/20 rounded"></div>
       </div>
     );
   }
 
   return (
     <>
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-700 dark:to-purple-700 rounded-xl p-6 shadow-lg">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="bg-white/20 backdrop-blur-sm p-4 rounded-xl">
-              <span className="text-5xl">🎫</span>
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-700 dark:to-purple-700 rounded-lg p-3 sm:p-4 shadow">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="bg-white/20 backdrop-blur-sm p-2 rounded-lg">
+              <span className="text-2xl">🎫</span>
             </div>
             <div className="text-white">
-              <h3 className="text-sm font-medium opacity-90">Available Tokens</h3>
-              <p className="text-4xl font-bold mt-1">{tokens}</p>
-              <p className="text-sm opacity-75 mt-1">Use tokens to unlock seller contacts</p>
+              <h3 className="text-xs font-medium opacity-90">Tokens</h3>
+              <p className="text-xl sm:text-2xl font-bold">{tokens}</p>
             </div>
           </div>
           
           <button
             onClick={() => setShowPurchaseModal(true)}
-            className="bg-white text-indigo-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-all hover:scale-105 shadow-lg flex items-center gap-2"
+            className="bg-white text-indigo-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-all hover:scale-105 shadow flex items-center gap-2 text-sm"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            Top Up Tokens
+            Top Up
           </button>
-        </div>
-
-        {/* Quick Stats */}
-        <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-white/20">
-          <div className="text-center text-white">
-            <p className="text-xs opacity-75">Per Unlock</p>
-            <p className="text-xl font-bold">1 Token</p>
-          </div>
-          <div className="text-center text-white">
-            <p className="text-xs opacity-75">Best Value</p>
-            <p className="text-xl font-bold">25@₹100</p>
-          </div>
-          <div className="text-center text-white">
-            <p className="text-xs opacity-75">New Users Get</p>
-            <p className="text-xl font-bold">2 FREE</p>
-          </div>
         </div>
       </div>
 

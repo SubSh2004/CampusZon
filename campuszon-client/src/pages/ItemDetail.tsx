@@ -537,7 +537,7 @@ export default function ItemDetail() {
                       onClick={() => setShowUnlockModal(true)}
                       className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 px-6 rounded-md transition font-semibold"
                     >
-                      🔓 Unlock Contact Details (₹11)
+                      🎫 Unlock with 1 Token
                     </button>
                   )}
                 </div>
