@@ -186,31 +186,6 @@ export const unlockItem = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
-      type: 'unlock_basic',
-      amount: 10,
-      razorpayOrderId: order.id,
-      status: 'pending',
-      metadata: {
-        tier: 'basic',
-        sellerName: item.userName,
-        itemTitle: item.title
-      }
-    });
-
-    await payment.save();
-
-    res.json({
-      success: true,
-      requiresPayment: true,
-      order,
-      payment: payment._id
-    });
-
-  } catch (error) {
-    console.error('Unlock item error:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-};
 
 // Get seller's interested buyers (for seller view)
 export const getInterestedBuyers = async (req, res) => {
