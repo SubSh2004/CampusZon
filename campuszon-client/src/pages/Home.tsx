@@ -9,6 +9,7 @@ import { getOrganizationName } from '../utils/domainMapper';
 import ProductsList from '../components/ProductsList';
 import Notifications from '../components/Notifications';
 import SearchWithAutoComplete from '../components/SearchWithAutoComplete';
+import TokensSection from '../components/TokensSection';
 import { generateSuggestions } from '../utils/searchUtils';
 
 type SuggestionSourceItem = {
@@ -212,6 +213,13 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8">
+        {/* Tokens Section - Only show when logged in */}
+        {user.isLoggedIn && (
+          <div className="mb-6 max-w-5xl mx-auto">
+            <TokensSection />
+          </div>
+        )}
+
         {/* Search Bar with Auto-Complete */}
         <div className="mb-4 sm:mb-6 md:mb-8">
           <div className="max-w-3xl mx-auto">
