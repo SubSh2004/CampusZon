@@ -9,8 +9,9 @@ import { getOrganizationName } from '../utils/domainMapper';
 import ProductsList from '../components/ProductsList';
 import Notifications from '../components/Notifications';
 import SearchWithAutoComplete from '../components/SearchWithAutoComplete';
-import TokensSection from '../components/TokensSection';
+import TokenPurchase from '../components/TokenPurchase';
 import { generateSuggestions } from '../utils/searchUtils';
+import axios from '../config/axios';
 
 type SuggestionSourceItem = {
   title: string;
@@ -31,6 +32,8 @@ export default function Home() {
   const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
   const [itemsForSuggestions, setItemsForSuggestions] = useState<SuggestionSourceItem[]>([]);
   const filterRef = useRef<HTMLDivElement>(null);
+  const [showTokenModal, setShowTokenModal] = useState(false);
+  const [tokens, setTokens] = useState<number>(0);
   
   const organizationName = user.email ? getOrganizationName(user.email) : '';
 
@@ -62,6 +65,97 @@ export default function Home() {
     }
     setSearchSuggestions(generateSuggestions(itemsForSuggestions, searchQuery));
   }, [itemsForSuggestions, searchQuery]);
+
+  useEffect(() => {
+    if (user.isLoggedIn) {
+      fetchTokenBalance();
+    }
+  }, [user.isLoggedIn]);
+
+  const fetchTokenBalance = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await axios.get('/api/tokens/balance', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setTokens(response.data.currentTokens);
+    } catch (error) {
+      console.error('Error fetching token balance:', error);
+    }
+  };
+
+  const handlePurchaseToken = async (packageId: string) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please login to purchase tokens');
+        return;
+      }
+
+      const response = await axios.post(
+        '/api/tokens/purchase',
+        { packageId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (response.data.requiresPayment) {
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.async = true;
+        document.body.appendChild(script);
+
+        script.onload = () => {
+          const options = {
+            key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+            amount: response.data.order.amount,
+            currency: response.data.order.currency,
+            name: 'CampusZon',
+            description: `${response.data.packageDetails.tokens} Unlock Tokens`,
+            order_id: response.data.order.id,
+            handler: async (razorpayResponse: any) => {
+              try {
+                const verifyResponse = await axios.post(
+                  '/api/tokens/verify',
+                  {
+                    razorpay_order_id: razorpayResponse.razorpay_order_id,
+                    razorpay_payment_id: razorpayResponse.razorpay_payment_id,
+                    razorpay_signature: razorpayResponse.razorpay_signature,
+                    paymentId: response.data.payment.id
+                  },
+                  { headers: { Authorization: `Bearer ${token}` } }
+                );
+
+                if (verifyResponse.data.success) {
+                  alert(`✅ Successfully added ${verifyResponse.data.tokensAdded} tokens!`);
+                  setShowTokenModal(false);
+                  fetchTokenBalance();
+                }
+              } catch (error) {
+                console.error('Payment verification error:', error);
+                alert('Payment verification failed. Please contact support.');
+              }
+            },
+            prefill: {
+              name: user.username || '',
+              email: user.email || '',
+            },
+            theme: {
+              color: '#4F46E5'
+            }
+          };
+
+          const razorpay = new (window as any).Razorpay(options);
+          razorpay.open();
+        };
+      }
+    } catch (error: any) {
+      console.error('Token purchase error:', error);
+      alert(error.response?.data?.message || 'Failed to initiate purchase');
+    }
+  };
 
   const handleItemsFetched = useCallback((items: SuggestionSourceItem[]) => {
     setItemsForSuggestions(items);
@@ -182,6 +276,14 @@ export default function Home() {
                   Bookings
                 </Link>
                 <button
+                  onClick={() => setShowTokenModal(true)}
+                  className="flex items-center gap-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-500 dark:to-purple-500 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:from-indigo-700 hover:to-purple-700 dark:hover:from-indigo-600 dark:hover:to-purple-600 transition font-medium text-sm whitespace-nowrap shadow-sm"
+                >
+                  <span className="text-base">🎫</span>
+                  <span className="font-bold">{tokens}</span>
+                  <span className="hidden sm:inline">Tokens</span>
+                </button>
+                <button
                   onClick={logout}
                   className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors text-red-700 dark:text-red-400 text-sm font-medium whitespace-nowrap ml-auto"
                 >
@@ -211,15 +313,33 @@ export default function Home() {
         </div>
       </header>
 
+      {/* Token Purchase Modal */}
+      {showTokenModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Top Up Tokens</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Current balance: <span className="font-semibold text-indigo-600 dark:text-indigo-400">{tokens} tokens</span></p>
+              </div>
+              <button
+                onClick={() => setShowTokenModal(false)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <svg className="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="overflow-y-auto max-h-[calc(90vh-100px)]">
+              <TokenPurchase onSelectPackage={handlePurchaseToken} currentTokens={tokens} />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Content */}
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8">
-        {/* Tokens Section - Only show when logged in */}
-        {user.isLoggedIn && (
-          <div className="mb-6 max-w-5xl mx-auto">
-            <TokensSection />
-          </div>
-        )}
-
         {/* Search Bar with Auto-Complete */}
         <div className="mb-4 sm:mb-6 md:mb-8">
           <div className="max-w-3xl mx-auto">
