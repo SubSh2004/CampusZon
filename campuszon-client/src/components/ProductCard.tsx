@@ -207,7 +207,6 @@ export default function ProductCard({ item }: ProductCardProps) {
             {/* Price with Gradient Background */}
             <div className="flex items-center justify-between mt-2 sm:mt-3 mb-3">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg blur-sm opacity-30 group-hover:opacity-50 transition-opacity"></div>
                 <span className="relative text-xl sm:text-2xl font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
                   ₹{parseFloat(item.price.toString()).toFixed(2)}
                 </span>
