@@ -1,5 +1,5 @@
 import express from 'express';
-import { auth } from '../middleware/auth.js';
+import { authenticate } from '../middleware/auth.js';
 import {
   getTokenPackages,
   purchaseTokens,
@@ -10,15 +10,15 @@ import {
 const router = express.Router();
 
 // Get all token packages
-router.get('/packages', auth, getTokenPackages);
+router.get('/packages', authenticate, getTokenPackages);
 
 // Purchase token package
-router.post('/purchase', auth, purchaseTokens);
+router.post('/purchase', authenticate, purchaseTokens);
 
 // Verify token purchase payment
-router.post('/verify', auth, verifyTokenPurchase);
+router.post('/verify', authenticate, verifyTokenPurchase);
 
 // Get user's token balance and history
-router.get('/balance', auth, getTokenBalance);
+router.get('/balance', authenticate, getTokenBalance);
 
 export default router;
