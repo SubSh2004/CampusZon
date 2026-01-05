@@ -189,7 +189,7 @@ const PaymentFailed: React.FC = () => {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <a
-                    href="mailto:support@campuskart.com"
+                    href="mailto:support@campuszon.com"
                     className="inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700
                              text-white font-medium rounded-lg transition-colors duration-200"
                   >

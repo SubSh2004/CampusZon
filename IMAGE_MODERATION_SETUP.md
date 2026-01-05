@@ -5,7 +5,7 @@
 ### Step 1: Install Dependencies
 
 ```bash
-cd campuskart-server
+cd campuszon-server
 npm install sharp axios
 ```
 
@@ -181,7 +181,7 @@ db.moderationauditlogs.find().sort({ timestamp: -1 }).limit(10)
 
 ### Adjust Moderation Thresholds
 
-Edit `campuskart-server/src/utils/aiModerationService.js`:
+Edit `campuszon-server/src/utils/aiModerationService.js`:
 
 ```javascript
 const THRESHOLDS = {
@@ -200,7 +200,7 @@ const THRESHOLDS = {
 
 ### Adjust Strike Penalties
 
-Edit `campuskart-server/src/utils/enforcementSystem.js`:
+Edit `campuszon-server/src/utils/enforcementSystem.js`:
 
 ```javascript
 const SEVERITY_STRIKES = {
@@ -220,7 +220,7 @@ const ENFORCEMENT_THRESHOLDS = {
 
 ### Change Queue Concurrency
 
-Edit `campuskart-server/src/utils/moderationQueue.js`:
+Edit `campuszon-server/src/utils/moderationQueue.js`:
 
 ```javascript
 class ModerationQueue {

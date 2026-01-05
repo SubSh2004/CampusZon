@@ -1,4 +1,4 @@
-# 🚀 Campus-Kart Deployment Guide
+# 🚀 CampusZon Deployment Guide
 
 ## Free & Reliable Deployment Stack
 - **Frontend**: Vercel (Free, Fast, Reliable)
@@ -22,7 +22,7 @@
 
 ### A. Update Backend CORS Settings
 
-Edit `campuskart-server/src/index.js` and update CORS to accept your Vercel domain:
+Edit `campuszon-server/src/index.js` and update CORS to accept your Vercel domain:
 
 ```javascript
 app.use(cors({
@@ -38,7 +38,7 @@ app.use(cors({
 
 ### B. Update Frontend API URLs
 
-Edit `campuskart-client/src/` files to use environment variables:
+Edit `campuszon-client/src/` files to use environment variables:
 
 Replace hardcoded `http://localhost:5000` with:
 ```javascript
@@ -70,8 +70,8 @@ git push -u origin main
 1. Go to [Render Dashboard](https://dashboard.render.com)
 2. Click **"New +"** → **"PostgreSQL"**
 3. Configure:
-   - **Name**: `campuskart-db`
-   - **Database**: `campuskart`
+   - **Name**: `campuszon-db`
+   - **Database**: `campuszon`
    - **User**: (auto-generated)
    - **Region**: Choose closest to you
    - **Plan**: **Free**
@@ -83,10 +83,10 @@ git push -u origin main
 1. In Render Dashboard, click **"New +"** → **"Web Service"**
 2. Connect your GitHub repository
 3. Configure:
-   - **Name**: `campuskart-backend` (or any name)
+   - **Name**: `campuszon-backend` (or any name)
    - **Region**: Same as database
    - **Branch**: `main`
-   - **Root Directory**: `campuskart-server`
+   - **Root Directory**: `campuszon-server`
    - **Runtime**: `Node`
    - **Build Command**: `npm install`
    - **Start Command**: `npm start`
@@ -117,7 +117,7 @@ git push -u origin main
 
 ### A. Update Environment Variables
 
-1. Edit `campuskart-client/.env.production`:
+1. Edit `campuszon-client/.env.production`:
    ```
    VITE_API_URL=https://your-backend-name.onrender.com
    VITE_SOCKET_URL=https://your-backend-name.onrender.com
@@ -137,7 +137,7 @@ git push -u origin main
 3. Import your GitHub repository
 4. Configure:
    - **Framework Preset**: `Vite`
-   - **Root Directory**: `campuskart-client`
+   - **Root Directory**: `campuszon-client`
    - **Build Command**: `npm run build`
    - **Output Directory**: `dist`
 
@@ -174,7 +174,7 @@ Go back to Render and update the `FRONTEND_URL` environment variable with your a
 
 ## 🎉 You're Live!
 
-Your Campus-Kart website is now accessible at:
+Your CampusZon website is now accessible at:
 - **Frontend**: `https://your-app.vercel.app`
 - **Backend**: `https://your-backend-name.onrender.com`
 

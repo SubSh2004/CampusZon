@@ -2,7 +2,7 @@
 
 ## ✨ What's New?
 
-Your Campus-Kart now has a **complete monetization system**!
+Your CampusZon now has a **complete monetization system**!
 
 ### 🎁 Every New User Gets:
 - **3 FREE unlocks** (worth ₹30!)
@@ -21,7 +21,7 @@ Your Campus-Kart now has a **complete monetization system**!
 ### Step 1: Install Dependencies (1 min)
 
 ```bash
-cd campuskart-server
+cd campuszon-server
 npm install razorpay
 ```
 
@@ -34,13 +34,13 @@ npm install razorpay
 
 ### Step 3: Configure Environment (2 min)
 
-**Backend (`campuskart-server/.env`):**
+**Backend (`campuszon-server/.env`):**
 ```env
 RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxx
 RAZORPAY_KEY_SECRET=xxxxxxxxxxxxxxxx
 ```
 
-**Frontend (`campuskart-client/.env`):**
+**Frontend (`campuszon-client/.env`):**
 ```env
 VITE_RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxx
 ```

@@ -1,4 +1,4 @@
-# Google OAuth Setup Guide for CampusKart
+# Google OAuth Setup Guide for CampusZon
 
 ## Overview
 Google Sign-In has been integrated into both the Login and Signup pages. To make it functional, you need to configure Google OAuth credentials.
@@ -9,7 +9,7 @@ Google Sign-In has been integrated into both the Login and Signup pages. To make
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 2. Click on "Select a Project" at the top
 3. Click "New Project"
-4. Enter project name: **CampusKart** (or any name you prefer)
+4. Enter project name: **CampusZon** (or any name you prefer)
 5. Click "Create"
 
 ### 2. Enable Google+ API
@@ -22,7 +22,7 @@ Google Sign-In has been integrated into both the Login and Signup pages. To make
 2. Select **External** (for testing) or **Internal** (if you have a Google Workspace)
 3. Click "Create"
 4. Fill in the required fields:
-   - **App name**: CampusKart
+   - **App name**: CampusZon
    - **User support email**: Your email
    - **Developer contact information**: Your email
 5. Click "Save and Continue"
@@ -34,7 +34,7 @@ Google Sign-In has been integrated into both the Login and Signup pages. To make
 1. Go to **APIs & Services** > **Credentials**
 2. Click "Create Credentials" > "OAuth client ID"
 3. Select **Application type**: Web application
-4. **Name**: CampusKart Web Client
+4. **Name**: CampusZon Web Client
 5. **Authorized JavaScript origins**: 
    - Add: `http://localhost:5000`
    - Add: `http://localhost:3000`
@@ -48,7 +48,7 @@ After creation, a popup will show:
 - **Client Secret**: Copy this (looks like: `GOCSPX-abc123`)
 
 ### 6. Update Your .env File
-Open `campuskart-server/.env` and replace the placeholder values:
+Open `campuszon-server/.env` and replace the placeholder values:
 
 ```env
 GOOGLE_CLIENT_ID=your-actual-client-id-here
@@ -61,7 +61,7 @@ After updating the `.env` file, restart your backend server:
 ```bash
 # Stop the current server (Ctrl + C)
 # Then restart it
-cd campuskart-server
+cd campuszon-server
 npm run dev
 ```
 
@@ -104,8 +104,8 @@ npm run dev
 ## Production Deployment
 When deploying to production:
 1. Update the authorized origins and redirect URIs in Google Cloud Console
-2. Add your production domain (e.g., `https://campuskart.com`)
-3. Add production callback URL (e.g., `https://campuskart.com/api/auth/google/callback`)
+2. Add your production domain (e.g., `https://campuszon.com`)
+3. Add production callback URL (e.g., `https://campuszon.com/api/auth/google/callback`)
 4. Update the redirect URLs in `src/routes/auth.routes.js` to use production domain
 5. Update environment variables on your hosting platform (Vercel, Render, etc.)
 

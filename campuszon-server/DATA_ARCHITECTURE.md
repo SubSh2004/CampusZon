@@ -27,7 +27,7 @@ This project originally used PostgreSQL (for `items`) and MongoDB (for users, ch
 
 2. Run the migration script locally (PowerShell example):
 ```powershell
-# from campuskart-server folder
+# from campuszon-server folder
 $env:MONGODB_URI = "your_mongo_uri"
 $env:POSTGRES_URI = "your_postgres_uri"
 node scripts/migrateItemsToMongo.js

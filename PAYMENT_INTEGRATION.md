@@ -1,6 +1,6 @@
 # 💳 Custom Razorpay Payment Integration
 
-A comprehensive custom payment solution for CampusKart using Razorpay payment gateway.
+A comprehensive custom payment solution for CampusZon using Razorpay payment gateway.
 
 ## 🎯 Features
 
@@ -16,7 +16,7 @@ A comprehensive custom payment solution for CampusKart using Razorpay payment ga
 ## 📁 File Structure
 
 ```
-campuskart-client/src/
+campuszon-client/src/
 ├── pages/
 │   ├── Payment.tsx              # Main payment page
 │   ├── PaymentSuccess.tsx       # Success confirmation page
@@ -31,12 +31,12 @@ campuskart-client/src/
 
 ### 1. Environment Variables
 
-Add to `campuskart-client/.env`:
+Add to `campuszon-client/.env`:
 ```env
 VITE_RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxx
 ```
 
-Add to `campuskart-server/.env`:
+Add to `campuszon-server/.env`:
 ```env
 RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxx
 RAZORPAY_KEY_SECRET=xxxxxxxxxxxxxxxx
@@ -46,7 +46,7 @@ RAZORPAY_KEY_SECRET=xxxxxxxxxxxxxxxx
 
 Backend (if not already installed):
 ```bash
-cd campuskart-server
+cd campuszon-server
 npm install razorpay
 ```
 
@@ -356,13 +356,13 @@ For Razorpay issues:
 - Email: support@razorpay.com
 - Docs: https://razorpay.com/docs/
 
-For CampusKart issues:
+For CampusZon issues:
 - Create a GitHub issue
 - Contact: your-email@example.com
 
 ## 📄 License
 
-This payment integration is part of CampusKart project.
+This payment integration is part of CampusZon project.
 
 ---
 

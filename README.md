@@ -1,4 +1,4 @@
-# Campus-Kart 🛒
+# CampusZon 🛒
 
 A full-stack campus marketplace application for students to buy, sell, and rent items within their college campus.
 
@@ -51,13 +51,13 @@ A full-stack campus marketplace application for students to buy, sell, and rent 
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/YOUR_USERNAME/campus-kart.git
-cd campus-kart
+git clone https://github.com/YOUR_USERNAME/campuszon.git
+cd campuszon
 ```
 
 2. **Setup Backend**
 ```bash
-cd campuskart-server
+cd campuszon-server
 npm install
 
 # Create .env file (copy from .env.example)
@@ -68,7 +68,7 @@ npm start
 
 3. **Setup Frontend**
 ```bash
-cd campuskart-client
+cd campuszon-client
 npm install
 
 # Create .env.local file
@@ -98,8 +98,8 @@ See **DEPLOYMENT_GUIDE.md** for comprehensive deployment documentation.
 ## 📁 Project Structure
 
 ```
-Campus-Kart/
-├── campuskart-client/          # React frontend
+CampusZon/
+├── campuszon-client/          # React frontend
 │   ├── src/
 │   │   ├── components/         # Reusable components
 │   │   ├── pages/              # Page components
@@ -108,7 +108,7 @@ Campus-Kart/
 │   │   ├── store/              # Recoil atoms
 │   │   └── config/             # Configuration
 │   └── public/
-├── campuskart-server/          # Express backend
+├── campuszon-server/          # Express backend
 │   ├── src/
 │   │   ├── controllers/        # Route handlers
 │   │   ├── models/             # Database models
@@ -189,7 +189,7 @@ This project is open source and available under the MIT License.
 
 ## 👨‍💻 Author
 
-Campus-Kart Team
+CampusZon Team
 
 ## 🙏 Acknowledgments
 

@@ -1,4 +1,4 @@
-# 🚀 Quick Deploy Campus-Kart (5 Minutes!)
+# 🚀 Quick Deploy CampusZon (5 Minutes!)
 
 ## ✅ What You Get
 - **Frontend**: https://your-app.vercel.app (Your public website)
@@ -18,7 +18,7 @@ You need accounts on:
 
 ## 🎯 STEP 1: Push to GitHub (2 minutes)
 
-Open terminal in Campus-Kart folder and run:
+Open terminal in CampusZon folder and run:
 
 ```bash
 # Initialize git
@@ -45,7 +45,7 @@ git push -u origin main
 1. Go to https://dashboard.render.com
 2. Click **"New +"** → **"PostgreSQL"**
 3. Settings:
-   - Name: `campuskart-db`
+   - Name: `campuszon-db`
    - Plan: **Free**
 4. Click **"Create Database"**
 5. **Copy the "Internal Database URL"** (you'll need this!)
@@ -75,7 +75,7 @@ PORT=5000
 
 5. Click **"Create Web Service"**
 6. Wait 2-5 minutes for deployment
-7. **Copy your backend URL**: `https://campuskart-api.onrender.com`
+7. **Copy your backend URL**: `https://campuszon-api.onrender.com`
 
 ✅ Backend is live!
 
@@ -101,10 +101,10 @@ git push
 ### 3B. Deploy on Vercel
 1. Go to https://vercel.com/dashboard
 2. Click **"Add New..."** → **"Project"**
-3. Click **"Import"** next to your `campus-kart` repository
+3. Click **"Import"** next to your `campuszon` repository
 4. Settings:
    - **Framework**: `Vite`
-   - **Root Directory**: `campuskart-client`
+   - **Root Directory**: `campuszon-client`
    - **Build Command**: Leave default (npm run build)
    - **Output Directory**: Leave default (dist)
 
@@ -112,7 +112,7 @@ git push
 6. Wait 1-2 minutes
 7. **Your website is LIVE!** 🎉
 
-Example: `https://campus-kart-abc123.vercel.app`
+Example: `https://campuszon-abc123.vercel.app`
 
 ✅ Frontend is live!
 
@@ -122,11 +122,11 @@ Example: `https://campus-kart-abc123.vercel.app`
 
 ### Update Backend to Accept Frontend
 1. Go back to Render dashboard
-2. Open your backend service (`campuskart-api`)
+2. Open your backend service (`campuszon-api`)
 3. Go to **"Environment"** tab
 4. Add new variable:
 ```
-FRONTEND_URL=https://campus-kart-abc123.vercel.app
+FRONTEND_URL=https://campuszon-abc123.vercel.app
 ```
 (Use your actual Vercel URL)
 
@@ -138,8 +138,8 @@ FRONTEND_URL=https://campus-kart-abc123.vercel.app
 
 ## 🎉 YOU'RE DONE!
 
-Your Campus-Kart is now live at:
-**https://campus-kart-abc123.vercel.app**
+Your CampusZon is now live at:
+**https://campuszon-abc123.vercel.app**
 
 Share this link with anyone! 🌐
 

@@ -7,37 +7,37 @@ Check that you have received these files:
 ### Backend Files (11 files)
 
 **Models** (3 files)
-- [ ] `campuskart-server/src/models/imageModeration.model.js`
-- [ ] `campuskart-server/src/models/userViolation.model.js`
-- [ ] `campuskart-server/src/models/moderationAuditLog.model.js`
+- [ ] `campuszon-server/src/models/imageModeration.model.js`
+- [ ] `campuszon-server/src/models/userViolation.model.js`
+- [ ] `campuszon-server/src/models/moderationAuditLog.model.js`
 
 **Controllers** (2 files)
-- [ ] `campuskart-server/src/controllers/moderation.controller.js`
-- [ ] `campuskart-server/src/controllers/item.controller.js` (UPDATED)
+- [ ] `campuszon-server/src/controllers/moderation.controller.js`
+- [ ] `campuszon-server/src/controllers/item.controller.js` (UPDATED)
 
 **Routes** (1 file)
-- [ ] `campuskart-server/src/routes/moderation.routes.js`
+- [ ] `campuszon-server/src/routes/moderation.routes.js`
 
 **Utilities** (4 files)
-- [ ] `campuskart-server/src/utils/imageValidator.js`
-- [ ] `campuskart-server/src/utils/aiModerationService.js`
-- [ ] `campuskart-server/src/utils/moderationQueue.js`
-- [ ] `campuskart-server/src/utils/enforcementSystem.js`
+- [ ] `campuszon-server/src/utils/imageValidator.js`
+- [ ] `campuszon-server/src/utils/aiModerationService.js`
+- [ ] `campuszon-server/src/utils/moderationQueue.js`
+- [ ] `campuszon-server/src/utils/enforcementSystem.js`
 
 **Middleware** (1 file)
-- [ ] `campuskart-server/src/middleware/multer.js` (UPDATED)
+- [ ] `campuszon-server/src/middleware/multer.js` (UPDATED)
 
 **Server Config** (2 files)
-- [ ] `campuskart-server/src/index.js` (UPDATED - added moderation routes)
-- [ ] `campuskart-server/package.json` (UPDATED - added sharp, axios)
+- [ ] `campuszon-server/src/index.js` (UPDATED - added moderation routes)
+- [ ] `campuszon-server/package.json` (UPDATED - added sharp, axios)
 
 ### Frontend Files (2 files)
 
 **Pages** (1 file)
-- [ ] `campuskart-client/src/pages/ModerationDashboard.tsx`
+- [ ] `campuszon-client/src/pages/ModerationDashboard.tsx`
 
 **Components** (1 file)
-- [ ] `campuskart-client/src/components/ReportImageButton.tsx`
+- [ ] `campuszon-client/src/components/ReportImageButton.tsx`
 
 ### Documentation Files (5 files)
 
@@ -54,7 +54,7 @@ Check that you have received these files:
 ### Step 1: Dependencies
 
 ```bash
-cd campuskart-server
+cd campuszon-server
 npm list sharp axios
 ```
 

@@ -1,4 +1,4 @@
-# 💰 Campus-Kart Monetization System - IMPLEMENTATION COMPLETE
+# 💰 CampusZon Monetization System - IMPLEMENTATION COMPLETE
 
 ## 🎉 What's Been Implemented
 
@@ -312,11 +312,11 @@ Follow [RAZORPAY_SETUP.md](RAZORPAY_SETUP.md) to:
 
 ```bash
 # Backend
-cd campuskart-server
+cd campuszon-server
 npm start
 
 # Frontend
-cd campuskart-client
+cd campuszon-client
 npm run dev
 ```
 

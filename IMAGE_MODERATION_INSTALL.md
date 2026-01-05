@@ -5,7 +5,7 @@
 Before you begin, ensure you have:
 - ✅ Node.js 18+ installed
 - ✅ MongoDB instance running (local or Atlas)
-- ✅ Campus-Kart project already set up
+- ✅ CampusZon project already set up
 - ✅ At least ONE AI provider API key
 
 ---
@@ -25,7 +25,7 @@ npm install sharp axios
 
 ## Step 2: Configure Environment Variables
 
-Edit your `.env` file in `campuskart-server/`:
+Edit your `.env` file in `campuszon-server/`:
 
 ```bash
 # Add these new variables:
@@ -79,7 +79,7 @@ GOOGLE_CLOUD_VISION_API_KEY=your_google_vision_api_key
 ### Start the Server
 
 ```bash
-cd campuskart-server
+cd campuszon-server
 npm run dev
 ```
 
@@ -304,7 +304,7 @@ npm run dev
 
 ### Adjust Moderation Strictness
 
-Edit `campuskart-server/src/utils/aiModerationService.js`:
+Edit `campuszon-server/src/utils/aiModerationService.js`:
 
 ```javascript
 const THRESHOLDS = {
@@ -321,7 +321,7 @@ const THRESHOLDS = {
 
 ### Adjust Strike Penalties
 
-Edit `campuskart-server/src/utils/enforcementSystem.js`:
+Edit `campuszon-server/src/utils/enforcementSystem.js`:
 
 ```javascript
 const ENFORCEMENT_THRESHOLDS = {
@@ -334,7 +334,7 @@ const ENFORCEMENT_THRESHOLDS = {
 
 ### Change Processing Speed
 
-Edit `campuskart-server/src/utils/moderationQueue.js`:
+Edit `campuszon-server/src/utils/moderationQueue.js`:
 
 ```javascript
 constructor() {
@@ -420,7 +420,7 @@ curl http://localhost:5000/api/moderation/stats
 
 # View MongoDB collections
 mongo
-use campus-kart
+use campuszon
 db.imagemoderations.find().pretty()
 ```
 

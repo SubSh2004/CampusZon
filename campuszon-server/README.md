@@ -1,6 +1,6 @@
-# CampusKart Server
+# CampusZon Server
 
-Backend server for the CampusKart application built with Node.js, Express, MongoDB, and PostgreSQL.
+Backend server for the CampusZon application built with Node.js, Express, MongoDB, and PostgreSQL.
 
 ## Features
 
@@ -39,7 +39,7 @@ Backend server for the CampusKart application built with Node.js, Express, Mongo
 ## Project Structure
 
 ```
-campuskart-server/
+campuszon-server/
 ├── src/
 │   └── index.js          # Main application entry point
 ├── .env                  # Environment variables

@@ -45,7 +45,7 @@ A **production-ready, enterprise-grade image moderation system** that automatica
 ### 1. Install Dependencies
 
 ```bash
-cd campuskart-server
+cd campuszon-server
 npm install sharp axios
 ```
 
@@ -403,7 +403,7 @@ JWT_SECRET=xxx
 ## 📚 File Structure
 
 ```
-campuskart-server/src/
+campuszon-server/src/
 ├── models/
 │   ├── imageModeration.model.js      ✅ NEW
 │   ├── userViolation.model.js        ✅ NEW
@@ -421,7 +421,7 @@ campuskart-server/src/
 └── middleware/
     └── multer.js                      ✅ UPDATED
 
-campuskart-client/src/
+campuszon-client/src/
 ├── pages/
 │   └── ModerationDashboard.tsx       ✅ NEW
 └── components/
@@ -515,7 +515,7 @@ Optional improvements:
 
 ## 📄 License
 
-This moderation system is part of Campus-Kart project.
+This moderation system is part of CampusZon project.
 
 **Compliance:**
 - ✅ COPPA (Children's Online Privacy Protection Act)
@@ -540,6 +540,6 @@ Your marketplace is now protected by a comprehensive image moderation system tha
 
 ---
 
-**Built with ❤️ for Campus-Kart**  
+**Built with ❤️ for CampusZon**  
 **Version:** 1.0.0  
 **Last Updated:** December 2024

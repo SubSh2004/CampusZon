@@ -11,7 +11,7 @@ This guide will help you integrate Razorpay payment gateway for the unlock syste
 1. Visit [Razorpay.com](https://razorpay.com)
 2. Click **"Sign Up"** → Choose **"As a Business"**
 3. Enter your details:
-   - Business Name: Campus-Kart (or your name)
+   - Business Name: CampusZon (or your name)
    - Email
    - Phone number
 4. Verify email and phone (OTP)
@@ -45,7 +45,7 @@ This guide will help you integrate Razorpay payment gateway for the unlock syste
 
 ## ⚙️ Step 3: Configure Backend
 
-1. Open `campuskart-server/.env` file
+1. Open `campuszon-server/.env` file
 2. Add these variables:
 
 ```env
@@ -63,7 +63,7 @@ RAZORPAY_KEY_SECRET=xxxxxxxxxxxxxxxx
 
 ## 🎨 Step 4: Configure Frontend
 
-1. Open `campuskart-client/.env` file (create if doesn't exist)
+1. Open `campuszon-client/.env` file (create if doesn't exist)
 2. Add:
 
 ```env
@@ -80,7 +80,7 @@ VITE_RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxx
 In backend terminal:
 
 ```bash
-cd campuskart-server
+cd campuszon-server
 npm install razorpay
 ```
 

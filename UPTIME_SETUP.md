@@ -13,8 +13,8 @@ Use **UptimeRobot** (a free monitoring service) to ping your backend every 5 min
 ### Step 1: Get Your Render Backend URL
 
 1. Go to your [Render Dashboard](https://dashboard.render.com)
-2. Click on your **campuskart-backend** service
-3. Copy your URL (looks like: `https://campuskart-backend-abc123.onrender.com`)
+2. Click on your **campuszon-backend** service
+3. Copy your URL (looks like: `https://campuszon-backend-abc123.onrender.com`)
 
 ---
 
@@ -35,7 +35,7 @@ Use **UptimeRobot** (a free monitoring service) to ping your backend every 5 min
 
    **Monitor Type:** `HTTP(s)`
    
-   **Friendly Name:** `Campus-Kart Backend`
+   **Friendly Name:** `CampusZon Backend`
    
    **URL (or IP):** `https://your-render-url.onrender.com/api/health`
    
@@ -115,7 +115,7 @@ Both keep the server awake and can be used for monitoring.
 
 ## 🚀 You're Done!
 
-Your Campus-Kart backend will now:
+Your CampusZon backend will now:
 - ✅ Stay awake 24/7
 - ✅ Load instantly for all users
 - ✅ Be monitored for downtime

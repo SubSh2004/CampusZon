@@ -1,4 +1,4 @@
-# Email OTP Setup Guide for CampusKart
+# Email OTP Setup Guide for CampusZon
 
 ## Overview
 OTP (One-Time Password) email verification has been added to the signup process. Users must verify their email before completing registration.
@@ -22,11 +22,11 @@ OTP (One-Time Password) email verification has been added to the signup process.
 3. **Create App Password**:
    - Visit: https://myaccount.google.com/apppasswords
    - Select app: "Mail"
-   - Select device: "Other" (type "CampusKart")
+   - Select device: "Other" (type "CampusZon")
    - Click "Generate"
    - **Copy the 16-character password**
 
-4. **Update `.env` file** in `campuskart-server`:
+4. **Update `.env` file** in `campuszon-server`:
    ```env
    EMAIL_USER=your-gmail@gmail.com
    EMAIL_PASS=your-16-char-app-password
@@ -84,7 +84,7 @@ auth: {
 
 1. **Install nodemailer** (if not already installed):
    ```bash
-   cd campuskart-server
+   cd campuszon-server
    npm install nodemailer
    ```
 
@@ -121,7 +121,7 @@ auth: {
 ## Email Template
 
 The OTP email includes:
-- Professional design with CampusKart branding
+- Professional design with CampusZon branding
 - Large, easy-to-read 6-digit OTP
 - Expiry information (10 minutes)
 - Security message

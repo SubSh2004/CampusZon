@@ -6,7 +6,7 @@
 **Problem:** When clicking "Chat with Seller" after unlocking, it was opening a booking modal instead of the chat interface.
 
 **Solution:** 
-- Changed the button behavior in [ItemDetail.tsx](campuskart-client/src/pages/ItemDetail.tsx#L359-L364)
+- Changed the button behavior in [ItemDetail.tsx](campuszon-client/src/pages/ItemDetail.tsx#L359-L364)
 - Now directly navigates to `/chat` with `sellerId` and `itemId` in navigation state
 - Chat page automatically opens conversation with the seller when navigation state includes `sellerId`
 
@@ -21,7 +21,7 @@ onClick={() => navigate('/chat', { state: { sellerId: item.userId, itemId: item.
 **Problem:** Chat page had a "Users" tab that was confusing and unnecessary.
 
 **Solution:**
-- Removed the tab toggle UI from [Chat.tsx](campuskart-client/src/pages/Chat.tsx#L391-L400)
+- Removed the tab toggle UI from [Chat.tsx](campuszon-client/src/pages/Chat.tsx#L391-L400)
 - Replaced with a simple "Your Chats" header
 - Users can only see their existing conversations
 
@@ -159,13 +159,13 @@ if (location.state?.sellerId) {
 ## Files Modified
 
 ### Frontend
-- `campuskart-client/src/pages/ItemDetail.tsx` - Navigation with state
-- `campuskart-client/src/pages/Chat.tsx` - Removed Users tab, auto-open chat, error handling
+- `campuszon-client/src/pages/ItemDetail.tsx` - Navigation with state
+- `campuszon-client/src/pages/Chat.tsx` - Removed Users tab, auto-open chat, error handling
 
 ### Backend
-- `campuskart-server/src/socketManager.js` - Message limit enforcement
-- `campuskart-server/src/controllers/user.controller.js` - Added getUserById
-- `campuskart-server/src/routes/user.routes.js` - Added GET /:userId route
+- `campuszon-server/src/socketManager.js` - Message limit enforcement
+- `campuszon-server/src/controllers/user.controller.js` - Added getUserById
+- `campuszon-server/src/routes/user.routes.js` - Added GET /:userId route
 
 ## Deployment Notes
 

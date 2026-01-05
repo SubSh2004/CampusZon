@@ -2,7 +2,7 @@
 
 ## 🎯 Overview
 
-This document describes the comprehensive image moderation system implemented for Campus-Kart marketplace. The system prevents inappropriate, offensive, or harmful images from appearing on the platform while allowing human oversight and enforcing penalties for repeat offenders.
+This document describes the comprehensive image moderation system implemented for CampusZon marketplace. The system prevents inappropriate, offensive, or harmful images from appearing on the platform while allowing human oversight and enforcing penalties for repeat offenders.
 
 ---
 
@@ -481,7 +481,7 @@ LOW:      Minor quality issues
 ### 1. Install Dependencies
 
 ```bash
-cd campuskart-server
+cd campuszon-server
 npm install sharp axios @aws-sdk/client-rekognition
 ```
 
@@ -740,4 +740,4 @@ For issues or questions:
 
 **Version**: 1.0.0  
 **Last Updated**: December 2024  
-**Maintained By**: Campus-Kart Development Team
+**Maintained By**: CampusZon Development Team

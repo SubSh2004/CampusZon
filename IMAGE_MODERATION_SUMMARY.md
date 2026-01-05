@@ -2,7 +2,7 @@
 
 ## 🎯 Executive Summary
 
-Successfully implemented a **production-ready, enterprise-grade image moderation system** for Campus-Kart marketplace that:
+Successfully implemented a **production-ready, enterprise-grade image moderation system** for CampusZon marketplace that:
 
 ✅ **Prevents inappropriate content** from appearing on the platform  
 ✅ **Uses AI automation** for 80%+ of decisions  
@@ -303,7 +303,7 @@ LOW:      0.5 strikes - Quality issues
 
 ### File Structure
 ```
-campuskart-server/
+campuszon-server/
 ├── src/
 │   ├── models/
 │   │   ├── imageModeration.model.js
@@ -322,7 +322,7 @@ campuskart-server/
 │   └── middleware/
 │       └── multer.js (updated)
 
-campuskart-client/
+campuszon-client/
 ├── src/
 │   ├── pages/
 │   │   └── ModerationDashboard.tsx

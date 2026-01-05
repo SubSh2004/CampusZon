@@ -1,13 +1,13 @@
-# CampusKart Client
+# CampusZon Client
 
-Vite + React + TypeScript frontend for CampusKart.
+Vite + React + TypeScript frontend for CampusZon.
 
 ## Setup
 
 Install dependencies:
 
 ```bash
-cd campuskart-client
+cd campuszon-client
 npm install
 ```
 

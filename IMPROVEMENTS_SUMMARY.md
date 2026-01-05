@@ -9,7 +9,7 @@
 **Why:** This enforces the monetization model where users must unlock items to contact sellers.
 
 **Files Modified:**
-- [campuskart-client/src/components/ProductCard.tsx](campuskart-client/src/components/ProductCard.tsx)
+- [campuszon-client/src/components/ProductCard.tsx](campuszon-client/src/components/ProductCard.tsx)
 
 ### ✅ 2. Combined Message Limit (20 Total)
 **Before:** Each user could send 20 messages (40 total)  
@@ -23,9 +23,9 @@
 - Premium tier (₹25) has no limit
 
 **Files Modified:**
-- [campuskart-server/src/socketManager.js](campuskart-server/src/socketManager.js) - Enforces limit on every message
-- [campuskart-server/src/models/unlock.model.js](campuskart-server/src/models/unlock.model.js) - Updated comment
-- [campuskart-client/src/pages/ItemDetail.tsx](campuskart-client/src/pages/ItemDetail.tsx) - Updated button text
+- [campuszon-server/src/socketManager.js](campuszon-server/src/socketManager.js) - Enforces limit on every message
+- [campuszon-server/src/models/unlock.model.js](campuszon-server/src/models/unlock.model.js) - Updated comment
+- [campuszon-client/src/pages/ItemDetail.tsx](campuszon-client/src/pages/ItemDetail.tsx) - Updated button text
 
 ### ✅ 3. Hidden Email in Chat
 **Before:** Email was visible in chat header  
@@ -34,7 +34,7 @@
 **Why:** Privacy - email should only be visible to Premium users who unlocked the item.
 
 **Files Modified:**
-- [campuskart-client/src/pages/Chat.tsx](campuskart-client/src/pages/Chat.tsx)
+- [campuszon-client/src/pages/Chat.tsx](campuszon-client/src/pages/Chat.tsx)
 
 ### ✅ 4. Auto-Send Purchase Message
 **Before:** After unlocking, buyer had to manually start conversation  
@@ -53,7 +53,7 @@ Hi! I'm interested in buying your "[Item Title]" listed for ₹[Price]. Please l
 5. When buyer clicks "Chat with Seller", they see the conversation already started
 
 **Files Modified:**
-- [campuskart-server/src/controllers/unlock.controller.js](campuskart-server/src/controllers/unlock.controller.js)
+- [campuszon-server/src/controllers/unlock.controller.js](campuszon-server/src/controllers/unlock.controller.js)
 
 ### ✅ 5. Premium Upgrade Button
 **Before:** After Basic unlock, no easy way to upgrade  
@@ -66,7 +66,7 @@ Hi! I'm interested in buying your "[Item Title]" listed for ₹[Price]. Please l
 - Opens same unlock modal with upgrade pricing
 
 **Files Modified:**
-- [campuskart-client/src/pages/ItemDetail.tsx](campuskart-client/src/pages/ItemDetail.tsx)
+- [campuszon-client/src/pages/ItemDetail.tsx](campuszon-client/src/pages/ItemDetail.tsx)
 
 ## Technical Details
 

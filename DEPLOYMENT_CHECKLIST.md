@@ -15,12 +15,12 @@ Use this checklist to track your deployment progress!
 
 ## ✅ Step 1: Push to GitHub
 
-- [ ] Open terminal in Campus-Kart folder
+- [ ] Open terminal in CampusZon folder
 - [ ] Run: `git init`
 - [ ] Run: `git add .`
 - [ ] Run: `git commit -m "Ready for deployment"`
 - [ ] Create new repository on GitHub.com
-- [ ] Run: `git remote add origin https://github.com/YOUR_USERNAME/campus-kart.git`
+- [ ] Run: `git remote add origin https://github.com/YOUR_USERNAME/campuszon.git`
 - [ ] Run: `git branch -M main`
 - [ ] Run: `git push -u origin main`
 - [ ] ✅ Verify code is on GitHub
@@ -32,7 +32,7 @@ Use this checklist to track your deployment progress!
 ### PostgreSQL Database
 - [ ] Go to Render dashboard
 - [ ] Create new PostgreSQL database
-- [ ] Name: `campuskart-db`
+- [ ] Name: `campuszon-db`
 - [ ] Plan: Free
 - [ ] Copy "Internal Database URL"
 - [ ] ✅ Database created
@@ -40,7 +40,7 @@ Use this checklist to track your deployment progress!
 ### Backend Service
 - [ ] Create new Web Service
 - [ ] Connect GitHub repository
-- [ ] Root Directory: `campuskart-server`
+- [ ] Root Directory: `campuszon-server`
 - [ ] Build Command: `npm install`
 - [ ] Start Command: `npm start`
 - [ ] Add Environment Variables:
@@ -53,7 +53,7 @@ Use this checklist to track your deployment progress!
   - [ ] `PORT=5000`
 - [ ] Click "Create Web Service"
 - [ ] Wait for deployment (2-5 minutes)
-- [ ] Copy backend URL (e.g., https://campuskart-api.onrender.com)
+- [ ] Copy backend URL (e.g., https://campuszon-api.onrender.com)
 - [ ] Test backend: Open `YOUR_BACKEND_URL/health` in browser
 - [ ] ✅ Backend is live!
 
@@ -62,7 +62,7 @@ Use this checklist to track your deployment progress!
 ## ✅ Step 3: Deploy Frontend (Vercel)
 
 ### Update API URLs
-- [ ] Open `campuskart-client/.env.production`
+- [ ] Open `campuszon-client/.env.production`
 - [ ] Update `VITE_API_URL` with your Render backend URL
 - [ ] Update `VITE_SOCKET_URL` with your Render backend URL
 - [ ] Run: `git add .`
@@ -74,13 +74,13 @@ Use this checklist to track your deployment progress!
 - [ ] Click "Add New Project"
 - [ ] Import GitHub repository
 - [ ] Framework: Vite
-- [ ] Root Directory: `campuskart-client`
+- [ ] Root Directory: `campuszon-client`
 - [ ] Add Environment Variables:
   - [ ] `VITE_API_URL` (your Render backend URL)
   - [ ] `VITE_SOCKET_URL` (your Render backend URL)
 - [ ] Click "Deploy"
 - [ ] Wait for deployment (1-2 minutes)
-- [ ] Copy frontend URL (e.g., https://campus-kart.vercel.app)
+- [ ] Copy frontend URL (e.g., https://campuszon.vercel.app)
 - [ ] ✅ Frontend is live!
 
 ---
@@ -138,7 +138,7 @@ Use this checklist to track your deployment progress!
 
 Write down your URLs here:
 
-**GitHub Repository**: https://github.com/_________________/campus-kart
+**GitHub Repository**: https://github.com/_________________/campuszon
 
 **Backend (Render)**: https://________________________________.onrender.com
 
@@ -181,7 +181,7 @@ Write down your URLs here:
 
 ## 🎉 Success!
 
-Once all checkboxes are ✅, your Campus-Kart is LIVE! 🚀
+Once all checkboxes are ✅, your CampusZon is LIVE! 🚀
 
 Share your website: ________________________________
 

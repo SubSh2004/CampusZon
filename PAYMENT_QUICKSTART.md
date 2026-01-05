@@ -22,12 +22,12 @@
 
 ### Step 1: Environment Variables
 
-**Frontend** (`campuskart-client/.env`):
+**Frontend** (`campuszon-client/.env`):
 ```env
 VITE_RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxx
 ```
 
-**Backend** (`campuskart-server/.env`):
+**Backend** (`campuszon-server/.env`):
 ```env
 RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxx
 RAZORPAY_KEY_SECRET=xxxxxxxxxxxxxxxx
@@ -36,7 +36,7 @@ RAZORPAY_KEY_SECRET=xxxxxxxxxxxxxxxx
 ### Step 2: Install Dependencies (Backend)
 
 ```bash
-cd campuskart-server
+cd campuszon-server
 npm install razorpay
 ```
 

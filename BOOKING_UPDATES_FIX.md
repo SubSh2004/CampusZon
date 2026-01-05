@@ -119,4 +119,4 @@ These come from the `/api/booking/buyer` endpoint:
 - Previous commits addressed deduplication and other issues
 
 ## Files Modified
-- `campuskart-client/src/pages/Notifications.tsx`
+- `campuszon-client/src/pages/Notifications.tsx`

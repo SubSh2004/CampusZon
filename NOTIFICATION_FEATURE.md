@@ -6,7 +6,7 @@ A dedicated notification page has been created to display all user notifications
 ## What Was Implemented
 
 ### 1. New Notifications Page (`/notifications`)
-**Location:** `campuskart-client/src/pages/Notifications.tsx`
+**Location:** `campuszon-client/src/pages/Notifications.tsx`
 
 **Features:**
 - Full-page view for all notifications
@@ -61,7 +61,7 @@ A dedicated notification page has been created to display all user notifications
   - Clear all moderation notifications
 
 ### 4. Updated Notification Component (Bell Icon)
-**Location:** `campuskart-client/src/components/Notifications.tsx`
+**Location:** `campuszon-client/src/components/Notifications.tsx`
 
 **Changes:**
 - Simplified to just display bell icon with unread count
@@ -71,7 +71,7 @@ A dedicated notification page has been created to display all user notifications
 - Shows combined unread count (booking + moderation)
 
 ### 5. Routing
-**Location:** `campuskart-client/src/App.tsx`
+**Location:** `campuszon-client/src/App.tsx`
 
 Added new route:
 ```tsx
@@ -214,12 +214,12 @@ interface ModerationNotification {
 ## Files Modified/Created
 
 ### Created:
-- `campuskart-client/src/pages/Notifications.tsx` (New page component)
+- `campuszon-client/src/pages/Notifications.tsx` (New page component)
 - `NOTIFICATION_FEATURE.md` (This documentation)
 
 ### Modified:
-- `campuskart-client/src/components/Notifications.tsx` (Simplified bell icon)
-- `campuskart-client/src/App.tsx` (Added route)
+- `campuszon-client/src/components/Notifications.tsx` (Simplified bell icon)
+- `campuszon-client/src/App.tsx` (Added route)
 - `README.md` (Updated features documentation)
 
 ---
