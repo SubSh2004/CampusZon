@@ -1,6 +1,7 @@
 import express from 'express';
 import Notification from '../models/notification.model.js';
 import { authenticate } from '../middleware/auth.js';
+import { getCache, setCache } from '../utils/cache.js';
 
 const router = express.Router();
 
@@ -13,6 +14,13 @@ router.get('/', authenticate, async (req, res) => {
   try {
     const userId = req.user._id.toString();
     const { limit = 20, unreadOnly = false } = req.query;
+    
+    // Try cache first (30 second TTL for notifications)
+    const cacheKey = `notifications:${userId}:${limit}:${unreadOnly}`;
+    const cachedData = await getCache(cacheKey);
+    if (cachedData) {
+      return res.json(cachedData);
+    }
     
     console.log(`🔔 Fetching notifications for userId: ${userId}`);
 
@@ -29,11 +37,16 @@ router.get('/', authenticate, async (req, res) => {
     
     console.log(`🔔 Found ${notifications.length} notifications (${unreadCount} unread) for userId: ${userId}`);
 
-    res.json({
+    const responseData = {
       success: true,
       notifications,
       unreadCount
-    });
+    };
+    
+    // Cache for 30 seconds
+    await setCache(cacheKey, responseData, 30);
+    
+    res.json(responseData);
   } catch (error) {
     console.error('Error fetching notifications:', error);
     res.status(500).json({

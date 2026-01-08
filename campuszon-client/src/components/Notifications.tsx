@@ -31,11 +31,27 @@ export default function Notifications() {
     // Fetch initial data
     fetchNotifications();
 
-    // Poll for updates every 30 seconds
-    const interval = setInterval(fetchNotifications, 30000);
+    // Poll for updates every 3 minutes (instead of 30 seconds)
+    // Reduces server load by 83% while still keeping notifications fresh
+    // Only poll when tab is visible
+    const interval = setInterval(() => {
+      if (!document.hidden) {
+        fetchNotifications();
+      }
+    }, 3 * 60 * 1000); // 180 seconds
+
+    // Also fetch when user comes back to tab
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchNotifications();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 
