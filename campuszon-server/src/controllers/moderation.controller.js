@@ -10,6 +10,7 @@ import Item from '../models/item.mongo.model.js';
 import Notification from '../models/notification.model.js';
 import { recordViolation, getUserViolationStats } from '../utils/enforcementSystem.js';
 import { createBlurredPreview } from '../utils/imageValidator.js';
+import { emitNotification } from '../index.js';
 import axios from 'axios';
 
 /**
@@ -171,6 +172,9 @@ export const approveImage = async (req, res) => {
       notificationId: approveNotification._id
     });
 
+    // Send real-time notification
+    emitNotification(moderation.userId, approveNotification);
+
     res.json({
       success: true,
       message: 'Image approved successfully',
@@ -285,6 +289,9 @@ export const rejectImage = async (req, res) => {
       notificationId: rejectNotification._id,
       reasons
     });
+
+    // Send real-time notification
+    emitNotification(moderation.userId, rejectNotification);
 
     res.json({
       success: true,
@@ -738,7 +745,7 @@ export const reverseDecision = async (req, res) => {
         ? `Your item "${item?.title || 'Unknown'}" has been re-approved.`
         : `Your item "${item?.title || 'Unknown'}" status has been updated.`);
 
-    await Notification.create({
+    const reverseNotification = await Notification.create({
       userId: moderation.userId,
       type: newStatus === 'APPROVED' ? 'ITEM_APPROVED' : 'ITEM_REJECTED',
       title: notificationTitle,
@@ -747,6 +754,9 @@ export const reverseDecision = async (req, res) => {
       imageUrl: moderation.imageUrl,
       read: false
     });
+
+    // Send real-time notification
+    emitNotification(moderation.userId, reverseNotification);
 
     res.json({
       success: true,

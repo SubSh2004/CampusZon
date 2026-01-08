@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { io, Socket } from 'socket.io-client';
 import { useTheme } from '../context/ThemeContext';
+import { API_URL } from '../config/api';
 
 interface ModerationNotification {
   _id: string;
@@ -18,6 +20,7 @@ export default function Notifications() {
   const { theme } = useTheme();
   const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = useState(0);
+  const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -31,27 +34,33 @@ export default function Notifications() {
     // Fetch initial data
     fetchNotifications();
 
-    // Poll for updates every 3 minutes (instead of 30 seconds)
-    // Reduces server load by 83% while still keeping notifications fresh
-    // Only poll when tab is visible
-    const interval = setInterval(() => {
-      if (!document.hidden) {
-        fetchNotifications();
-      }
-    }, 3 * 60 * 1000); // 180 seconds
+    // Setup Socket.IO for real-time notifications (no polling needed!)
+    socketRef.current = io(API_URL, {
+      auth: { token },
+      transports: ['websocket', 'polling']
+    });
 
-    // Also fetch when user comes back to tab
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        fetchNotifications();
-      }
-    };
-    
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    // Join with userId to receive notifications
+    socketRef.current.emit('userJoin', userId);
+
+    // Listen for real-time notifications
+    socketRef.current.on('new-notification', () => {
+      console.log('📬 Real-time notification received!');
+      fetchNotifications(); // Refresh count instantly
+    });
+
+    socketRef.current.on('connect', () => {
+      console.log('🔗 Socket.IO connected for notifications');
+    });
+
+    socketRef.current.on('disconnect', () => {
+      console.log('🔌 Socket.IO disconnected');
+    });
 
     return () => {
-      clearInterval(interval);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
     };
   }, []);
 

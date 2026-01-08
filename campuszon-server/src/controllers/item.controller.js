@@ -7,6 +7,7 @@ import imgbbUploader from 'imgbb-uploader';
 import { queueImageModeration } from '../utils/moderationQueue.js';
 import { checkUserCanUpload } from '../utils/enforcementSystem.js';
 import { getCache, setCache, generateItemsCacheKey, invalidateDomainCache } from '../utils/cache.js';
+import { emitNotification } from '../index.js';
 
 // Create a new item
 export const createItem = async (req, res) => {
@@ -607,7 +608,7 @@ export const moderateItem = async (req, res) => {
 
     // Create notification for item owner
     try {
-      await Notification.create({
+      const notification = await Notification.create({
         userId: item.userId,
         type: notificationType,
         title: notificationTitle,
@@ -622,6 +623,9 @@ export const moderateItem = async (req, res) => {
         ])
       });
       console.log(`✅ Notification sent to user ${item.userId} for ${action} action on item ${item.title}`);
+      
+      // Send real-time notification
+      emitNotification(item.userId, notification);
     } catch (notifError) {
       console.error('Failed to create notification:', notifError);
       // Don't fail the request if notification fails

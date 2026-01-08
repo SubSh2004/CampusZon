@@ -3,6 +3,8 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import express from 'express';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
 import cors from 'cors';
 import compression from 'compression';
 import session from 'express-session';
@@ -23,6 +25,7 @@ import cartRoutes from './routes/cart.routes.js';
 
 // Initialize Express app
 const app = express();
+const httpServer = createServer(app);
 
 // Middleware
 const allowedOrigins = [
@@ -99,6 +102,47 @@ configurePassport();
 app.use(passport.initialize());
 app.use(passport.session());
 
+// Socket.IO Setup
+const io = new Server(httpServer, {
+  cors: {
+    origin: allowedOrigins,
+    credentials: true
+  }
+});
+
+// Track user socket connections for notifications
+const userSockets = new Map(); // userId -> socketId
+
+io.on('connection', (socket) => {
+  console.log('🔌 User connected:', socket.id);
+
+  // User joins with their userId for notifications
+  socket.on('userJoin', (userId) => {
+    userSockets.set(userId, socket.id);
+    socket.userId = userId;
+    console.log(`✅ User ${userId} connected for notifications`);
+  });
+
+  socket.on('disconnect', () => {
+    if (socket.userId) {
+      userSockets.delete(socket.userId);
+      console.log(`👋 User ${socket.userId} disconnected`);
+    }
+  });
+});
+
+// Export notification helper for controllers
+export const emitNotification = (userId, notification) => {
+  const socketId = userSockets.get(userId);
+  if (socketId) {
+    io.to(socketId).emit('new-notification', notification);
+    console.log(`📬 Notification sent to user ${userId}`);
+    return true;
+  }
+  console.log(`⚠️ User ${userId} offline, notification queued`);
+  return false;
+};
+
 // Database Connections - Initialize databases before starting server
 const initializeServer = async () => {
   await connectMongoDB();
@@ -108,8 +152,9 @@ const initializeServer = async () => {
   
   // Start server after databases are initialized
   const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+  httpServer.listen(PORT, () => {
+    console.log(`🚀 Server is running on port ${PORT}`);
+    console.log(`🔌 Socket.IO enabled for real-time notifications`);
   });
 };
 

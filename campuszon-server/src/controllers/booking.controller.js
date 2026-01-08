@@ -2,7 +2,7 @@ import Booking from '../models/booking.model.js';
 import Chat from '../models/chat.model.js';
 import Message from '../models/message.model.js';
 import Notification from '../models/notification.model.js';
-import { sendToUser } from '../socketManager.js';
+import { emitNotification } from '../index.js';
 
 // Create a booking request
 export const createBooking = async (req, res) => {
@@ -312,11 +312,7 @@ export const updateBookingStatus = async (req, res) => {
         console.log(`✅ Notification created for buyer ${booking.buyerId}:`, notification._id);
 
         // Send real-time notification update
-        try {
-          sendToUser(buyerIdStr, 'newNotification', notification);
-        } catch (err) {
-          console.warn('Failed to send real-time notification:', err);
-        }
+        emitNotification(buyerIdStr, notification);
       } catch (err) {
         console.error('❌ Error creating acceptance notification:', err);
       }
@@ -373,11 +369,7 @@ export const updateBookingStatus = async (req, res) => {
         console.log(`✅ Rejection notification created for buyer ${booking.buyerId}:`, notification._id);
 
         // Send real-time notification update
-        try {
-          sendToUser(buyerIdStr, 'newNotification', notification);
-        } catch (err) {
-          console.warn('Failed to send real-time rejection notification:', err);
-        }
+        emitNotification(buyerIdStr, notification);
       } catch (err) {
         console.error('❌ Error creating rejection notification:', err);
       }
