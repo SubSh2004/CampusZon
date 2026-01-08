@@ -6,6 +6,7 @@ import Notification from '../models/notification.model.js';
 import imgbbUploader from 'imgbb-uploader';
 import { queueImageModeration } from '../utils/moderationQueue.js';
 import { checkUserCanUpload } from '../utils/enforcementSystem.js';
+import { getCache, setCache, generateItemsCacheKey, invalidateDomainCache } from '../utils/cache.js';
 
 // Create a new item
 export const createItem = async (req, res) => {
@@ -95,6 +96,10 @@ export const createItem = async (req, res) => {
       moderationStatus: 'active', // All items start as active
     });
 
+    // Invalidate cache for this domain (new item added)
+    await invalidateDomainCache(emailDomain);
+    console.log(`🗑️  Cache invalidated for domain: ${emailDomain}`);
+
     // Return response
     res.status(201).json({
       success: true,
@@ -132,6 +137,17 @@ export const getAllItems = async (req, res) => {
     const limitNum = parseInt(limit);
     const skip = (pageNum - 1) * limitNum;
 
+    // Try to get from cache first
+    const cacheKey = generateItemsCacheKey(emailDomain, pageNum, search);
+    const cachedData = await getCache(cacheKey);
+    
+    if (cachedData) {
+      console.log(`✅ Cache hit: ${cacheKey}`);
+      return res.status(200).json(cachedData);
+    }
+    
+    console.log(`❌ Cache miss: ${cacheKey}`);
+
     // Build query object
     const query = {
       emailDomain,
@@ -165,7 +181,7 @@ export const getAllItems = async (req, res) => {
       _id: undefined
     }));
 
-    res.status(200).json({
+    const responseData = {
       success: true,
       count: itemsWithId.length,
       items: itemsWithId,
@@ -175,7 +191,12 @@ export const getAllItems = async (req, res) => {
         totalItems,
         hasMore: pageNum * limitNum < totalItems
       }
-    });
+    };
+
+    // Cache the response for 5 minutes (300 seconds)
+    await setCache(cacheKey, responseData, 300);
+
+    res.status(200).json(responseData);
   } catch (error) {
     console.error('Get items error:', error);
     res.status(500).json({
@@ -271,6 +292,10 @@ export const updateItem = async (req, res) => {
   Object.assign(item, updates);
   await item.save();
 
+    // Invalidate cache for this domain (item updated)
+    await invalidateDomainCache(item.emailDomain);
+    console.log(`🗑️  Cache invalidated for domain: ${item.emailDomain}`);
+
     res.status(200).json({
       success: true,
       message: 'Item updated successfully',
@@ -312,7 +337,14 @@ export const deleteItem = async (req, res) => {
       });
     }
 
+    // Store email domain before deletion
+    const emailDomain = item.emailDomain;
+
     await Item.findByIdAndDelete(id);
+
+    // Invalidate cache for this domain (item deleted)
+    await invalidateDomainCache(emailDomain);
+    console.log(`🗑️  Cache invalidated for domain: ${emailDomain}`);
 
     res.status(200).json({
       success: true,

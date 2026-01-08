@@ -4,10 +4,12 @@ dotenv.config();
 
 import express from 'express';
 import cors from 'cors';
+import compression from 'compression';
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
 import passport, { configurePassport } from './config/passport.js';
 import { connectMongoDB } from './db/mongo.js';
+import { connectRedis } from './config/redis.js';
 import userRoutes from './routes/user.routes.js';
 import itemRoutes from './routes/item.routes.js';
 import authRoutes from './routes/auth.routes.js';
@@ -50,6 +52,10 @@ app.use(cors({
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
+
+// Compression middleware - reduces response size by 70%
+app.use(compression());
+
 app.use(express.json());
 app.use(express.static('public'));
 
@@ -96,6 +102,9 @@ app.use(passport.session());
 // Database Connections - Initialize databases before starting server
 const initializeServer = async () => {
   await connectMongoDB();
+  
+  // Connect to Redis (optional - app works without it)
+  await connectRedis();
   
   // Start server after databases are initialized
   const PORT = process.env.PORT || 5000;
