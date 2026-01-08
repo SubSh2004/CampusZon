@@ -124,18 +124,6 @@ export const createBooking = async (req, res) => {
       $inc: { [`unreadCount.${sellerId}`]: 1 }
     });
 
-    // Try to notify seller in real-time via sockets (if connected)
-    try {
-      sendToUser(sellerId, 'newPrivateMessage', {
-        ...newMessage.toObject(),
-        chatId: chat._id
-      });
-      // Also send booking notification
-      sendToUser(sellerId, 'newBookingRequest', booking);
-    } catch (err) {
-      console.warn('Failed to send real-time booking notification:', err);
-    }
-
     // Return booking with chat info. Frontend no longer needs to emit sendPrivateMessage when autoMessage present.
     res.json({ 
       success: true, 
@@ -276,14 +264,6 @@ export const updateBookingStatus = async (req, res) => {
         });
 
         console.log(`✅ Acceptance message sent to buyer ${booking.buyerId}`);
-
-        // Send real-time notification
-        try {
-          const buyerIdStr = booking.buyerId._id ? booking.buyerId._id.toString() : booking.buyerId.toString();
-          sendToUser(buyerIdStr, 'newPrivateMessage', acceptMessage);
-        } catch (err) {
-          console.warn('Failed to send real-time acceptance notification:', err);
-        }
       } catch (err) {
         console.error('❌ Error creating acceptance message:', err);
       }
@@ -337,13 +317,6 @@ export const updateBookingStatus = async (req, res) => {
         lastMessageTime: new Date(),
         $inc: { [`unreadCount.${booking.buyerId}`]: 1 }
       });
-
-      try {
-        const buyerIdStr = booking.buyerId._id ? booking.buyerId._id.toString() : booking.buyerId.toString();
-        sendToUser(buyerIdStr, 'newPrivateMessage', rejectMessage);
-      } catch (err) {
-        console.warn('Failed to send real-time rejection notification:', err);
-      }
 
       // Create notification for buyer
       try {
