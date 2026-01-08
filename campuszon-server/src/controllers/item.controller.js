@@ -118,7 +118,7 @@ export const createItem = async (req, res) => {
 // Get all items (filtered by email domain) with pagination
 export const getAllItems = async (req, res) => {
   try {
-    const { emailDomain, page = 1, limit = 8 } = req.query;
+    const { emailDomain, page = 1, limit = 8, search = '' } = req.query;
     
     if (!emailDomain) {
       return res.status(400).json({
@@ -132,21 +132,31 @@ export const getAllItems = async (req, res) => {
     const limitNum = parseInt(limit);
     const skip = (pageNum - 1) * limitNum;
 
-    // Query MongoDB for items matching the domain with active moderation status
-    const items = await Item.find({ 
+    // Build query object
+    const query = {
       emailDomain,
       moderationStatus: { $in: ['active', 'warned'] }
-    })
+    };
+
+    // Add search filter if search query exists
+    if (search && search.trim()) {
+      const searchRegex = new RegExp(search.trim(), 'i'); // Case-insensitive search
+      query.$or = [
+        { title: searchRegex },
+        { description: searchRegex },
+        { category: searchRegex }
+      ];
+    }
+
+    // Query MongoDB for items matching the domain with active moderation status
+    const items = await Item.find(query)
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limitNum)
     .lean();
 
     // Get total count for pagination info
-    const totalItems = await Item.countDocuments({ 
-      emailDomain,
-      moderationStatus: { $in: ['active', 'warned'] }
-    });
+    const totalItems = await Item.countDocuments(query);
 
     // Convert _id to id for frontend compatibility
     const itemsWithId = items.map(item => ({

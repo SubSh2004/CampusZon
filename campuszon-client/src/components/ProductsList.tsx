@@ -3,7 +3,6 @@ import { useRecoilValue } from 'recoil';
 import axios from 'axios';
 import { userAtom } from '../store/user.atom';
 import ProductCard from './ProductCard';
-import { fuzzySearch } from '../utils/searchUtils';
 
 interface Item {
   id: string; // Changed from number to string for MongoDB ObjectId compatibility
@@ -52,12 +51,12 @@ export default function ProductsList({ searchQuery = '', selectedCategory = 'All
     if (node) observer.current.observe(node);
   }, [loadingMore, hasMore]);
 
-  // Reset pagination only when the logged-in user changes
+  // Reset pagination when search, filters, or user changes
   useEffect(() => {
     setItems([]);
     setPage(1);
     setHasMore(true);
-  }, [user.email]);
+  }, [user.email, searchQuery, selectedCategory, listingTypeFilter, availabilityFilter]);
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -83,7 +82,18 @@ export default function ProductsList({ searchQuery = '', selectedCategory = 'All
           return;
         }
         
-        const response = await axios.get(`/api/items?emailDomain=${emailDomain}&page=${page}&limit=8`);
+        // Build API URL with search parameter
+        const params = new URLSearchParams({
+          emailDomain,
+          page: page.toString(),
+          limit: '8'
+        });
+        
+        if (searchQuery && searchQuery.trim()) {
+          params.append('search', searchQuery.trim());
+        }
+        
+        const response = await axios.get(`/api/items?${params.toString()}`);
         
         if (response.data.success) {
           setItems(prev => {
@@ -103,7 +113,7 @@ export default function ProductsList({ searchQuery = '', selectedCategory = 'All
     };
 
     fetchItems();
-  }, [user.email, page, onItemsFetched]);
+  }, [user.email, page, searchQuery, onItemsFetched]);
 
   if (loading) {
     return (
@@ -123,13 +133,8 @@ export default function ProductsList({ searchQuery = '', selectedCategory = 'All
     );
   }
 
-  // Filter items based on search query, category, and availability
+  // Filter items based on category and availability (search is handled by backend)
   let filteredItems = items;
-  
-  // Apply fuzzy search if query exists
-  if (searchQuery && searchQuery.trim()) {
-    filteredItems = fuzzySearch(filteredItems, searchQuery, 0.3);
-  }
   
   // Filter by category
   filteredItems = filteredItems.filter((item) => {
