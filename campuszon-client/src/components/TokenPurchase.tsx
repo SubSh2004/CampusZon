@@ -3,10 +3,9 @@ import { TOKEN_PACKAGES, TokenPackage } from '../config/tokenPackages';
 
 interface TokenPurchaseProps {
   onSelectPackage: (packageId: string) => void;
-  currentTokens: number;
 }
 
-const TokenPurchase: React.FC<TokenPurchaseProps> = ({ onSelectPackage, currentTokens }) => {
+const TokenPurchase: React.FC<TokenPurchaseProps> = ({ onSelectPackage }) => {
   return (
     <div className="p-4 sm:p-6">
       {/* Token Packages Grid - No scrollbar */}

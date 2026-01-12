@@ -4,8 +4,6 @@ import axios from 'axios';
 import { useTheme } from '../context/ThemeContext';
 import { useSetRecoilState } from 'recoil';
 import { cartAtom } from '../store/cart.atom';
-import { io, Socket } from 'socket.io-client';
-import { SOCKET_URL } from '../config/api';
 import UnlockModal from '../components/UnlockModal';
 import ReportButton from '../components/ReportButton';
 
@@ -37,7 +35,6 @@ export default function ItemDetail() {
   const [bookingMessage, setBookingMessage] = useState('');
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [bookingStatus, setBookingStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-  const [socket, setSocket] = useState<Socket | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   
@@ -45,7 +42,6 @@ export default function ItemDetail() {
   const [showUnlockModal, setShowUnlockModal] = useState(false);
   const [unlocked, setUnlocked] = useState(false);
   const [sellerInfo, setSellerInfo] = useState<any>(null);
-  const [unlockTier, setUnlockTier] = useState<string | null>(null);
   const [tokenBalance, setTokenBalance] = useState<number>(0);
   const [showInsufficientTokens, setShowInsufficientTokens] = useState(false);
 
@@ -70,15 +66,6 @@ export default function ItemDetail() {
     
     // Fetch token balance
     fetchTokenBalance();
-
-    // Initialize socket
-    // TEMPORARILY DISABLED - Socket.io not set up on Render backend yet
-    // const newSocket = io(SOCKET_URL);
-    // setSocket(newSocket);
-
-    return () => {
-      // newSocket.close();
-    };
   }, [id]);
 
   const fetchTokenBalance = async () => {
@@ -156,15 +143,7 @@ export default function ItemDetail() {
       });
 
       if (response.data.success) {
-        // Send real-time notification via socket
-        socket?.emit('sendBookingRequest', {
-          sellerId: item.userId,
-          booking: response.data.booking
-        });
-
         // The server creates the booking message and notifies the seller directly.
-        // No need to emit 'sendPrivateMessage' from the client (avoids duplicate saves).
-
         setBookingStatus({ type: 'success', message: response.data.message });
         setShowBookingModal(false);
         setBookingMessage('');
