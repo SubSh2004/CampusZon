@@ -29,7 +29,10 @@ const FreeCreditsIndicator: React.FC = () => {
     }
   };
 
-  if (loading || tokens === 0) return null;
+  // Hidden - Token indicator disabled
+  return null;
+
+  /* if (loading || tokens === 0) return null;
 
   return (
     <div className="fixed top-20 right-4 z-40">
@@ -45,7 +48,7 @@ const FreeCreditsIndicator: React.FC = () => {
         </div>
       </div>
     </div>
-  );
+  ); */
 };
 
 export default FreeCreditsIndicator;
