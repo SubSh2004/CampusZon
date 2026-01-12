@@ -167,8 +167,8 @@ export default function ProductCard({ item }: ProductCardProps) {
               </div>
             )}
             
-            {/* Availability Badge */}
-            <div className="absolute top-3 right-3 z-20">
+            {/* Availability Badge - Hidden */}
+            {/* <div className="absolute top-3 right-3 z-20">
               {item.available ? (
                 <span className="bg-green-600 text-white text-xs font-semibold px-2 sm:px-3 py-1 rounded shadow-sm">
                   Available
@@ -179,7 +179,7 @@ export default function ProductCard({ item }: ProductCardProps) {
                   <span className="relative">✕ Sold Out</span>
                 </span>
               )}
-            </div>
+            </div> */}
             
             {/* Category Badge on Image */}
             <div className="absolute top-3 left-3 z-20">

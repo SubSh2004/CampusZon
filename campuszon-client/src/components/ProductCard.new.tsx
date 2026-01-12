@@ -129,8 +129,8 @@ export default function ProductCard({ item }: ProductCardProps) {
             </div>
           )}
           
-          {/* Availability Badge */}
-          <div className="absolute top-3 right-3">
+          {/* Availability Badge - Hidden */}
+          {/* <div className="absolute top-3 right-3">
             <span className={`px-3 py-1 rounded-md text-xs font-semibold ${
               item.available
                 ? 'bg-green-600 text-white'
@@ -138,7 +138,7 @@ export default function ProductCard({ item }: ProductCardProps) {
             }`}>
               {item.available ? 'Available' : 'Booked'}
             </span>
-          </div>
+          </div> */}
         </Link>
 
         {/* Content Section */}
