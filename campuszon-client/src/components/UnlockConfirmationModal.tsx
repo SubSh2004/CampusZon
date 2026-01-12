@@ -66,13 +66,7 @@ const UnlockConfirmationModal: React.FC<UnlockConfirmationModalProps> = ({
                 <li className="flex items-start gap-2">
                   <span className="text-amber-500 mt-0.5">•</span>
                   <span>
-                    After unlocking, you must <strong>interact with the seller</strong> to confirm and finalize the booking.
-                  </span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-amber-500 mt-0.5">•</span>
-                  <span>
-                    If the seller <strong>rejects your booking request</strong> or if the <strong>booking is cancelled</strong>:
+                    After unlocking, you must <strong>interact with the seller</strong> to confirm & finalize the booking, and also the exchange of the item.
                   </span>
                 </li>
               </ul>
@@ -82,7 +76,7 @@ const UnlockConfirmationModal: React.FC<UnlockConfirmationModalProps> = ({
             <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4">
               <h3 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
                 <span className="text-green-500">💰</span>
-                Refund Policy
+                If Booking is not confirmed by seller :
               </h3>
               <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
                 <li className="flex items-center gap-2">
