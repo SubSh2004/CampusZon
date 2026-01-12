@@ -7,7 +7,6 @@ import { cartAtom } from '../store/cart.atom';
 import { io, Socket } from 'socket.io-client';
 import { SOCKET_URL } from '../config/api';
 import UnlockModal from '../components/UnlockModal';
-import FreeCreditsIndicator from '../components/FreeCreditsIndicator';
 import ReportButton from '../components/ReportButton';
 
 interface Item {
@@ -247,9 +246,6 @@ export default function ItemDetail() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-      {/* Free Credits Indicator */}
-      <FreeCreditsIndicator />
-      
       {/* Header */}
       <header className="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700 transition-colors duration-300">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
