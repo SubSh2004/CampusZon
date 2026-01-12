@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import axios from '../config/axios';
+import UnlockConfirmationModal from './UnlockConfirmationModal';
 
 interface UnlockModalProps {
   isOpen: boolean;
@@ -31,10 +32,13 @@ const UnlockModal: React.FC<UnlockModalProps> = ({
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [tokenBalance, setTokenBalance] = useState(0);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [skipConfirmation, setSkipConfirmation] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       checkTokenBalance();
+      checkSkipConfirmation();
     }
   }, [isOpen]);
 
@@ -50,7 +54,60 @@ const UnlockModal: React.FC<UnlockModalProps> = ({
     }
   };
 
-  const handleUnlock = async () => {
+  const checkSkipConfirmation = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('/api/user/profile', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setSkipConfirmation(response.data.user.skipUnlockConfirmation || false);
+    } catch (error) {
+      console.error('Error checking skip confirmation:', error);
+    }
+  };
+
+  const handleUnlockClick = () => {
+    if (tokenBalance < 1) {
+      alert('⚠️ Insufficient tokens! Please top up to unlock.');
+      onClose();
+      navigate('/');
+      return;
+    }
+
+    // Show confirmation popup if not skipped
+    if (!skipConfirmation) {
+      setShowConfirmation(true);
+    } else {
+      performUnlock();
+    }
+  };
+
+  const handleConfirmUnlock = async (dontShowAgain: boolean) => {
+    setShowConfirmation(false);
+    
+    // Save preference if user checked "don't show again"
+    if (dontShowAgain) {
+      try {
+        const token = localStorage.getItem('token');
+        await axios.put(
+          '/api/user/preferences',
+          { skipUnlockConfirmation: true },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setSkipConfirmation(true);
+      } catch (error) {
+        console.error('Error saving preference:', error);
+      }
+    }
+
+    performUnlock();
+  };
+
+  const handleCancelConfirmation = () => {
+    setShowConfirmation(false);
+  };
+
+  const performUnlock = async () => {
     if (tokenBalance < 1) {
       alert('⚠️ Insufficient tokens! Please top up to unlock.');
       onClose();
@@ -88,11 +145,13 @@ const UnlockModal: React.FC<UnlockModalProps> = ({
 
   if (!isOpen) return null;
 
-  return createPortal(
-    <div 
-      className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-4"
-      onClick={onClose}
-    >
+  return (
+    <>
+      {createPortal(
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-4"
+          onClick={onClose}
+        >
       <div 
         className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full shadow-2xl"
         onClick={(e) => e.stopPropagation()}
@@ -154,7 +213,7 @@ const UnlockModal: React.FC<UnlockModalProps> = ({
           {/* Action Buttons */}
           <div className="space-y-3">
             <button
-              onClick={handleUnlock}
+              onClick={handleUnlockClick}
               disabled={loading || tokenBalance < 1}
               className={`w-full py-3 rounded-lg font-semibold transition-all ${
                 loading || tokenBalance < 1
@@ -196,7 +255,16 @@ const UnlockModal: React.FC<UnlockModalProps> = ({
         </div>
       </div>
     </div>,
-    document.body
+        document.body
+      )}
+
+      <UnlockConfirmationModal
+        isOpen={showConfirmation}
+        onConfirm={handleConfirmUnlock}
+        onCancel={handleCancelConfirmation}
+        itemTitle={itemTitle}
+      />
+    </>
   );
 };
 

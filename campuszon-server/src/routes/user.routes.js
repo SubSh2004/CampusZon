@@ -72,4 +72,31 @@ router.get('/unlock/check-limits', authenticate, async (req, res) => {
 // PUT /api/user/profile - Update user profile (protected)
 router.put('/profile', authenticate, updateProfile);
 
+// PUT /api/user/preferences - Update user preferences (protected)
+router.put('/preferences', authenticate, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { skipUnlockConfirmation } = req.body;
+
+    const User = (await import('../models/user.model.js')).default;
+    
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { skipUnlockConfirmation },
+      { new: true }
+    );
+
+    res.json({
+      success: true,
+      message: 'Preferences updated successfully',
+      preferences: {
+        skipUnlockConfirmation: updatedUser.skipUnlockConfirmation
+      }
+    });
+  } catch (error) {
+    console.error('Error updating preferences:', error);
+    res.status(500).json({ success: false, message: 'Failed to update preferences' });
+  }
+});
+
 export default router;

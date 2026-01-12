@@ -302,13 +302,37 @@ export const updateBookingStatus = async (req, res) => {
     if (status === 'rejected') {
       booking.rejectionNote = rejectionNote || 'No reason provided';
       
+      // Refund 0.5 tokens to buyer if they unlocked the item
+      try {
+        const buyerIdStr = booking.buyerId._id ? booking.buyerId._id.toString() : booking.buyerId.toString();
+        const User = (await import('../models/user.model.js')).default;
+        const Unlock = (await import('../models/unlock.model.js')).default;
+        
+        // Check if buyer unlocked the item
+        const unlock = await Unlock.findOne({
+          userId: buyerIdStr,
+          itemId: booking.itemId,
+          active: true
+        });
+
+        if (unlock) {
+          // Refund 0.5 tokens
+          await User.findByIdAndUpdate(buyerIdStr, {
+            $inc: { unlockTokens: 0.5 }
+          });
+          console.log(`✅ Refunded 0.5 tokens to buyer ${buyerIdStr} for rejected booking`);
+        }
+      } catch (refundError) {
+        console.error('❌ Error processing token refund:', refundError);
+      }
+      
       // Send chat message to buyer
       const rejectMessage = await Message.create({
         chatId: chat._id,
         senderId: booking.sellerId,
         senderName: booking.sellerName,
         receiverId: booking.buyerId,
-        message: `❌ Your booking for "${booking.itemTitle}" was cancelled.\n\nReason: ${rejectionNote || 'No reason provided'}`
+        message: `❌ Your booking for "${booking.itemTitle}" was cancelled.\n\nReason: ${rejectionNote || 'No reason provided'}\n\n💰 You have received a 0.5 token refund. The item remains unlocked for you.`
       });
 
       // Update chat with latest message
@@ -334,7 +358,7 @@ export const updateBookingStatus = async (req, res) => {
           userId: buyerIdStr,
           type: 'BOOKING',
           title: '❌ Booking Rejected',
-          message: `Your booking request for "${booking.itemTitle}" was rejected. Reason: ${rejectionNote || 'No reason provided'}`,
+          message: `Your booking request for "${booking.itemTitle}" was rejected. You received a 0.5 token refund. Reason: ${rejectionNote || 'No reason provided'}`,
           itemId: notificationItemId,
           read: false
         });
@@ -415,9 +439,34 @@ export const deleteBooking = async (req, res) => {
       });
     }
 
+    // Refund 0.5 tokens to buyer if they unlocked the item (only for pending bookings)
+    if (booking.status === 'pending') {
+      try {
+        const User = (await import('../models/user.model.js')).default;
+        const Unlock = (await import('../models/unlock.model.js')).default;
+        
+        // Check if buyer unlocked the item
+        const unlock = await Unlock.findOne({
+          userId: buyerIdStr,
+          itemId: booking.itemId,
+          active: true
+        });
+
+        if (unlock) {
+          // Refund 0.5 tokens
+          await User.findByIdAndUpdate(buyerIdStr, {
+            $inc: { unlockTokens: 0.5 }
+          });
+          console.log(`✅ Refunded 0.5 tokens to buyer ${buyerIdStr} for cancelled booking`);
+        }
+      } catch (refundError) {
+        console.error('❌ Error processing token refund on cancellation:', refundError);
+      }
+    }
+
     await Booking.findByIdAndDelete(bookingId);
 
-    res.json({ success: true, message: 'Booking deleted successfully' });
+    res.json({ success: true, message: 'Booking deleted successfully. 0.5 tokens have been refunded.' });
   } catch (error) {
     console.error('Error deleting booking:', error);
     res.status(500).json({ success: false, message: 'Failed to delete booking' });

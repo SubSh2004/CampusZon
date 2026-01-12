@@ -274,6 +274,7 @@ export const getProfile = async (req, res) => {
         email: user.email,
         phoneNumber: user.phoneNumber,
         hostelName: user.hostelName,
+        skipUnlockConfirmation: user.skipUnlockConfirmation || false,
       },
     });
   } catch (error) {

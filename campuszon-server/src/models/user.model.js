@@ -58,6 +58,10 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  skipUnlockConfirmation: {
+    type: Boolean,
+    default: false,
+  },
 }, {
   timestamps: true,
 });
