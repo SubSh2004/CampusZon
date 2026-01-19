@@ -96,7 +96,40 @@ export const verifyTokenPurchase = async (req, res) => {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, paymentId } = req.body;
     const userId = req.user.id;
 
-    // Verify signature
+    // SECURITY: Get payment record first and verify ownership
+    const payment = await Payment.findById(paymentId);
+    if (!payment) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'Payment record not found' 
+      });
+    }
+
+    // SECURITY: Verify payment belongs to requesting user
+    if (payment.userId !== userId) {
+      return res.status(403).json({ 
+        success: false,
+        message: 'Unauthorized: Payment does not belong to you' 
+      });
+    }
+
+    // SECURITY: Prevent replay attacks - check if already completed
+    if (payment.status === 'completed') {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Payment already processed' 
+      });
+    }
+
+    // SECURITY: Verify payment matches our order
+    if (payment.razorpayOrderId !== razorpay_order_id) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Payment order mismatch' 
+      });
+    }
+
+    // Verify Razorpay signature
     const body = razorpay_order_id + '|' + razorpay_payment_id;
     const expectedSignature = crypto
       .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
@@ -106,16 +139,66 @@ export const verifyTokenPurchase = async (req, res) => {
     if (expectedSignature !== razorpay_signature) {
       return res.status(400).json({ 
         success: false, 
-        message: 'Payment verification failed' 
+        message: 'Payment signature verification failed - potential tampering detected' 
       });
     }
 
-    // Update payment record
-    const payment = await Payment.findById(paymentId);
-    if (!payment) {
-      return res.status(404).json({ message: 'Payment record not found' });
+    // SECURITY: Verify amount matches the expected package price
+    const tokenPackage = getPackageById(payment.metadata.packageId);
+    if (!tokenPackage) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Invalid package in payment record' 
+      });
     }
 
+    // Verify stored amount matches package price (prevent amount manipulation)
+    if (payment.amount !== tokenPackage.price) {
+      console.error('⚠️ SECURITY ALERT: Payment amount mismatch', {
+        paymentId: payment._id,
+        storedAmount: payment.amount,
+        expectedAmount: tokenPackage.price,
+        userId
+      });
+      return res.status(400).json({ 
+        success: false,
+        message: 'Payment amount verification failed' 
+      });
+    }
+
+    // SECURITY: Fetch payment details from Razorpay to verify actual amount paid
+    const Razorpay = (await import('razorpay')).default;
+    const razorpay = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET
+    });
+
+    const razorpayPayment = await razorpay.payments.fetch(razorpay_payment_id);
+    const actualAmountPaid = razorpayPayment.amount / 100; // Convert from paise to rupees
+
+    // Verify actual amount paid matches expected amount
+    if (actualAmountPaid !== tokenPackage.price) {
+      console.error('⚠️ CRITICAL SECURITY ALERT: Razorpay amount mismatch', {
+        paymentId: payment._id,
+        actualPaid: actualAmountPaid,
+        expectedAmount: tokenPackage.price,
+        userId
+      });
+      return res.status(400).json({ 
+        success: false,
+        message: 'Payment amount does not match package price' 
+      });
+    }
+
+    // Verify payment was successful on Razorpay's end
+    if (razorpayPayment.status !== 'captured' && razorpayPayment.status !== 'authorized') {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Payment not successful on gateway' 
+      });
+    }
+
+    // All security checks passed - Update payment record
     payment.razorpayPaymentId = razorpay_payment_id;
     payment.razorpaySignature = razorpay_signature;
     payment.status = 'completed';
@@ -128,6 +211,13 @@ export const verifyTokenPurchase = async (req, res) => {
     user.unlockTokens += tokensToAdd;
     user.totalSpent += payment.amount;
     await user.save();
+
+    console.log('✅ Payment verified successfully:', {
+      paymentId: payment._id,
+      userId,
+      amount: payment.amount,
+      tokensAdded
+    });
 
     res.json({
       success: true,
@@ -142,7 +232,10 @@ export const verifyTokenPurchase = async (req, res) => {
     });
   } catch (error) {
     console.error('Verify token purchase error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ 
+      success: false,
+      message: 'Server error during payment verification' 
+    });
   }
 };
 

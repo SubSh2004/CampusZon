@@ -282,6 +282,14 @@ export const updateItem = async (req, res) => {
       });
     }
 
+    // AUTHORIZATION CHECK: Verify user owns this item (or is admin)
+    if (item.userId !== req.user._id.toString() && !req.user.isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: 'You do not have permission to update this item',
+      });
+    }
+
     // Update fields
     const updates = {};
     if (title !== undefined) updates.title = title;
@@ -335,6 +343,14 @@ export const deleteItem = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'Item not found',
+      });
+    }
+
+    // AUTHORIZATION CHECK: Verify user owns this item (or is admin)
+    if (item.userId !== req.user._id.toString() && !req.user.isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: 'You do not have permission to delete this item',
       });
     }
 

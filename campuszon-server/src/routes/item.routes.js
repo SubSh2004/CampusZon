@@ -13,6 +13,7 @@ import {
 } from '../controllers/item.controller.js';
 import upload from '../middleware/multer.js';
 import { authenticateToken } from '../middleware/auth.js';
+import { itemCreationLimiter, reportLimiter } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
 
@@ -29,7 +30,9 @@ const requireAdmin = (req, res, next) => {
 };
 
 // POST /api/items/add - Create a new item with image upload (up to 5 images)
-router.post('/add', upload.array('images', 5), createItem);
+// REQUIRES AUTHENTICATION - only logged-in users can create items
+// RATE LIMITED: 20 items per hour to prevent spam
+router.post('/add', authenticateToken, itemCreationLimiter, upload.array('images', 5), createItem);
 
 // GET /api/items - Get all items
 router.get('/', getAllItems);
@@ -44,13 +47,17 @@ router.get('/admin/all', authenticateToken, requireAdmin, getAllItemsForAdmin);
 router.get('/:id', getItemById);
 
 // PUT /api/items/:id - Update item by ID
-router.put('/:id', updateItem);
+// REQUIRES AUTHENTICATION - only logged-in users can update items
+router.put('/:id', authenticateToken, updateItem);
 
 // DELETE /api/items/:id - Delete item by ID
-router.delete('/:id', deleteItem);
+// REQUIRES AUTHENTICATION - only logged-in users can delete items
+router.delete('/:id', authenticateToken, deleteItem);
 
 // POST /api/items/:id/report - Report an item
-router.post('/:id/report', reportItem);
+// REQUIRES AUTHENTICATION - only logged-in users can report items
+// RATE LIMITED: 10 reports per hour
+router.post('/:id/report', authenticateToken, reportLimiter, reportItem);
 
 // POST /api/items/:id/review - Add/update review for an item
 router.post('/:id/review', addReview);

@@ -6,6 +6,7 @@ import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
+import helmet from 'helmet';
 import compression from 'compression';
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
@@ -27,6 +28,9 @@ import cartRoutes from './routes/cart.routes.js';
 const app = express();
 const httpServer = createServer(app);
 
+// Trust proxy - Required for rate limiting and security headers behind reverse proxy
+app.set('trust proxy', 1);
+
 // Middleware
 const allowedOrigins = [
   'http://localhost:3000',
@@ -38,6 +42,37 @@ const allowedOrigins = [
   'https://www.campuszon.tech', // Custom domain with www
   process.env.FRONTEND_URL
 ].filter(Boolean); // Remove undefined values
+
+// SECURITY: Helmet.js - Set security headers
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"], // Allow inline styles for React
+      scriptSrc: ["'self'", "'unsafe-inline'"], // Allow inline scripts (consider removing in production)
+      imgSrc: ["'self'", "data:", "https:", "http:"], // Allow images from any HTTPS source
+      connectSrc: ["'self'", ...allowedOrigins], // Allow API calls to allowed origins
+      fontSrc: ["'self'", "data:"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"], // Prevent iframe embedding
+    },
+  },
+  crossOriginEmbedderPolicy: false, // Disable for compatibility with external images
+  hsts: {
+    maxAge: 31536000, // 1 year
+    includeSubDomains: true,
+    preload: true
+  },
+  frameguard: {
+    action: 'deny' // Prevent clickjacking
+  },
+  xssFilter: true, // Enable XSS filter
+  noSniff: true, // Prevent MIME type sniffing
+  referrerPolicy: {
+    policy: 'strict-origin-when-cross-origin'
+  }
+}));
 
 // CORS configuration - Secure and explicit
 app.use(cors({
@@ -74,8 +109,6 @@ if (!process.env.JWT_SECRET) {
   console.error('CRITICAL: JWT_SECRET is not defined. Server cannot start securely.');
   process.exit(1);
 }
-
-app.set('trust proxy', 1);
 
 app.use(
   session({

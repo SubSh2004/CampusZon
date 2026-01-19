@@ -1,5 +1,6 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.js';
+import { paymentLimiter } from '../middleware/rateLimiter.js';
 import {
   getTokenPackages,
   purchaseTokens,
@@ -13,10 +14,12 @@ const router = express.Router();
 router.get('/packages', authenticate, getTokenPackages);
 
 // Purchase token package
-router.post('/purchase', authenticate, purchaseTokens);
+// RATE LIMITED: 10 payment operations per 15 minutes
+router.post('/purchase', authenticate, paymentLimiter, purchaseTokens);
 
 // Verify token purchase payment
-router.post('/verify', authenticate, verifyTokenPurchase);
+// RATE LIMITED: 10 payment operations per 15 minutes
+router.post('/verify', authenticate, paymentLimiter, verifyTokenPurchase);
 
 // Get user's token balance and history
 router.get('/balance', authenticate, getTokenBalance);
