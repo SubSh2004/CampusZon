@@ -152,7 +152,7 @@ const TokensSection: React.FC = () => {
               </button>
             </div>
             <div className="overflow-y-auto max-h-[calc(90vh-80px)]">
-              <TokenPurchase onSelectPackage={handlePurchaseToken} currentTokens={tokens} />
+              <TokenPurchase onSelectPackage={handlePurchaseToken} />
             </div>
           </div>
         </div>
