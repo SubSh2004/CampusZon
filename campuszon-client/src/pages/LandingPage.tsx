@@ -267,17 +267,17 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Step 2 - Static (No Animations) */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center" data-animated="false">
-              <div className="bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 p-8 rounded-xl h-64 flex items-center justify-center">
-                <svg className="w-32 h-32 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {/* Step 2 - Animated */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center" data-animated="true">
+              <div className="bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 p-8 rounded-xl h-64 flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer">
+                <svg className="w-32 h-32 text-green-600 dark:text-green-400 transition-transform duration-300 hover:-rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
               <div>
-                <div className="bg-white dark:bg-gray-900 p-8 rounded-xl shadow-lg">
+                <div className="bg-white dark:bg-gray-900 p-8 rounded-xl shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-105 hover:shadow-green-500/50 cursor-pointer">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center text-white font-bold text-xl">2</div>
+                    <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center text-white font-bold text-xl transition-all duration-300 hover:scale-110 hover:rotate-12 hover:shadow-lg hover:shadow-green-400/50">2</div>
                     <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Browse or List Items</h3>
                   </div>
                   <p className="text-gray-600 dark:text-gray-400 text-lg">
@@ -287,12 +287,12 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Step 3 - Static (No Animations) */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center" data-animated="false">
+            {/* Step 3 - Animated */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center" data-animated="true">
               <div className="order-2 lg:order-1">
-                <div className="bg-white dark:bg-gray-900 p-8 rounded-xl shadow-lg">
+                <div className="bg-white dark:bg-gray-900 p-8 rounded-xl shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-105 hover:shadow-purple-500/50 cursor-pointer">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl">3</div>
+                    <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl transition-all duration-300 hover:scale-110 hover:-rotate-6 hover:shadow-lg hover:shadow-purple-400/50">3</div>
                     <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Connect Directly</h3>
                   </div>
                   <p className="text-gray-600 dark:text-gray-400 text-lg">
@@ -301,25 +301,25 @@ export default function LandingPage() {
                 </div>
               </div>
               <div className="order-1 lg:order-2">
-                <div className="bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 p-8 rounded-xl h-64 flex items-center justify-center">
-                  <svg className="w-32 h-32 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 p-8 rounded-xl h-64 flex items-center justify-center transition-all duration-500 hover:scale-105 hover:shadow-xl hover:rotate-2 cursor-pointer">
+                  <svg className="w-32 h-32 text-purple-600 dark:text-purple-400 transition-all duration-500 hover:scale-110 hover:rotate-[360deg]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                   </svg>
                 </div>
               </div>
             </div>
 
-            {/* Step 4 - Static (No Animations) */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center" data-animated="false">
-              <div className="bg-gradient-to-br from-orange-100 to-red-100 dark:from-orange-900/30 dark:to-red-900/30 p-8 rounded-xl h-64 flex items-center justify-center">
-                <svg className="w-32 h-32 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {/* Step 4 - Animated */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center" data-animated="true">
+              <div className="bg-gradient-to-br from-orange-100 to-red-100 dark:from-orange-900/30 dark:to-red-900/30 p-8 rounded-xl h-64 flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-xl hover:animate-glow-pulse cursor-pointer">
+                <svg className="w-32 h-32 text-orange-600 dark:text-orange-400 transition-all duration-300 hover:scale-110 hover:animate-bounce-gentle" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
               <div>
-                <div className="bg-white dark:bg-gray-900 p-8 rounded-xl shadow-lg">
+                <div className="bg-white dark:bg-gray-900 p-8 rounded-xl shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-105 hover:shadow-orange-500/50 cursor-pointer">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 bg-orange-600 rounded-full flex items-center justify-center text-white font-bold text-xl">4</div>
+                    <div className="w-12 h-12 bg-orange-600 rounded-full flex items-center justify-center text-white font-bold text-xl transition-all duration-300 hover:scale-110 hover:rotate-12 hover:shadow-lg hover:shadow-orange-400/50">4</div>
                     <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Meet & Exchange Safely</h3>
                   </div>
                   <p className="text-gray-600 dark:text-gray-400 text-lg">
