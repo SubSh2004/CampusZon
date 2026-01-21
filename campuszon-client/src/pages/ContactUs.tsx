@@ -15,7 +15,15 @@ export default function ContactUs() {
     const mailtoLink = `mailto:campuszon@gmail.com?subject=${encodeURIComponent(formData.subject)}&body=${encodeURIComponent(
       `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`
     )}`;
-    window.location.href = mailtoLink;
+    
+    // Open in a new window/tab to avoid navigation issues
+    const link = document.createElement('a');
+    link.href = mailtoLink;
+    link.target = '_blank';
+    link.click();
+    
+    // Show success feedback
+    alert('Email client opened! If it didn\'t open automatically, please email us at campuszon@gmail.com');
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
