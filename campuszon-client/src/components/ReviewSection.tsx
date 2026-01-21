@@ -72,6 +72,7 @@ export default function ReviewSection({ itemId, itemOwnerId }: ReviewSectionProp
   const fetchReviews = async () => {
     try {
       const response = await axios.get(`/api/items/${itemId}`);
+      console.log('Fetched item:', response.data);
       if (response.data.success) {
         const item = response.data.item;
         setReviews(item.reviews || []);
@@ -118,6 +119,8 @@ export default function ReviewSection({ itemId, itemOwnerId }: ReviewSectionProp
       const userId = userResponse.data.user._id || userResponse.data.user.id;
       const userName = userResponse.data.user.name;
 
+      console.log('Submitting review:', { userId, userName, rating, comment: reviewText, itemId });
+
       const response = await axios.post(
         `/api/items/${itemId}/review`,
         {
@@ -131,19 +134,30 @@ export default function ReviewSection({ itemId, itemOwnerId }: ReviewSectionProp
         }
       );
 
+      console.log('Review response:', response.data);
+
       if (response.data.success) {
         setSuccess(response.data.message);
         setRating(0);
         setReviewText('');
         
         // Refresh reviews
-        fetchReviews();
+        await fetchReviews();
         
         // Clear success message after 3 seconds
         setTimeout(() => setSuccess(''), 3000);
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to submit review');
+      console.error('Review submission error:', err);
+      console.error('Error response:', err.response?.data);
+      
+      // Check if it's a validation error
+      if (err.response?.data?.errors && Array.isArray(err.response.data.errors)) {
+        const errorMessages = err.response.data.errors.map((e: any) => e.msg).join(', ');
+        setError(errorMessages);
+      } else {
+        setError(err.response?.data?.message || 'Failed to submit review');
+      }
     } finally {
       setSubmitting(false);
     }
