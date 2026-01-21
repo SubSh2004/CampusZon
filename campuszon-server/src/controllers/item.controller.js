@@ -459,6 +459,8 @@ export const addReview = async (req, res) => {
     const { id } = req.params;
     const { userId, userName, rating, comment } = req.body;
     
+    console.log('Add review request:', { id, userId, userName, rating, comment });
+    
     if (!userId || !rating) {
       return res.status(400).json({
         success: false,
@@ -475,6 +477,7 @@ export const addReview = async (req, res) => {
     
     const item = await Item.findById(id);
     if (!item) {
+      console.log('Item not found:', id);
       return res.status(404).json({
         success: false,
         message: 'Item not found',
@@ -491,8 +494,10 @@ export const addReview = async (req, res) => {
         userName,
         rating,
         comment,
-        createdAt: new Date()
+        createdAt: new Date(),
+        replies: item.reviews[existingReviewIndex].replies || [] // Preserve existing replies
       };
+      console.log('Updated existing review');
     } else {
       // Add new review
       item.reviews.push({
@@ -500,8 +505,10 @@ export const addReview = async (req, res) => {
         userName,
         rating,
         comment,
-        createdAt: new Date()
+        createdAt: new Date(),
+        replies: [] // Initialize replies array
       });
+      console.log('Added new review');
     }
 
     // Calculate average rating
@@ -510,6 +517,8 @@ export const addReview = async (req, res) => {
     item.reviewCount = item.reviews.length;
     
     await item.save();
+
+    console.log('Review saved successfully:', { averageRating: item.averageRating, reviewCount: item.reviewCount });
 
     res.status(200).json({
       success: true,
