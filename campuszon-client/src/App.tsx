@@ -20,6 +20,7 @@ import Payment from './pages/Payment'
 import PaymentSuccess from './pages/PaymentSuccess'
 import PaymentFailed from './pages/PaymentFailed'
 import PaymentHistory from './pages/PaymentHistory'
+import Footer from './components/Footer'
 
 export default function App() {
   const setUser = useSetRecoilState(userAtom);
@@ -106,25 +107,28 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/add-item" element={<AddItem />} />
-        <Route path="/item/:id" element={<ItemDetail />} />
-        <Route path="/bookings" element={<Bookings />} />
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/notifications" element={<Notifications />} />
-        <Route path="/payment" element={<Payment />} />
-        <Route path="/payment-success" element={<PaymentSuccess />} />
-        <Route path="/payment-failed" element={<PaymentFailed />} />
-        <Route path="/payment-history" element={<PaymentHistory />} />
-        <Route path="/oauth-callback" element={<OAuthCallback />} />
-        <Route path="/admin/moderation" element={<ModerationDashboard />} />
-      </Routes>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <div className="flex-grow">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/add-item" element={<AddItem />} />
+          <Route path="/item/:id" element={<ItemDetail />} />
+          <Route path="/bookings" element={<Bookings />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/notifications" element={<Notifications />} />
+          <Route path="/payment" element={<Payment />} />
+          <Route path="/payment-success" element={<PaymentSuccess />} />
+          <Route path="/payment-failed" element={<PaymentFailed />} />
+          <Route path="/payment-history" element={<PaymentHistory />} />
+          <Route path="/oauth-callback" element={<OAuthCallback />} />
+          <Route path="/admin/moderation" element={<ModerationDashboard />} />
+        </Routes>
+      </div>
+      <Footer />
     </div>
   )
 }
