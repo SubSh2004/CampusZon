@@ -535,7 +535,7 @@ export default function ItemDetail() {
 
         {/* Reviews Section */}
         <div className="mt-8 max-w-5xl mx-auto">
-          <ReviewSection itemId={id!} />
+          <ReviewSection itemId={id!} itemOwnerId={item.userId} />
         </div>
       </main>
 

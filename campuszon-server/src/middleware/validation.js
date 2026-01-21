@@ -367,6 +367,51 @@ export const validateReview = [
   handleValidationErrors
 ];
 
+/**
+ * Validation for adding/updating replies to reviews
+ */
+export const validateReply = [
+  body('userId')
+    .trim()
+    .notEmpty().withMessage('User ID is required')
+    .isMongoId().withMessage('Invalid user ID format'),
+  
+  body('userName')
+    .optional()
+    .trim()
+    .isLength({ min: 1, max: 100 }).withMessage('User name must be 1-100 characters')
+    .customSanitizer(sanitizeHtmlContent),
+  
+  body('replyText')
+    .trim()
+    .notEmpty().withMessage('Reply text cannot be empty')
+    .isLength({ min: 1, max: 500 }).withMessage('Reply must be 1-500 characters')
+    .customSanitizer(sanitizeHtmlContent),
+  
+  param('reviewIndex')
+    .isInt({ min: 0 }).withMessage('Invalid review index'),
+  
+  handleValidationErrors
+];
+
+/**
+ * Validation for deleting replies
+ */
+export const validateReplyDelete = [
+  body('userId')
+    .trim()
+    .notEmpty().withMessage('User ID is required')
+    .isMongoId().withMessage('Invalid user ID format'),
+  
+  param('reviewIndex')
+    .isInt({ min: 0 }).withMessage('Invalid review index'),
+  
+  param('replyIndex')
+    .isInt({ min: 0 }).withMessage('Invalid reply index'),
+  
+  handleValidationErrors
+];
+
 export default {
   validateUserSignup,
   validateUserLogin,
@@ -380,5 +425,7 @@ export default {
   validateSearchQuery,
   validateEmailDomain,
   validateReview,
+  validateReply,
+  validateReplyDelete,
   handleValidationErrors
 };

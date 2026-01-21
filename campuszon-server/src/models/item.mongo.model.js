@@ -39,7 +39,14 @@ const itemSchema = new mongoose.Schema({
     userName: { type: String },
     rating: { type: Number, required: true, min: 1, max: 5 },
     comment: { type: String },
-    createdAt: { type: Date, default: Date.now }
+    createdAt: { type: Date, default: Date.now },
+    replies: [{
+      userId: { type: String, required: true },
+      userName: { type: String },
+      replyText: { type: String, required: true },
+      createdAt: { type: Date, default: Date.now },
+      updatedAt: { type: Date }
+    }]
   }],
   averageRating: { type: Number, default: 0 },
   reviewCount: { type: Number, default: 0 },

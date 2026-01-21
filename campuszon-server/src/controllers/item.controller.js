@@ -527,6 +527,174 @@ export const addReview = async (req, res) => {
   }
 };
 
+// Add reply to a review
+export const addReplyToReview = async (req, res) => {
+  try {
+    const { id, reviewIndex } = req.params;
+    const { userId, userName, replyText } = req.body;
+    
+    if (!userId || !replyText) {
+      return res.status(400).json({
+        success: false,
+        message: 'User ID and reply text are required',
+      });
+    }
+    
+    const item = await Item.findById(id);
+    if (!item) {
+      return res.status(404).json({
+        success: false,
+        message: 'Item not found',
+      });
+    }
+
+    if (!item.reviews[reviewIndex]) {
+      return res.status(404).json({
+        success: false,
+        message: 'Review not found',
+      });
+    }
+
+    // Initialize replies array if it doesn't exist
+    if (!item.reviews[reviewIndex].replies) {
+      item.reviews[reviewIndex].replies = [];
+    }
+
+    // Add new reply
+    item.reviews[reviewIndex].replies.push({
+      userId,
+      userName,
+      replyText,
+      createdAt: new Date()
+    });
+    
+    await item.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Reply added successfully',
+      review: item.reviews[reviewIndex]
+    });
+  } catch (error) {
+    console.error('Add reply error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while adding reply',
+      error: error.message,
+    });
+  }
+};
+
+// Update a reply
+export const updateReply = async (req, res) => {
+  try {
+    const { id, reviewIndex, replyIndex } = req.params;
+    const { userId, replyText } = req.body;
+    
+    if (!replyText) {
+      return res.status(400).json({
+        success: false,
+        message: 'Reply text is required',
+      });
+    }
+    
+    const item = await Item.findById(id);
+    if (!item) {
+      return res.status(404).json({
+        success: false,
+        message: 'Item not found',
+      });
+    }
+
+    if (!item.reviews[reviewIndex] || !item.reviews[reviewIndex].replies[replyIndex]) {
+      return res.status(404).json({
+        success: false,
+        message: 'Reply not found',
+      });
+    }
+
+    const reply = item.reviews[reviewIndex].replies[replyIndex];
+    
+    // Check if user owns this reply
+    if (reply.userId !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'You can only edit your own replies',
+      });
+    }
+
+    // Update reply
+    item.reviews[reviewIndex].replies[replyIndex].replyText = replyText;
+    item.reviews[reviewIndex].replies[replyIndex].updatedAt = new Date();
+    
+    await item.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Reply updated successfully',
+      review: item.reviews[reviewIndex]
+    });
+  } catch (error) {
+    console.error('Update reply error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while updating reply',
+      error: error.message,
+    });
+  }
+};
+
+// Delete a reply
+export const deleteReply = async (req, res) => {
+  try {
+    const { id, reviewIndex, replyIndex } = req.params;
+    const { userId } = req.body;
+    
+    const item = await Item.findById(id);
+    if (!item) {
+      return res.status(404).json({
+        success: false,
+        message: 'Item not found',
+      });
+    }
+
+    if (!item.reviews[reviewIndex] || !item.reviews[reviewIndex].replies[replyIndex]) {
+      return res.status(404).json({
+        success: false,
+        message: 'Reply not found',
+      });
+    }
+
+    const reply = item.reviews[reviewIndex].replies[replyIndex];
+    
+    // Check if user owns this reply or is the item owner
+    if (reply.userId !== userId && item.userId !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'You can only delete your own replies or replies on your items',
+      });
+    }
+
+    // Remove reply
+    item.reviews[reviewIndex].replies.splice(replyIndex, 1);
+    
+    await item.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Reply deleted successfully',
+      review: item.reviews[reviewIndex]
+    });
+  } catch (error) {
+    console.error('Delete reply error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while deleting reply',
+      error: error.message,
+    });
+  }
+};
+
 // Get reported items (Admin only)
 export const getReportedItems = async (req, res) => {
   try {

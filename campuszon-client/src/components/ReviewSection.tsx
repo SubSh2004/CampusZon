@@ -10,19 +10,30 @@ interface Review {
   rating: number;
   comment: string;
   createdAt: string;
+  replies?: Reply[];
+}
+
+interface Reply {
+  userId: string;
+  userName: string;
+  replyText: string;
+  createdAt: string;
+  updatedAt?: string;
 }
 
 interface ReviewSectionProps {
   itemId: string;
+  itemOwnerId?: string;
 }
 
-export default function ReviewSection({ itemId }: ReviewSectionProps) {
+export default function ReviewSection({ itemId, itemOwnerId }: ReviewSectionProps) {
   const { theme } = useTheme();
   const navigate = useNavigate();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [averageRating, setAverageRating] = useState(0);
   const [reviewCount, setReviewCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<string>('');
   
   // Form state
   const [rating, setRating] = useState(0);
@@ -31,9 +42,32 @@ export default function ReviewSection({ itemId }: ReviewSectionProps) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  // Reply state
+  const [activeReplyIndex, setActiveReplyIndex] = useState<number | null>(null);
+  const [replyTexts, setReplyTexts] = useState<{[key: number]: string}>({});
+  const [submittingReply, setSubmittingReply] = useState<number | null>(null);
+  const [editingReply, setEditingReply] = useState<{reviewIndex: number, replyIndex: number} | null>(null);
+  const [editReplyText, setEditReplyText] = useState('');
+  const [expandedReplies, setExpandedReplies] = useState<{[key: number]: boolean}>({});
+
   useEffect(() => {
     fetchReviews();
+    fetchCurrentUser();
   }, [itemId]);
+
+  const fetchCurrentUser = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+      const response = await axios.get('/api/auth/profile', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setCurrentUserId(response.data.user._id || response.data.user.id);
+    } catch (error) {
+      console.error('Error fetching user:', error);
+    }
+  };
 
   const fetchReviews = async () => {
     try {
@@ -113,6 +147,133 @@ export default function ReviewSection({ itemId }: ReviewSectionProps) {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleSubmitReply = async (reviewIndex: number) => {
+    const replyText = replyTexts[reviewIndex]?.trim();
+    
+    if (!replyText) {
+      setError('Reply text cannot be empty');
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      setSubmittingReply(reviewIndex);
+      setError('');
+      
+      const userResponse = await axios.get('/api/auth/profile', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      const userId = userResponse.data.user._id || userResponse.data.user.id;
+      const userName = userResponse.data.user.name;
+
+      await axios.post(
+        `/api/items/${itemId}/review/${reviewIndex}/reply`,
+        {
+          userId,
+          userName,
+          replyText
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      // Clear reply text and close reply form
+      setReplyTexts(prev => ({ ...prev, [reviewIndex]: '' }));
+      setActiveReplyIndex(null);
+      
+      // Refresh reviews
+      await fetchReviews();
+      
+      // Expand replies section
+      setExpandedReplies(prev => ({ ...prev, [reviewIndex]: true }));
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to submit reply');
+    } finally {
+      setSubmittingReply(null);
+    }
+  };
+
+  const handleEditReply = (reviewIndex: number, replyIndex: number, currentText: string) => {
+    setEditingReply({ reviewIndex, replyIndex });
+    setEditReplyText(currentText);
+  };
+
+  const handleUpdateReply = async () => {
+    if (!editingReply || !editReplyText.trim()) {
+      setError('Reply text cannot be empty');
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      setError('');
+      
+      await axios.put(
+        `/api/items/${itemId}/review/${editingReply.reviewIndex}/reply/${editingReply.replyIndex}`,
+        {
+          userId: currentUserId,
+          replyText: editReplyText
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      setEditingReply(null);
+      setEditReplyText('');
+      
+      // Refresh reviews
+      await fetchReviews();
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to update reply');
+    }
+  };
+
+  const handleDeleteReply = async (reviewIndex: number, replyIndex: number) => {
+    if (!confirm('Are you sure you want to delete this reply?')) {
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      setError('');
+      
+      await axios.delete(
+        `/api/items/${itemId}/review/${reviewIndex}/reply/${replyIndex}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          data: { userId: currentUserId }
+        }
+      );
+
+      // Refresh reviews
+      await fetchReviews();
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to delete reply');
+    }
+  };
+
+  const toggleReplies = (reviewIndex: number) => {
+    setExpandedReplies(prev => ({ ...prev, [reviewIndex]: !prev[reviewIndex] }));
   };
 
   const formatDate = (dateString: string) => {
@@ -278,9 +439,9 @@ export default function ReviewSection({ itemId }: ReviewSectionProps) {
           <div className="space-y-4">
             {[...reviews]
               .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-              .map((review, index) => (
+              .map((review, reviewIndex) => (
                 <div
-                  key={index}
+                  key={reviewIndex}
                   className="bg-white dark:bg-gray-700 p-5 rounded-lg border border-gray-200 dark:border-gray-600 hover:shadow-md transition-shadow duration-200"
                 >
                   {/* Review Header */}
@@ -306,9 +467,190 @@ export default function ReviewSection({ itemId }: ReviewSectionProps) {
                   </div>
 
                   {/* Review Text */}
-                  <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                  <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap mb-4">
                     {review.comment}
                   </p>
+
+                  {/* Reply Button and Count */}
+                  <div className="flex items-center gap-4 mb-3">
+                    <button
+                      onClick={() => {
+                        if (!localStorage.getItem('token')) {
+                          navigate('/login');
+                          return;
+                        }
+                        setActiveReplyIndex(activeReplyIndex === reviewIndex ? null : reviewIndex);
+                      }}
+                      className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium flex items-center gap-1"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                      </svg>
+                      Reply
+                    </button>
+                    
+                    {review.replies && review.replies.length > 0 && (
+                      <button
+                        onClick={() => toggleReplies(reviewIndex)}
+                        className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 flex items-center gap-1"
+                      >
+                        {expandedReplies[reviewIndex] ? (
+                          <>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                            </svg>
+                            Hide {review.replies.length} {review.replies.length === 1 ? 'reply' : 'replies'}
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                            Show {review.replies.length} {review.replies.length === 1 ? 'reply' : 'replies'}
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Reply Input Form */}
+                  {activeReplyIndex === reviewIndex && (
+                    <div className="ml-8 mb-4 bg-gray-50 dark:bg-gray-600 p-4 rounded-lg border border-gray-200 dark:border-gray-500">
+                      <textarea
+                        value={replyTexts[reviewIndex] || ''}
+                        onChange={(e) => setReplyTexts(prev => ({ ...prev, [reviewIndex]: e.target.value }))}
+                        placeholder="Write your reply..."
+                        rows={3}
+                        className={`w-full px-3 py-2 rounded-lg border ${
+                          theme === 'dark'
+                            ? 'bg-gray-700 border-gray-500 text-white placeholder-gray-400'
+                            : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                        } focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors duration-300 mb-2`}
+                        maxLength={500}
+                      />
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {(replyTexts[reviewIndex] || '').length}/500 characters
+                        </p>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              setActiveReplyIndex(null);
+                              setReplyTexts(prev => ({ ...prev, [reviewIndex]: '' }));
+                            }}
+                            className="px-3 py-1 text-sm bg-gray-300 dark:bg-gray-500 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-white rounded transition"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={() => handleSubmitReply(reviewIndex)}
+                            disabled={submittingReply === reviewIndex}
+                            className="px-3 py-1 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded transition disabled:opacity-50"
+                          >
+                            {submittingReply === reviewIndex ? 'Posting...' : 'Post Reply'}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Replies List */}
+                  {review.replies && review.replies.length > 0 && expandedReplies[reviewIndex] && (
+                    <div className="ml-8 mt-3 space-y-3 border-l-2 border-indigo-200 dark:border-indigo-700 pl-4">
+                      {review.replies
+                        .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+                        .map((reply, replyIndex) => (
+                          <div
+                            key={replyIndex}
+                            className="bg-gray-50 dark:bg-gray-600 p-3 rounded-lg"
+                          >
+                            {editingReply?.reviewIndex === reviewIndex && editingReply?.replyIndex === replyIndex ? (
+                              // Edit Mode
+                              <div>
+                                <textarea
+                                  value={editReplyText}
+                                  onChange={(e) => setEditReplyText(e.target.value)}
+                                  rows={3}
+                                  className={`w-full px-3 py-2 rounded-lg border ${
+                                    theme === 'dark'
+                                      ? 'bg-gray-700 border-gray-500 text-white'
+                                      : 'bg-white border-gray-300 text-gray-900'
+                                  } focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-2`}
+                                  maxLength={500}
+                                />
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={() => {
+                                      setEditingReply(null);
+                                      setEditReplyText('');
+                                    }}
+                                    className="px-3 py-1 text-sm bg-gray-300 dark:bg-gray-500 hover:bg-gray-400 text-gray-800 dark:text-white rounded"
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button
+                                    onClick={handleUpdateReply}
+                                    className="px-3 py-1 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded"
+                                  >
+                                    Save
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              // View Mode
+                              <>
+                                <div className="flex items-start justify-between mb-2">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-teal-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                                      {reply.userName?.charAt(0).toUpperCase() || 'U'}
+                                    </div>
+                                    <div>
+                                      <div className="flex items-center gap-2">
+                                        <p className="font-semibold text-sm text-gray-900 dark:text-white">
+                                          {reply.userName || 'Anonymous'}
+                                        </p>
+                                        {reply.userId === itemOwnerId && (
+                                          <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-0.5 rounded-full font-semibold">
+                                            Seller
+                                          </span>
+                                        )}
+                                      </div>
+                                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                                        {formatDate(reply.createdAt)}
+                                        {reply.updatedAt && ' (edited)'}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Edit/Delete buttons for own replies or item owner */}
+                                  {(reply.userId === currentUserId || itemOwnerId === currentUserId) && (
+                                    <div className="flex gap-2">
+                                      {reply.userId === currentUserId && (
+                                        <button
+                                          onClick={() => handleEditReply(reviewIndex, replyIndex, reply.replyText)}
+                                          className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700"
+                                        >
+                                          Edit
+                                        </button>
+                                      )}
+                                      <button
+                                        onClick={() => handleDeleteReply(reviewIndex, replyIndex)}
+                                        className="text-xs text-red-600 dark:text-red-400 hover:text-red-700"
+                                      >
+                                        Delete
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                                <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                                  {reply.replyText}
+                                </p>
+                              </>
+                            )}
+                          </div>
+                        ))}
+                    </div>
+                  )}
                 </div>
               ))}
           </div>

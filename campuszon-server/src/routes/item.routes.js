@@ -7,6 +7,9 @@ import {
   deleteItem,
   reportItem,
   addReview,
+  addReplyToReview,
+  updateReply,
+  deleteReply,
   getReportedItems,
   getAllItemsForAdmin,
   moderateItem
@@ -20,7 +23,9 @@ import {
   validateObjectId,
   validateSearchQuery,
   validateEmailDomain,
-  validateReview
+  validateReview,
+  validateReply,
+  validateReplyDelete
 } from '../middleware/validation.js';
 
 const router = express.Router();
@@ -76,6 +81,21 @@ router.post('/:id/report', authenticateToken, reportLimiter, reportItem);
 // REQUIRES AUTHENTICATION - only logged-in users can review items
 // VALIDATED: Rating (1-5), review text, user info
 router.post('/:id/review', authenticateToken, validateObjectId('id'), validateReview, addReview);
+
+// POST /api/items/:id/review/:reviewIndex/reply - Add reply to a review
+// REQUIRES AUTHENTICATION - only logged-in users can reply
+// VALIDATED: Reply text, user info, review index
+router.post('/:id/review/:reviewIndex/reply', authenticateToken, validateObjectId('id'), validateReply, addReplyToReview);
+
+// PUT /api/items/:id/review/:reviewIndex/reply/:replyIndex - Update a reply
+// REQUIRES AUTHENTICATION - only reply owner can update
+// VALIDATED: Reply text, user info, indices
+router.put('/:id/review/:reviewIndex/reply/:replyIndex', authenticateToken, validateObjectId('id'), validateReply, updateReply);
+
+// DELETE /api/items/:id/review/:reviewIndex/reply/:replyIndex - Delete a reply
+// REQUIRES AUTHENTICATION - only reply owner or item owner can delete
+// VALIDATED: User info, indices
+router.delete('/:id/review/:reviewIndex/reply/:replyIndex', authenticateToken, validateObjectId('id'), validateReplyDelete, deleteReply);
 
 // POST /api/items/:id/moderate - Admin action on item (keep/warn/remove)
 router.post('/:id/moderate', authenticateToken, requireAdmin, moderateItem);
