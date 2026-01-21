@@ -204,12 +204,24 @@ export default function ProductCard({ item }: ProductCardProps) {
               {item.description}
             </p>
             
-            {/* Price with Gradient Background */}
+            {/* Price with Gradient Background and Availability Badge */}
             <div className="flex items-center justify-between mt-2 sm:mt-3 mb-3">
               <div className="relative">
                 <span className="relative text-xl sm:text-2xl font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
                   ₹{parseFloat(item.price.toString()).toFixed(2)}
                 </span>
+              </div>
+              
+              {/* Availability Badge */}
+              <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${
+                item.available 
+                  ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' 
+                  : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${
+                  item.available ? 'bg-green-500' : 'bg-red-500'
+                }`}></span>
+                <span>{item.available ? 'Available' : 'Sold'}</span>
               </div>
             </div>
 
