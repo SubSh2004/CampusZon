@@ -60,7 +60,7 @@ export default function ReviewSection({ itemId, itemOwnerId }: ReviewSectionProp
     if (!token) return;
 
     try {
-      const response = await axios.get('/api/auth/profile', {
+      const response = await axios.get('/api/user/profile', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCurrentUserId(response.data.user._id || response.data.user.id);
@@ -112,7 +112,7 @@ export default function ReviewSection({ itemId, itemOwnerId }: ReviewSectionProp
       setSubmitting(true);
       
       // Get user info from token or API
-      const userResponse = await axios.get('/api/auth/profile', {
+      const userResponse = await axios.get('/api/user/profile', {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -181,7 +181,7 @@ export default function ReviewSection({ itemId, itemOwnerId }: ReviewSectionProp
       setSubmittingReply(reviewIndex);
       setError('');
       
-      const userResponse = await axios.get('/api/auth/profile', {
+      const userResponse = await axios.get('/api/user/profile', {
         headers: { Authorization: `Bearer ${token}` }
       });
       
