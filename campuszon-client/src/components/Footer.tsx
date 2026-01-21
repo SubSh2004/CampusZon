@@ -119,12 +119,12 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <button 
-                  onClick={() => alert('Terms of Service coming soon!')}
+                <Link 
+                  to="/terms-of-service"
                   className="text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors"
                 >
                   Terms of Service
-                </button>
+                </Link>
               </li>
             </ul>
           </div>

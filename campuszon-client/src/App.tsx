@@ -22,6 +22,7 @@ import PaymentFailed from './pages/PaymentFailed'
 import PaymentHistory from './pages/PaymentHistory'
 import FAQ from './pages/FAQ'
 import PrivacyPolicy from './pages/PrivacyPolicy'
+import TermsOfService from './pages/TermsOfService'
 import Footer from './components/Footer'
 
 export default function App() {
@@ -128,6 +129,7 @@ export default function App() {
           <Route path="/payment-history" element={<PaymentHistory />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/oauth-callback" element={<OAuthCallback />} />
           <Route path="/admin/moderation" element={<ModerationDashboard />} />
         </Routes>
