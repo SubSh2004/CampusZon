@@ -22,7 +22,9 @@ import PaymentFailed from './pages/PaymentFailed'
 import PaymentHistory from './pages/PaymentHistory'
 import FAQ from './pages/FAQ'
 import PrivacyPolicy from './pages/PrivacyPolicy'
-import TermsOfService from './pages/TermsOfService'import ContactUs from './pages/ContactUs';import Footer from './components/Footer'
+import TermsOfService from './pages/TermsOfService'
+import ContactUs from './pages/ContactUs'
+import Footer from './components/Footer'
 
 export default function App() {
   const setUser = useSetRecoilState(userAtom);
