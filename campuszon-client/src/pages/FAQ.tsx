@@ -147,7 +147,39 @@ export default function FAQ() {
           question: 'Can I get a refund?',
           answer: (
             <div>
-              <p className="mb-2"><strong>Tokens:</strong> No refunds on purchased tokens as they remain in your account for future use.</p>              <p className="mb-2"><strong>Booking Rejection:</strong> If a seller rejects your booking, you will receive 0.5 tokens back as a refund (50% of the unlock cost).</p>              <p><strong>Item Purchases:</strong> Refunds depend on the seller\'s policy. Always discuss return/refund terms with the seller before completing the transaction.</p>
+              <p className="mb-2"><strong>Tokens:</strong> No refunds on purchased tokens as they remain in your account for future use.</p>              <p className="mb-2"><strong>Booking Rejection:</strong> If a seller rejects your booking, you will receive 0.5 tokens back as a refund (50% of the unlock cost).</p>              <p><strong>Item Purchases:</strong> Refunds depend on the seller's policy. Always discuss return/refund terms with the seller before completing the transaction.</p>
+            </div>
+          ),
+        },
+        {
+          question: 'What is the return policy for purchased items?',
+          answer: (
+            <div>
+              <p className="mb-2"><strong>5-Day Return Window:</strong> Buyers have 5 days from the purchase date to return an item if needed.</p>
+              <p className="mb-2"><strong>Return Fee:</strong> To return an item, the buyer must pay 10% of the listed price to the seller as a restocking/handling fee.</p>
+              <p className="mb-3"><strong>Example:</strong> If an item was listed for ₹1,000, the buyer pays ₹100 to the seller to process the return.</p>
+              <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 mt-3">
+                <p className="text-sm text-yellow-800 dark:text-yellow-300">
+                  <strong>⚠️ Important:</strong> Discuss return conditions with the seller before purchasing. The seller may refuse returns for certain items (personalized, damaged by buyer, etc.).
+                </p>
+              </div>
+            </div>
+          ),
+        },
+        {
+          question: 'What if a rented item gets damaged?',
+          answer: (
+            <div>
+              <p className="mb-2">If an item is damaged during the rental period:</p>
+              <ol className="list-decimal ml-5 space-y-1">
+                <li>Inform the seller immediately with photos of the damage</li>
+                <li>The buyer and seller will discuss and mutually agree on a fair compensation amount</li>
+                <li>Consider factors like: original item value, extent of damage, repair costs, age of item</li>
+                <li>Payment for damages is arranged directly between buyer and seller</li>
+              </ol>
+              <p className="mt-3 text-sm font-semibold text-indigo-600 dark:text-indigo-400">
+                💡 Tip: Before renting, take photos/videos of the item's condition to avoid disputes. Discuss potential damage scenarios upfront.
+              </p>
             </div>
           ),
         },
