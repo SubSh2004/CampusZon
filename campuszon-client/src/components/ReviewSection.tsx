@@ -117,7 +117,7 @@ export default function ReviewSection({ itemId, itemOwnerId }: ReviewSectionProp
       });
       
       const userId = userResponse.data.user._id || userResponse.data.user.id;
-      const userName = userResponse.data.user.name;
+      const userName = userResponse.data.user.username;
 
       console.log('Submitting review:', { userId, userName, rating, comment: reviewText, itemId });
 
@@ -186,7 +186,7 @@ export default function ReviewSection({ itemId, itemOwnerId }: ReviewSectionProp
       });
       
       const userId = userResponse.data.user._id || userResponse.data.user.id;
-      const userName = userResponse.data.user.name;
+      const userName = userResponse.data.user.username;
 
       await axios.post(
         `/api/items/${itemId}/review/${reviewIndex}/reply`,
