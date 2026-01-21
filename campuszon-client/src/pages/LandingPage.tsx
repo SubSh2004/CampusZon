@@ -245,12 +245,12 @@ export default function LandingPage() {
             How Campuszon Works
           </h2>
           <div className="space-y-16">
-            {/* Step 1 */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            {/* Step 1 - ONLY Animated Step */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center" data-animated="true">
               <div className="order-2 lg:order-1">
-                <div className="bg-white dark:bg-gray-900 p-8 rounded-xl shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-105">
+                <div className="bg-white dark:bg-gray-900 p-8 rounded-xl shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-105 hover:shadow-indigo-500/50 cursor-pointer">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-xl transition-all duration-300 hover:scale-110 hover:rotate-12">1</div>
+                    <div className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-xl transition-all duration-300 hover:scale-110 hover:rotate-6 hover:shadow-lg hover:shadow-indigo-400/50">1</div>
                     <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Sign Up with College Email</h3>
                   </div>
                   <p className="text-gray-600 dark:text-gray-400 text-lg">
@@ -259,16 +259,16 @@ export default function LandingPage() {
                 </div>
               </div>
               <div className="order-1 lg:order-2">
-                <div className="bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 p-8 rounded-xl h-64 flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-xl">
-                  <svg className="w-32 h-32 text-indigo-600 dark:text-indigo-400 transition-transform duration-300 hover:rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 p-8 rounded-xl h-64 flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-xl animate-gradient cursor-pointer">
+                  <svg className="w-32 h-32 text-indigo-600 dark:text-indigo-400 transition-transform duration-300 hover:rotate-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
               </div>
             </div>
 
-            {/* Step 2 */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            {/* Step 2 - Static (No Animations) */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center" data-animated="false">
               <div className="bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 p-8 rounded-xl h-64 flex items-center justify-center">
                 <svg className="w-32 h-32 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -287,8 +287,8 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Step 3 */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            {/* Step 3 - Static (No Animations) */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center" data-animated="false">
               <div className="order-2 lg:order-1">
                 <div className="bg-white dark:bg-gray-900 p-8 rounded-xl shadow-lg">
                   <div className="flex items-center gap-3 mb-4">
@@ -309,8 +309,8 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Step 4 */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            {/* Step 4 - Static (No Animations) */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center" data-animated="false">
               <div className="bg-gradient-to-br from-orange-100 to-red-100 dark:from-orange-900/30 dark:to-red-900/30 p-8 rounded-xl h-64 flex items-center justify-center">
                 <svg className="w-32 h-32 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
