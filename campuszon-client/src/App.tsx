@@ -4,6 +4,7 @@ import { useSetRecoilState } from 'recoil'
 import axios from 'axios'
 import { userAtom } from './store/user.atom'
 import { cartAtom } from './store/cart.atom'
+import ProtectedRoute from './components/ProtectedRoute'
 import LandingPage from './pages/LandingPage'
 import Home from './pages/Home'
 import Login from './pages/Login'
@@ -115,25 +116,34 @@ export default function App() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <div className="flex-grow">
         <Routes>
+          {/* Public Routes - Landing Page Only */}
           <Route path="/" element={<LandingPage />} />
-          <Route path="/home" element={<Home />} />
+          
+          {/* Auth Routes - Public */}
           <Route path="/login" element={<Login />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/profile" element={<Profile />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/add-item" element={<AddItem />} />
-          <Route path="/item/:id" element={<ItemDetail />} />
-          <Route path="/bookings" element={<Bookings />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/notifications" element={<Notifications />} />
-          <Route path="/payment" element={<Payment />} />
-          <Route path="/payment-success" element={<PaymentSuccess />} />
-          <Route path="/payment-failed" element={<PaymentFailed />} />
-          <Route path="/payment-history" element={<PaymentHistory />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/oauth-callback" element={<OAuthCallback />} />
+          
+          {/* Protected Routes - Require Authentication */}
+          <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/add-item" element={<ProtectedRoute><AddItem /></ProtectedRoute>} />
+          <Route path="/item/:id" element={<ProtectedRoute><ItemDetail /></ProtectedRoute>} />
+          <Route path="/bookings" element={<ProtectedRoute><Bookings /></ProtectedRoute>} />
+          <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+          <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+          <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
+          <Route path="/payment-success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
+          <Route path="/payment-failed" element={<ProtectedRoute><PaymentFailed /></ProtectedRoute>} />
+          <Route path="/payment-history" element={<ProtectedRoute><PaymentHistory /></ProtectedRoute>} />
+          <Route path="/admin/moderation" element={<ProtectedRoute><ModerationDashboard /></ProtectedRoute>} />
+          
+          {/* Public Info Pages - Accessible to all */}
           <Route path="/faq" element={<FAQ />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route path="/terms-of-service" element={<TermsOfService />} />            <Route path="/contact-us" element={<ContactUs />} />          <Route path="/oauth-callback" element={<OAuthCallback />} />
-          <Route path="/admin/moderation" element={<ModerationDashboard />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
+          <Route path="/contact-us" element={<ContactUs />} />
         </Routes>
       </div>
       <Footer />
