@@ -82,9 +82,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-2">
-              <svg className="w-8 h-8 text-indigo-600 dark:text-indigo-400 logo-nav" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
+              <img src="/logo-icon.jpg" alt="Campuszon" className="w-8 h-8 rounded-full object-cover logo-nav" />
               <span className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">Campuszon</span>
             </div>
             <div className="flex gap-4">
@@ -116,9 +114,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="text-center lg:text-left">
               <div className="flex items-center justify-center lg:justify-start gap-3 mb-6">
-                <svg className="w-12 h-12 text-indigo-600 dark:text-indigo-400 logo-hero" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                </svg>
+                <img src="/logo-icon.jpg" alt="Campuszon" className="w-12 h-12 rounded-full object-cover logo-hero" />
                 <h1 className="text-3xl sm:text-4xl font-bold text-indigo-600 dark:text-indigo-400">Campuszon</h1>
               </div>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6 animate-fade-in">
@@ -266,7 +262,7 @@ export default function LandingPage() {
               </div>
               <div className="order-1 lg:order-2">
                 <div className="bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 p-8 rounded-xl h-64 flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-xl animate-gradient cursor-pointer">
-                  <svg className="w-32 h-32 text-indigo-600 dark:text-indigo-400 logo-onboarding" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <img src="/logo-icon.jpg" alt="Campuszon" className="w-32 h-32 rounded-full object-cover logo-onboarding" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
@@ -635,9 +631,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <svg className="w-6 h-6 text-indigo-400 logo-footer" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                </svg>
+                <img src="/logo-icon.jpg" alt="Campuszon" className="w-6 h-6 rounded-full object-cover logo-footer" />
                 <h3 className="text-white font-bold text-lg">Campuszon</h3>
               </div>
               <p className="text-sm text-gray-400">
