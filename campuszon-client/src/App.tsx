@@ -4,6 +4,7 @@ import { useSetRecoilState } from 'recoil'
 import axios from 'axios'
 import { userAtom } from './store/user.atom'
 import { cartAtom } from './store/cart.atom'
+import LandingPage from './pages/LandingPage'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
@@ -114,7 +115,7 @@ export default function App() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <div className="flex-grow">
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<LandingPage />} />
           <Route path="/home" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
