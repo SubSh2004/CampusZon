@@ -1,11 +1,51 @@
-import { Link } from 'react-router-dom';
-import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useRecoilValue } from 'recoil';
+import { userAtom } from '../store/user.atom';
 
 export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [visibleSections, setVisibleSections] = useState<Set<number>>(new Set());
+  const user = useRecoilValue(userAtom);
+  const navigate = useNavigate();
+
+  // Redirect logged-in users to /home
+  useEffect(() => {
+    if (user.isLoggedIn) {
+      navigate('/home');
+    }
+  }, [user.isLoggedIn, navigate]);
+
+  // Scroll-based animations
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const sectionIndex = parseInt(entry.target.getAttribute('data-section') || '0');
+            setVisibleSections((prev) => new Set(prev).add(sectionIndex));
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    const sections = document.querySelectorAll('[data-section]');
+    sections.forEach((section) => observer.observe(section));
+
+    return () => observer.disconnect();
+  }, []);
 
   const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index);
+  };
+
+  const handleStartBuying = () => {
+    if (user.isLoggedIn) {
+      navigate('/home');
+    } else {
+      navigate('/login');
+    }
   };
 
   const faqs = [
@@ -38,11 +78,11 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
       {/* Navigation */}
-      <nav className="fixed top-0 w-full bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm z-50 border-b border-gray-200 dark:border-gray-800">
+      <nav className="fixed top-0 w-full bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm z-50 border-b border-gray-200 dark:border-gray-800 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-2">
-              <svg className="w-8 h-8 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-8 h-8 text-indigo-600 dark:text-indigo-400 transition-transform hover:scale-110 duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
               </svg>
               <span className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">Campuszon</span>
@@ -50,13 +90,13 @@ export default function LandingPage() {
             <div className="flex gap-4">
               <Link
                 to="/login"
-                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200 hover:scale-105"
               >
                 Login
               </Link>
               <Link
                 to="/signup"
-                className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
+                className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-lg"
               >
                 Sign Up
               </Link>
@@ -66,36 +106,47 @@ export default function LandingPage() {
       </nav>
 
       {/* 1️⃣ Hero Section */}
-      <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-indigo-50 to-white dark:from-gray-800 dark:to-gray-900">
+      <section 
+        data-section="0"
+        className={`pt-32 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-indigo-50 to-white dark:from-gray-800 dark:to-gray-900 transition-all duration-1000 ${
+          visibleSections.has(0) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+        }`}
+      >
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="text-center lg:text-left">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6">
-                Buy, Sell & Rent Within Your Campus — <span className="text-indigo-600 dark:text-indigo-400">Safely.</span>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6 animate-fade-in">
+                Buy, Sell & Rent Within Your Campus — <span className="text-indigo-600 dark:text-indigo-400 bg-clip-text">Safely.</span>
               </h1>
               <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 mb-8">
-                A trusted student-to-student marketplace for books, cycles, electronics, and daily essentials.
+                A trusted student-to-student marketplace made exclusively for Indian campuses.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Link
-                  to="/home"
-                  className="px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white text-lg font-semibold rounded-lg transition-colors shadow-lg"
+                <button
+                  onClick={handleStartBuying}
+                  className="px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white text-lg font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl transform"
                 >
-                  Explore Campuszon
+                  Start Buying
+                </button>
+                <Link
+                  to="/login"
+                  className="px-8 py-4 border-2 border-indigo-600 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-lg font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg text-center"
+                >
+                  Login
                 </Link>
                 <Link
-                  to="/add-item"
-                  className="px-8 py-4 border-2 border-indigo-600 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-lg font-semibold rounded-lg transition-colors"
+                  to="/signup"
+                  className="px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-lg font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl text-center"
                 >
-                  List an Item
+                  Sign Up
                 </Link>
               </div>
             </div>
             <div className="relative">
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 border border-gray-200 dark:border-gray-700">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:shadow-3xl hover:scale-105">
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
-                    <div className="w-12 h-12 bg-indigo-600 rounded-lg flex items-center justify-center">
+                  <div className="flex items-center gap-3 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-md cursor-pointer">
+                    <div className="w-12 h-12 bg-indigo-600 rounded-lg flex items-center justify-center transition-transform duration-300 hover:rotate-12">
                       <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                       </svg>
@@ -105,8 +156,8 @@ export default function LandingPage() {
                       <div className="text-sm text-gray-600 dark:text-gray-400">Available in your hostel</div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                    <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center">
+                  <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-md cursor-pointer">
+                    <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center transition-transform duration-300 hover:rotate-12">
                       <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                       </svg>
@@ -116,8 +167,8 @@ export default function LandingPage() {
                       <div className="text-sm text-gray-600 dark:text-gray-400">Rent or buy from peers</div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                    <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center">
+                  <div className="flex items-center gap-3 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-md cursor-pointer">
+                    <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center transition-transform duration-300 hover:rotate-12">
                       <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
@@ -135,7 +186,12 @@ export default function LandingPage() {
       </section>
 
       {/* 2️⃣ What is Campuszon? */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-900">
+      <section 
+        data-section="1"
+        className={`py-20 px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-900 transition-all duration-1000 ${
+          visibleSections.has(1) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+        }`}
+      >
         <div className="max-w-7xl mx-auto text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-6">
             What is Campuszon?
@@ -145,8 +201,8 @@ export default function LandingPage() {
             No outsiders, no scams — just trusted campus transactions.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="p-6 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl">
-              <div className="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="p-6 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl group">
+              <div className="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:bg-indigo-700 group-hover:scale-110">
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                 </svg>
@@ -154,8 +210,8 @@ export default function LandingPage() {
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Buy</h3>
               <p className="text-gray-600 dark:text-gray-400">Find affordable items from students in your campus</p>
             </div>
-            <div className="p-6 bg-green-50 dark:bg-green-900/20 rounded-xl">
-              <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="p-6 bg-green-50 dark:bg-green-900/20 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl group">
+              <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:bg-green-700 group-hover:scale-110">
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -163,8 +219,8 @@ export default function LandingPage() {
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Sell</h3>
               <p className="text-gray-600 dark:text-gray-400">List items you no longer need and earn cash</p>
             </div>
-            <div className="p-6 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
-              <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="p-6 bg-purple-50 dark:bg-purple-900/20 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl group">
+              <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:bg-purple-700 group-hover:scale-110">
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                 </svg>
@@ -177,7 +233,12 @@ export default function LandingPage() {
       </section>
 
       {/* 3️⃣ How Campuszon Works */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-800">
+      <section 
+        data-section="2"
+        className={`py-20 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-800 transition-all duration-1000 ${
+          visibleSections.has(2) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+        }`}
+      >
         <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white text-center mb-16">
             How Campuszon Works
@@ -186,9 +247,9 @@ export default function LandingPage() {
             {/* Step 1 */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
               <div className="order-2 lg:order-1">
-                <div className="bg-white dark:bg-gray-900 p-8 rounded-xl shadow-lg">
+                <div className="bg-white dark:bg-gray-900 p-8 rounded-xl shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-105">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-xl">1</div>
+                    <div className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-xl transition-all duration-300 hover:scale-110 hover:rotate-12">1</div>
                     <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Sign Up with College Email</h3>
                   </div>
                   <p className="text-gray-600 dark:text-gray-400 text-lg">
@@ -197,8 +258,8 @@ export default function LandingPage() {
                 </div>
               </div>
               <div className="order-1 lg:order-2">
-                <div className="bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 p-8 rounded-xl h-64 flex items-center justify-center">
-                  <svg className="w-32 h-32 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 p-8 rounded-xl h-64 flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                  <svg className="w-32 h-32 text-indigo-600 dark:text-indigo-400 transition-transform duration-300 hover:rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
@@ -271,7 +332,12 @@ export default function LandingPage() {
       </section>
 
       {/* 4️⃣ What You Can Find */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-900">
+      <section 
+        data-section="3"
+        className={`py-20 px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-900 transition-all duration-1000 ${
+          visibleSections.has(3) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+        }`}
+      >
         <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white text-center mb-6">
             What You Can Find on Campuszon
@@ -280,8 +346,8 @@ export default function LandingPage() {
             From textbooks to tech gadgets — everything a student needs, all within your campus
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="group p-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border-2 border-transparent hover:border-indigo-600 transition-all">
-              <div className="w-14 h-14 bg-blue-600 rounded-lg flex items-center justify-center mb-4">
+            <div className="group p-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border-2 border-transparent hover:border-indigo-600 transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer">
+              <div className="w-14 h-14 bg-blue-600 rounded-lg flex items-center justify-center mb-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6">
                 <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
@@ -366,14 +432,19 @@ export default function LandingPage() {
       </section>
 
       {/* 5️⃣ Why Students Love Campuszon */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-indigo-600 to-purple-600 text-white">
+      <section 
+        data-section="4"
+        className={`py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-indigo-600 to-purple-600 text-white transition-all duration-1000 ${
+          visibleSections.has(4) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+        }`}
+      >
         <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl sm:text-4xl font-bold text-center mb-16">
             Why Students Love Campuszon
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="text-center group transition-all duration-300 hover:scale-105">
+              <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:bg-white/30 group-hover:scale-110">
                 <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
@@ -438,7 +509,12 @@ export default function LandingPage() {
       </section>
 
       {/* 7️⃣ FAQ Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-900">
+      <section 
+        data-section="6"
+        className={`py-20 px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-900 transition-all duration-1000 ${
+          visibleSections.has(6) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+        }`}
+      >
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white text-center mb-4">
             Frequently Asked Questions
@@ -450,15 +526,15 @@ export default function LandingPage() {
             {faqs.map((faq, index) => (
               <div
                 key={index}
-                className="bg-gray-50 dark:bg-gray-800 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700"
+                className="bg-gray-50 dark:bg-gray-800 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:shadow-lg hover:border-indigo-500"
               >
                 <button
                   onClick={() => toggleFaq(index)}
-                  className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200"
                 >
                   <span className="font-semibold text-gray-900 dark:text-white">{faq.question}</span>
                   <svg
-                    className={`w-5 h-5 text-gray-600 dark:text-gray-400 transition-transform ${
+                    className={`w-5 h-5 text-gray-600 dark:text-gray-400 transition-transform duration-300 ${
                       openFaq === index ? 'transform rotate-180' : ''
                     }`}
                     fill="none"
@@ -469,7 +545,7 @@ export default function LandingPage() {
                   </svg>
                 </button>
                 {openFaq === index && (
-                  <div className="px-6 pb-4 text-gray-600 dark:text-gray-400">
+                  <div className="px-6 pb-4 text-gray-600 dark:text-gray-400 animate-fade-in">
                     {faq.answer}
                   </div>
                 )}
@@ -489,26 +565,31 @@ export default function LandingPage() {
       </section>
 
       {/* 8️⃣ Final CTA */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white">
+      <section 
+        data-section="7"
+        className={`py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white transition-all duration-1000 ${
+          visibleSections.has(7) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+        }`}
+      >
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl sm:text-5xl font-bold mb-6">
+          <h2 className="text-4xl sm:text-5xl font-bold mb-6 animate-pulse">
             From Campus. For Campus.
           </h2>
           <p className="text-xl sm:text-2xl mb-12 text-indigo-100">
             Join thousands of students already trading safely within their campus
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+              onClick={handleStartBuying}
+              className="px-10 py-4 bg-white text-indigo-600 text-lg font-bold rounded-lg hover:bg-gray-100 transition-all duration-300 shadow-xl hover:scale-110 hover:shadow-2xl animate-gradient"
+            >
+              Start Buying
+            </button>
             <Link
               to="/signup"
-              className="px-10 py-4 bg-white text-indigo-600 text-lg font-bold rounded-lg hover:bg-gray-100 transition-colors shadow-xl"
+              className="px-10 py-4 bg-transparent border-2 border-white text-white text-lg font-bold rounded-lg hover:bg-white/10 transition-all duration-300 hover:scale-110 hover:shadow-2xl text-center"
             >
-              Join Your Campus
-            </Link>
-            <Link
-              to="/add-item"
-              className="px-10 py-4 bg-transparent border-2 border-white text-white text-lg font-bold rounded-lg hover:bg-white/10 transition-colors"
-            >
-              Start Selling
+              Sign Up Now
             </Link>
           </div>
           <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-6 text-sm">
