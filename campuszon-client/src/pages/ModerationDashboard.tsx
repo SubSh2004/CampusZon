@@ -50,11 +50,13 @@ const ModerationDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'reported' | 'all'>('reported');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'warned' | 'removed'>('all');
   const [items, setItems] = useState<Item[]>([]);
+  const [filteredItems, setFilteredItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [actionNotes, setActionNotes] = useState('');
   const [processingAction, setProcessingAction] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     // Check if user is admin
@@ -92,6 +94,7 @@ const ModerationDashboard: React.FC = () => {
         }
         
         setItems(fetchedItems);
+        setFilteredItems(fetchedItems);
       }
     } catch (error) {
       console.error('Failed to fetch items:', error);
@@ -100,6 +103,24 @@ const ModerationDashboard: React.FC = () => {
       setLoading(false);
     }
   };
+
+  // Filter items based on search query
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredItems(items);
+      return;
+    }
+
+    const query = searchQuery.toLowerCase();
+    const filtered = items.filter(item => 
+      item.title.toLowerCase().includes(query) ||
+      item.description.toLowerCase().includes(query) ||
+      item.category.toLowerCase().includes(query) ||
+      item.userEmail.toLowerCase().includes(query) ||
+      item.userName.toLowerCase().includes(query)
+    );
+    setFilteredItems(filtered);
+  }, [searchQuery, items]);
 
   const handleAction = async (itemId: string, action: 'keep' | 'warn' | 'remove') => {
     if (!itemId) return;
@@ -202,6 +223,27 @@ const ModerationDashboard: React.FC = () => {
           </button>
         </div>
 
+        {/* Search Bar */}
+        <div className="mb-6">
+          <div className="relative max-w-md">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by title, description, category, user..."
+              className="w-full px-4 py-3 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+            />
+            <svg className="absolute right-3 top-3.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          {searchQuery && (
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+              Found {filteredItems.length} item{filteredItems.length !== 1 ? 's' : ''}
+            </p>
+          )}
+        </div>
+
         {/* Status Filter (only show on 'all' tab) */}
         {activeTab === 'all' && (
           <div className="mb-6 flex gap-2">
@@ -227,15 +269,15 @@ const ModerationDashboard: React.FC = () => {
           <div className="flex justify-center items-center py-20">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
           </div>
-        ) : items.length === 0 ? (
+        ) : filteredItems.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-gray-500 dark:text-gray-400 text-lg">
-              {activeTab === 'reported' ? 'No reported items' : 'No items found'}
+              {searchQuery ? 'No items match your search' : activeTab === 'reported' ? 'No reported items' : 'No items found'}
             </p>
           </div>
         ) : (
-          <div className="grid gap-4">
-            {items.map((item) => (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {filteredItems.map((item) => (
               <div
                 key={item.id}
                 className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700"
