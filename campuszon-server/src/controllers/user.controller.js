@@ -4,6 +4,7 @@ import validator from 'validator';
 import User from '../models/user.model.js';
 import OTP from '../models/otp.model.js';
 import { generateOTP, sendOTPEmail, sendWelcomeEmail } from '../utils/emailService.js';
+import { validatePassword } from '../utils/passwordPolicy.js';
 
 // Helper function to create JWT token
 const createToken = (userId) => {
@@ -17,27 +18,24 @@ export const signupUser = async (req, res) => {
   try {
     const { username, email, password, phoneNumber, hostelName } = req.body;
 
-    // Validation
-    if (!username || !email || !password || !phoneNumber || !hostelName) {
-      return res.status(400).json({
-        success: false,
-        message: 'All fields are required',
-      });
-    }
+    // Note: Basic validation is now handled by express-validator middleware
+    // This is a safety check in case middleware is bypassed
 
-    // Validate email format
-    if (!validator.isEmail(email)) {
+    // Validate password strength with new policy
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid email format',
-      });
-    }
-
-    // Validate password strength
-    if (password.length < 6) {
-      return res.status(400).json({
-        success: false,
-        message: 'Password must be at least 6 characters long',
+        message: 'Password does not meet security requirements',
+        errors: passwordValidation.errors,
+        requirements: {
+          minLength: 8,
+          maxLength: 128,
+          requireUppercase: true,
+          requireLowercase: true,
+          requireNumber: true,
+          noSpaces: true
+        }
       });
     }
 
@@ -438,19 +436,24 @@ export const resetPassword = async (req, res) => {
   try {
     const { email, otp, newPassword } = req.body;
 
-    // Validation
-    if (!email || !otp || !newPassword) {
-      return res.status(400).json({
-        success: false,
-        message: 'Email, OTP, and new password are required',
-      });
-    }
+    // Note: Basic validation is now handled by express-validator middleware
+    // This is a safety check in case middleware is bypassed
 
-    // Validate password strength
-    if (newPassword.length < 6) {
+    // Validate new password strength with new policy
+    const passwordValidation = validatePassword(newPassword);
+    if (!passwordValidation.isValid) {
       return res.status(400).json({
         success: false,
-        message: 'Password must be at least 6 characters long',
+        message: 'New password does not meet security requirements',
+        errors: passwordValidation.errors,
+        requirements: {
+          minLength: 8,
+          maxLength: 128,
+          requireUppercase: true,
+          requireLowercase: true,
+          requireNumber: true,
+          noSpaces: true
+        }
       });
     }
 

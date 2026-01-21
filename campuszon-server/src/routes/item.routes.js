@@ -14,6 +14,13 @@ import {
 import upload from '../middleware/multer.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { itemCreationLimiter, reportLimiter } from '../middleware/rateLimiter.js';
+import { 
+  validateItemCreation, 
+  validateItemUpdate, 
+  validateObjectId,
+  validateSearchQuery,
+  validateEmailDomain
+} from '../middleware/validation.js';
 
 const router = express.Router();
 
@@ -32,10 +39,12 @@ const requireAdmin = (req, res, next) => {
 // POST /api/items/add - Create a new item with image upload (up to 5 images)
 // REQUIRES AUTHENTICATION - only logged-in users can create items
 // RATE LIMITED: 20 items per hour to prevent spam
-router.post('/add', authenticateToken, itemCreationLimiter, upload.array('images', 5), createItem);
+// VALIDATED: All item fields with sanitization
+router.post('/add', authenticateToken, itemCreationLimiter, upload.array('images', 5), validateItemCreation, createItem);
 
 // GET /api/items - Get all items
-router.get('/', getAllItems);
+// VALIDATED: Search query, pagination, email domain
+router.get('/', validateSearchQuery, validateEmailDomain, getAllItems);
 
 // GET /api/items/reported - Get reported items (Admin only)
 router.get('/reported', authenticateToken, requireAdmin, getReportedItems);
@@ -44,15 +53,18 @@ router.get('/reported', authenticateToken, requireAdmin, getReportedItems);
 router.get('/admin/all', authenticateToken, requireAdmin, getAllItemsForAdmin);
 
 // GET /api/items/:id - Get item by ID
-router.get('/:id', getItemById);
+// VALIDATED: MongoDB ObjectID format
+router.get('/:id', validateObjectId('id'), getItemById);
 
 // PUT /api/items/:id - Update item by ID
 // REQUIRES AUTHENTICATION - only logged-in users can update items
-router.put('/:id', authenticateToken, updateItem);
+// VALIDATED: ObjectID and update fields
+router.put('/:id', authenticateToken, validateObjectId('id'), validateItemUpdate, updateItem);
 
 // DELETE /api/items/:id - Delete item by ID
 // REQUIRES AUTHENTICATION - only logged-in users can delete items
-router.delete('/:id', authenticateToken, deleteItem);
+// VALIDATED: MongoDB ObjectID format
+router.delete('/:id', authenticateToken, validateObjectId('id'), deleteItem);
 
 // POST /api/items/:id/report - Report an item
 // REQUIRES AUTHENTICATION - only logged-in users can report items

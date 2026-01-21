@@ -9,13 +9,15 @@ import {
   deleteBooking
 } from '../controllers/booking.controller.js';
 import { authenticate } from '../middleware/auth.js';
+import { validateBookingCreation, validateObjectId } from '../middleware/validation.js';
 
 const router = express.Router();
 
 // All routes require authentication
 router.use(authenticate);
 
-router.post('/create', createBooking);
+// Create booking with validation
+router.post('/create', validateBookingCreation, createBooking);
 router.get('/seller', getSellerBookings);
 router.get('/booking-requests', getSellerBookings);
 router.get('/buyer', getBuyerBookings);

@@ -2,12 +2,17 @@ import dotenv from 'dotenv';
 // Load environment variables FIRST before any other imports that might use them
 dotenv.config();
 
+// SECURITY: Validate environment variables at startup
+import { validateAndExitOnError } from './utils/envValidator.js';
+validateAndExitOnError();
+
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
+import mongoSanitize from 'express-mongo-sanitize';
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
 import passport, { configurePassport } from './config/passport.js';
@@ -96,6 +101,14 @@ app.use(compression());
 
 app.use(express.json());
 app.use(express.static('public'));
+
+// SECURITY: NoSQL injection prevention - Sanitize user input
+app.use(mongoSanitize({
+  replaceWith: '_', // Replace prohibited characters with underscore
+  onSanitize: ({ req, key }) => {
+    console.warn(`⚠️ NoSQL injection attempt detected - Sanitized key: ${key} from IP: ${req.ip}`);
+  },
+}));
 
 const mongoUrl = process.env.MONGODB_URI || process.env.MONGO_URI;
 

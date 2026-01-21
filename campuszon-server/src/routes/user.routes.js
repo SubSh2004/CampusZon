@@ -2,32 +2,45 @@ import express from 'express';
 import { signupUser, loginUser, sendOTP, verifyOTP, getProfile, updateProfile, getUserById, forgotPassword, resetPassword } from '../controllers/user.controller.js';
 import { authenticate } from '../middleware/auth.js';
 import { authLimiter, otpLimiter } from '../middleware/rateLimiter.js';
+import { 
+  validateUserSignup, 
+  validateUserLogin, 
+  validateOTPRequest, 
+  validateOTPVerification,
+  validatePasswordReset 
+} from '../middleware/validation.js';
 import Unlock from '../models/unlock.model.js';
 
 const router = express.Router();
 
 // POST /api/user/send-otp - Send OTP for email verification
 // RATE LIMITED: 3 requests per 15 minutes
-router.post('/send-otp', otpLimiter, sendOTP);
+// VALIDATED: Email format
+router.post('/send-otp', otpLimiter, validateOTPRequest, sendOTP);
 
 // POST /api/user/verify-otp - Verify OTP
-router.post('/verify-otp', verifyOTP);
+// VALIDATED: Email format and OTP format
+router.post('/verify-otp', validateOTPVerification, verifyOTP);
 
 // POST /api/user/signup - Register a new user
 // RATE LIMITED: 5 requests per 15 minutes
-router.post('/signup', authLimiter, signupUser);
+// VALIDATED: All user fields with sanitization
+router.post('/signup', authLimiter, validateUserSignup, signupUser);
 
 // POST /api/user/login - Login user
 // RATE LIMITED: 5 requests per 15 minutes
-router.post('/login', authLimiter, loginUser);
+// VALIDATED: Email and password format
+router.post('/login', authLimiter, validateUserLogin, loginUser);
 
 // POST /api/user/forgot-password - Send OTP for password reset
 // RATE LIMITED: 3 requests per 15 minutes
-router.post('/forgot-password', otpLimiter, forgotPassword);
+// VALIDATED: Email format
+router.post('/forgot-password', otpLimiter, validateOTPRequest, forgotPassword);
 
 // POST /api/user/reset-password - Reset password with OTP
 // RATE LIMITED: 5 requests per 15 minutes
-router.post('/reset-password', authLimiter, resetPassword);
+// VALIDATED: Email, OTP, and new password
+router.post('/reset-password', authLimiter, validatePasswordReset, resetPassword);
 
 // GET /api/user/profile - Get user profile (protected)
 router.get('/profile', authenticate, getProfile);
