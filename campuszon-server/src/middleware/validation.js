@@ -334,7 +334,7 @@ export const validateEmailDomain = [
   query('emailDomain')
     .trim()
     .notEmpty().withMessage('Email domain is required')
-    .matches(/^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]?\.[a-zA-Z]{2,}$/)
+    .matches(/^[a-zA-Z0-9][a-zA-Z0-9.-]{0,253}[a-zA-Z0-9]$/)
     .withMessage('Invalid email domain format'),
   
   handleValidationErrors
