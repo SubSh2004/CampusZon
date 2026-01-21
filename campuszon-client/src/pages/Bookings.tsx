@@ -167,7 +167,7 @@ export default function Bookings() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center mb-8">
           <Link 
-            to="/" 
+            to="/home" 
             className="mr-4 p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
             title="Back to Home"
           >
@@ -212,7 +212,7 @@ export default function Bookings() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                   </svg>
                   <p className="text-gray-500 dark:text-gray-400 text-lg">No items booked yet</p>
-                  <Link to="/" className="mt-4 inline-block text-indigo-600 dark:text-indigo-400 hover:underline">
+                  <Link to="/home" className="mt-4 inline-block text-indigo-600 dark:text-indigo-400 hover:underline">
                     Browse items →
                   </Link>
                 </div>

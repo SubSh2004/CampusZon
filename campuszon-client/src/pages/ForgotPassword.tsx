@@ -88,7 +88,7 @@ export default function ForgotPassword() {
       <div className="max-w-md w-full relative z-10 animate-fade-in">
         {/* Logo Section */}
         <div className="text-center mb-8">
-          <Link to="/" className="inline-block">
+          <Link to="/home" className="inline-block">
             <img 
               src="/logo.jpg" 
               alt="CampusZon Logo" 

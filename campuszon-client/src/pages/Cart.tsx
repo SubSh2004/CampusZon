@@ -161,7 +161,7 @@ export default function Cart() {
               Browse items and add them to your cart for easy access later
             </p>
             <Link
-              to="/"
+              to="/home"
               className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition"
             >
               Browse Items
@@ -271,7 +271,7 @@ export default function Cart() {
                   <p>💡 Tip: View item details to unlock contact info and complete your purchase</p>
                 </div>
                 <Link
-                  to="/"
+                  to="/home"
                   className={`block text-center py-2 rounded-lg font-medium transition ${
                     theme === 'dark'
                       ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
