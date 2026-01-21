@@ -63,9 +63,21 @@ export default function Profile() {
       
       if (response.data.success) {
         // Filter to show only current user's items
+        // Compare using email since userId might not always be available
         const userItems = response.data.items.filter(
-          (item: Item & { userId: string }) => item.userId === user.userId
+          (item: any) => {
+            // Try userId first, fallback to email comparison
+            if (item.userId && user.userId) {
+              return item.userId === user.userId;
+            }
+            // Fallback to email comparison
+            return item.userEmail === user.email;
+          }
         );
+        console.log('Total items fetched:', response.data.items.length);
+        console.log('User items filtered:', userItems.length);
+        console.log('User ID:', user.userId);
+        console.log('User email:', user.email);
         setMyItems(userItems);
       }
     } catch (error) {
