@@ -84,12 +84,12 @@ export default function Footer() {
             </h4>
             <ul className="space-y-3">
               <li>
-                <a 
-                  href="mailto:campuszon@gmail.com" 
+                <Link 
+                  to="/contact-us" 
                   className="text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors"
                 >
                   Contact Us
-                </a>
+                </Link>
               </li>
               <li>
                 <a 
