@@ -340,6 +340,33 @@ export const validateEmailDomain = [
   handleValidationErrors
 ];
 
+/**
+ * Validation for adding/updating reviews
+ */
+export const validateReview = [
+  body('userId')
+    .trim()
+    .notEmpty().withMessage('User ID is required')
+    .isMongoId().withMessage('Invalid user ID format'),
+  
+  body('userName')
+    .optional()
+    .trim()
+    .isLength({ min: 1, max: 100 }).withMessage('User name must be 1-100 characters')
+    .customSanitizer(sanitizeHtmlContent),
+  
+  body('rating')
+    .isInt({ min: 1, max: 5 }).withMessage('Rating must be between 1 and 5'),
+  
+  body('comment')
+    .trim()
+    .notEmpty().withMessage('Review text cannot be empty')
+    .isLength({ min: 1, max: 500 }).withMessage('Review must be 1-500 characters')
+    .customSanitizer(sanitizeHtmlContent),
+  
+  handleValidationErrors
+];
+
 export default {
   validateUserSignup,
   validateUserLogin,
@@ -352,5 +379,6 @@ export default {
   validatePasswordReset,
   validateSearchQuery,
   validateEmailDomain,
+  validateReview,
   handleValidationErrors
 };

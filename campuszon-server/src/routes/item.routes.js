@@ -19,7 +19,8 @@ import {
   validateItemUpdate, 
   validateObjectId,
   validateSearchQuery,
-  validateEmailDomain
+  validateEmailDomain,
+  validateReview
 } from '../middleware/validation.js';
 
 const router = express.Router();
@@ -72,7 +73,9 @@ router.delete('/:id', authenticateToken, validateObjectId('id'), deleteItem);
 router.post('/:id/report', authenticateToken, reportLimiter, reportItem);
 
 // POST /api/items/:id/review - Add/update review for an item
-router.post('/:id/review', addReview);
+// REQUIRES AUTHENTICATION - only logged-in users can review items
+// VALIDATED: Rating (1-5), review text, user info
+router.post('/:id/review', authenticateToken, validateObjectId('id'), validateReview, addReview);
 
 // POST /api/items/:id/moderate - Admin action on item (keep/warn/remove)
 router.post('/:id/moderate', authenticateToken, requireAdmin, moderateItem);

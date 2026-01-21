@@ -6,6 +6,7 @@ import { useSetRecoilState } from 'recoil';
 import { cartAtom } from '../store/cart.atom';
 import UnlockModal from '../components/UnlockModal';
 import ReportButton from '../components/ReportButton';
+import ReviewSection from '../components/ReviewSection';
 
 interface Item {
   id: string; // MongoDB ObjectId as string
@@ -531,6 +532,11 @@ export default function ItemDetail() {
             {bookingStatus.message}
           </div>
         )}
+
+        {/* Reviews Section */}
+        <div className="mt-8 max-w-5xl mx-auto">
+          <ReviewSection itemId={id!} />
+        </div>
       </main>
 
       {/* Booking Modal */}
