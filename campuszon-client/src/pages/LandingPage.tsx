@@ -263,8 +263,6 @@ export default function LandingPage() {
               <div className="order-1 lg:order-2">
                 <div className="bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 p-8 rounded-xl h-64 flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-xl animate-gradient cursor-pointer">
                   <img src="/logo-icon.jpg" alt="Campuszon" className="w-32 h-32 rounded-full object-cover logo-onboarding" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
                 </div>
               </div>
             </div>
