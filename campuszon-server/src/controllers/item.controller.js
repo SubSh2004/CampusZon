@@ -357,11 +357,31 @@ export const deleteItem = async (req, res) => {
     // Store email domain before deletion
     const emailDomain = item.emailDomain;
 
+    // Delete the item from MongoDB
     await Item.findByIdAndDelete(id);
+    
+    // Clean up related data (cascade delete)
+    try {
+      // Delete image moderation records
+      await ImageModeration.deleteMany({ itemId: id });
+      
+      // Delete notifications related to this item
+      await Notification.deleteMany({ 
+        $or: [
+          { itemId: id },
+          { 'metadata.itemId': id }
+        ]
+      });
+      
+      console.log(`🧹 Cleaned up related data for item ${id}`);
+    } catch (cleanupError) {
+      console.error('Error cleaning up related data:', cleanupError);
+      // Don't fail the delete if cleanup fails
+    }
 
     // Invalidate cache for this domain (item deleted)
     await invalidateDomainCache(emailDomain);
-    console.log(`🗑️  Cache invalidated for domain: ${emailDomain}`);
+    console.log(`🗑️  Item deleted and cache invalidated for domain: ${emailDomain}`);
 
     res.status(200).json({
       success: true,
