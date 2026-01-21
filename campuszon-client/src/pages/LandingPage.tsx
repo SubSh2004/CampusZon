@@ -124,29 +124,30 @@ export default function LandingPage() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <button
                   onClick={handleStartBuying}
-                  className="px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white text-lg font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl transform"
+                  className="group px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-lg font-semibold rounded-lg transition-all duration-300 hover:scale-110 hover:shadow-2xl transform relative overflow-hidden"
                 >
-                  Start Buying
+                  <span className="relative z-10">Start Buying</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </button>
                 <Link
                   to="/login"
-                  className="px-8 py-4 border-2 border-indigo-600 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-lg font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg text-center"
+                  className="px-8 py-4 border-2 border-indigo-600 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white dark:hover:text-white text-lg font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg text-center transform hover:-translate-y-1"
                 >
                   Login
                 </Link>
                 <Link
                   to="/signup"
-                  className="px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-lg font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl text-center"
+                  className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-lg font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:rotate-1 text-center transform"
                 >
                   Sign Up
                 </Link>
               </div>
             </div>
-            <div className="relative">
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:shadow-3xl hover:scale-105">
+            <div className="relative animate-slide-in-right">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 border border-gray-200 dark:border-gray-700 transition-all duration-500 hover:shadow-3xl hover:-translate-y-2">
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-md cursor-pointer">
-                    <div className="w-12 h-12 bg-indigo-600 rounded-lg flex items-center justify-center transition-transform duration-300 hover:rotate-12">
+                  <div className="flex items-center gap-3 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer group">
+                    <div className="w-12 h-12 bg-indigo-600 rounded-lg flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:rotate-12 group-hover:bg-indigo-700">
                       <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                       </svg>
@@ -156,8 +157,8 @@ export default function LandingPage() {
                       <div className="text-sm text-gray-600 dark:text-gray-400">Available in your hostel</div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-md cursor-pointer">
-                    <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center transition-transform duration-300 hover:rotate-12">
+                  <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg transition-all duration-300 hover:translate-x-2 hover:shadow-lg cursor-pointer group">
+                    <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center transition-all duration-300 group-hover:scale-125 group-hover:-rotate-12 group-hover:bg-green-700">
                       <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                       </svg>
@@ -167,8 +168,8 @@ export default function LandingPage() {
                       <div className="text-sm text-gray-600 dark:text-gray-400">Rent or buy from peers</div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-md cursor-pointer">
-                    <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center transition-transform duration-300 hover:rotate-12">
+                  <div className="flex items-center gap-3 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg transition-all duration-300 hover:scale-105 hover:rotate-1 hover:shadow-xl cursor-pointer group">
+                    <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-180 group-hover:bg-purple-700">
                       <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
@@ -201,8 +202,8 @@ export default function LandingPage() {
             No outsiders, no scams — just trusted campus transactions.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="p-6 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl group">
-              <div className="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:bg-indigo-700 group-hover:scale-110">
+            <div className="p-6 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl group cursor-pointer">
+              <div className="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-500 group-hover:bg-indigo-700 group-hover:scale-125 group-hover:rotate-12">
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                 </svg>
@@ -210,8 +211,8 @@ export default function LandingPage() {
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Buy</h3>
               <p className="text-gray-600 dark:text-gray-400">Find affordable items from students in your campus</p>
             </div>
-            <div className="p-6 bg-green-50 dark:bg-green-900/20 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl group">
-              <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:bg-green-700 group-hover:scale-110">
+            <div className="p-6 bg-green-50 dark:bg-green-900/20 rounded-xl transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:border-2 hover:border-green-500 group cursor-pointer">
+              <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:bg-green-700 group-hover:animate-bounce-gentle">
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -219,8 +220,8 @@ export default function LandingPage() {
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Sell</h3>
               <p className="text-gray-600 dark:text-gray-400">List items you no longer need and earn cash</p>
             </div>
-            <div className="p-6 bg-purple-50 dark:bg-purple-900/20 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl group">
-              <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:bg-purple-700 group-hover:scale-110">
+            <div className="p-6 bg-purple-50 dark:bg-purple-900/20 rounded-xl transition-all duration-500 hover:rotate-2 hover:shadow-2xl hover:bg-purple-100 dark:hover:bg-purple-900/40 group cursor-pointer">
+              <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-700 group-hover:bg-purple-700 group-hover:scale-110 group-hover:rotate-[360deg]">
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                 </svg>
@@ -346,8 +347,9 @@ export default function LandingPage() {
             From textbooks to tech gadgets — everything a student needs, all within your campus
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="group p-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border-2 border-transparent hover:border-indigo-600 transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer">
-              <div className="w-14 h-14 bg-blue-600 rounded-lg flex items-center justify-center mb-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6">
+            {/* Card 1: Books - Scale + Shadow */}
+            <div className="group p-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border-2 border-transparent hover:border-indigo-600 transition-all duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer">
+              <div className="w-14 h-14 bg-blue-600 rounded-lg flex items-center justify-center mb-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 group-hover:bg-blue-700">
                 <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
@@ -356,8 +358,9 @@ export default function LandingPage() {
               <p className="text-gray-600 dark:text-gray-400">Engineering textbooks, competitive exam books, semester notes at discounted prices</p>
             </div>
 
-            <div className="group p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border-2 border-transparent hover:border-green-600 transition-all">
-              <div className="w-14 h-14 bg-green-600 rounded-lg flex items-center justify-center mb-4">
+            {/* Card 2: Cycles - Pop Animation */}
+            <div className="group p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border-2 border-transparent hover:border-green-600 transition-all duration-400 hover:animate-pop-in hover:shadow-2xl cursor-pointer">
+              <div className="w-14 h-14 bg-green-600 rounded-lg flex items-center justify-center mb-4 transition-all duration-500 group-hover:scale-125 group-hover:-rotate-12 group-hover:bg-green-700">
                 <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
@@ -366,8 +369,9 @@ export default function LandingPage() {
               <p className="text-gray-600 dark:text-gray-400">Bicycles for campus commute — buy or rent from seniors</p>
             </div>
 
-            <div className="group p-6 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl border-2 border-transparent hover:border-purple-600 transition-all">
-              <div className="w-14 h-14 bg-purple-600 rounded-lg flex items-center justify-center mb-4">
+            {/* Card 3: Calculators - Tilt + Glow */}
+            <div className="group p-6 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl border-2 border-transparent hover:border-purple-600 transition-all duration-300 hover:rotate-2 hover:shadow-2xl hover:animate-border-glow cursor-pointer">
+              <div className="w-14 h-14 bg-purple-600 rounded-lg flex items-center justify-center mb-4 transition-all duration-600 group-hover:scale-110 group-hover:rotate-[360deg] group-hover:bg-purple-700">
                 <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                 </svg>
@@ -376,8 +380,9 @@ export default function LandingPage() {
               <p className="text-gray-600 dark:text-gray-400">Scientific calculators, graphing calculators for exams</p>
             </div>
 
-            <div className="group p-6 bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-orange-900/20 dark:to-yellow-900/20 rounded-xl border-2 border-transparent hover:border-orange-600 transition-all">
-              <div className="w-14 h-14 bg-orange-600 rounded-lg flex items-center justify-center mb-4">
+            {/* Card 4: Electronics - Icon Bounce + Lift */}
+            <div className="group p-6 bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-orange-900/20 dark:to-yellow-900/20 rounded-xl border-2 border-transparent hover:border-orange-600 transition-all duration-300 hover:-translate-y-3 hover:shadow-2xl cursor-pointer">
+              <div className="w-14 h-14 bg-orange-600 rounded-lg flex items-center justify-center mb-4 transition-all duration-300 group-hover:animate-bounce-gentle group-hover:bg-orange-700">
                 <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
@@ -386,8 +391,9 @@ export default function LandingPage() {
               <p className="text-gray-600 dark:text-gray-400">Laptops, tablets, headphones, chargers and more</p>
             </div>
 
-            <div className="group p-6 bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 rounded-xl border-2 border-transparent hover:border-red-600 transition-all">
-              <div className="w-14 h-14 bg-red-600 rounded-lg flex items-center justify-center mb-4">
+            {/* Card 5: Hostel Essentials - Glow Pulse + Zoom */}
+            <div className="group p-6 bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 rounded-xl border-2 border-transparent hover:border-red-600 transition-all duration-500 hover:scale-110 hover:shadow-2xl hover:animate-glow-pulse cursor-pointer">
+              <div className="w-14 h-14 bg-red-600 rounded-lg flex items-center justify-center mb-4 transition-all duration-400 group-hover:scale-110 group-hover:rotate-12 group-hover:bg-red-700">
                 <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                 </svg>
@@ -396,8 +402,9 @@ export default function LandingPage() {
               <p className="text-gray-600 dark:text-gray-400">Mattresses, coolers, electric kettles, storage boxes</p>
             </div>
 
-            <div className="group p-6 bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-teal-900/20 dark:to-cyan-900/20 rounded-xl border-2 border-transparent hover:border-teal-600 transition-all">
-              <div className="w-14 h-14 bg-teal-600 rounded-lg flex items-center justify-center mb-4">
+            {/* Card 6: And More - Shake + Slide */}
+            <div className="group p-6 bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-teal-900/20 dark:to-cyan-900/20 rounded-xl border-2 border-transparent hover:border-teal-600 transition-all duration-300 hover:translate-x-2 hover:shadow-2xl hover:animate-tilt-shake cursor-pointer">
+              <div className="w-14 h-14 bg-teal-600 rounded-lg flex items-center justify-center mb-4 transition-all duration-500 group-hover:scale-125 group-hover:-rotate-6 group-hover:bg-teal-700">
                 <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                 </svg>
@@ -443,47 +450,47 @@ export default function LandingPage() {
             Why Students Love Campuszon
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="text-center group transition-all duration-300 hover:scale-105">
-              <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:bg-white/30 group-hover:scale-110">
+            <div className="text-center group transition-all duration-300 cursor-pointer">
+              <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-500 group-hover:bg-white/40 group-hover:scale-125 group-hover:rotate-12">
                 <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold mb-2">No Scams</h3>
-              <p className="text-indigo-100">Campus-verified users only. Know exactly who you're dealing with.</p>
+              <h3 className="text-xl font-bold mb-2 relative group-hover:underline transition-all duration-300">No Scams</h3>
+              <p className="text-indigo-100 group-hover:text-white transition-colors duration-300">Campus-verified users only. Know exactly who you're dealing with.</p>
             </div>
 
-            <div className="text-center">
-              <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="text-center group transition-all duration-300 cursor-pointer">
+              <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-500 group-hover:bg-white/40 group-hover:scale-110 group-hover:-rotate-12">
                 <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold mb-2">No Shipping</h3>
-              <p className="text-indigo-100">Meet on campus, exchange instantly. No waiting days for delivery.</p>
+              <h3 className="text-xl font-bold mb-2 relative group-hover:underline transition-all duration-300">No Shipping</h3>
+              <p className="text-indigo-100 group-hover:text-white transition-colors duration-300">Meet on campus, exchange instantly. No waiting days for delivery.</p>
             </div>
 
-            <div className="text-center">
-              <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="text-center group transition-all duration-300 cursor-pointer">
+              <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-500 group-hover:bg-white/40 group-hover:scale-125 group-hover:animate-bounce-gentle">
                 <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold mb-2">Easy Communication</h3>
-              <p className="text-indigo-100">Direct contact with sellers. Chat, negotiate, and decide quickly.</p>
+              <h3 className="text-xl font-bold mb-2 relative group-hover:underline transition-all duration-300">Easy Communication</h3>
+              <p className="text-indigo-100 group-hover:text-white transition-colors duration-300">Direct contact with sellers. Chat, negotiate, and decide quickly.</p>
             </div>
 
-            <div className="text-center">
-              <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="text-center group transition-all duration-300 cursor-pointer">
+              <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-700 group-hover:bg-white/40 group-hover:scale-110 group-hover:rotate-[360deg]">
                 <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold mb-2">Sustainable Reuse</h3>
-              <p className="text-indigo-100">Give items a second life. Help the environment while saving money.</p>
+              <h3 className="text-xl font-bold mb-2 relative group-hover:underline transition-all duration-300">Sustainable Reuse</h3>
+              <p className="text-indigo-100 group-hover:text-white transition-colors duration-300">Give items a second life. Help the environment while saving money.</p>
             </div>
           </div>
-          <div className="mt-16 text-center bg-white/10 backdrop-blur-sm rounded-2xl p-8 max-w-3xl mx-auto">
+          <div className="mt-16 text-center bg-white/10 backdrop-blur-sm rounded-2xl p-8 max-w-3xl mx-auto transition-all duration-500 hover:bg-white/20 hover:scale-105 hover:shadow-2xl">
             <p className="text-xl italic mb-4">
               "Built for students, by students — because we understand campus life."
             </p>
@@ -572,22 +579,23 @@ export default function LandingPage() {
         }`}
       >
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl sm:text-5xl font-bold mb-6 animate-pulse">
+          <h2 className="text-4xl sm:text-5xl font-bold mb-6 animate-pulse-subtle">
             From Campus. For Campus.
           </h2>
-          <p className="text-xl sm:text-2xl mb-12 text-indigo-100">
+          <p className="text-xl sm:text-2xl mb-12 text-indigo-100 animate-fade-in">
             Join thousands of students already trading safely within their campus
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
               onClick={handleStartBuying}
-              className="px-10 py-4 bg-white text-indigo-600 text-lg font-bold rounded-lg hover:bg-gray-100 transition-all duration-300 shadow-xl hover:scale-110 hover:shadow-2xl animate-gradient"
+              className="group relative px-10 py-4 bg-white text-indigo-600 text-lg font-bold rounded-lg transition-all duration-500 shadow-2xl hover:scale-110 hover:shadow-[0_20px_60px_rgba(255,255,255,0.4)] overflow-hidden"
             >
-              Start Buying
+              <span className="relative z-10 group-hover:scale-110 inline-block transition-transform duration-300">Start Buying</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-indigo-100 to-purple-100 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             </button>
             <Link
               to="/signup"
-              className="px-10 py-4 bg-transparent border-2 border-white text-white text-lg font-bold rounded-lg hover:bg-white/10 transition-all duration-300 hover:scale-110 hover:shadow-2xl text-center"
+              className="group px-10 py-4 bg-transparent border-2 border-white text-white text-lg font-bold rounded-lg transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:bg-white hover:text-indigo-600 hover:-rotate-2 text-center transform"
             >
               Sign Up Now
             </Link>
