@@ -97,7 +97,7 @@ export default function FAQ() {
             <div>
               <p className="mb-2">Tokens are CampusZon\'s virtual currency used to unlock seller contact information:</p>
               <ul className="list-disc ml-5 space-y-1">
-                <li>Each new user gets <strong>5 free tokens</strong> to start</li>
+                <li>Each new user gets <strong>2 free tokens</strong> to start</li>
                 <li>1 token = unlock 1 seller\'s contact details (phone number)</li>
                 <li>Purchase more tokens via Razorpay when you run out</li>
                 <li>Available packages: 10, 25, 50, or 100 tokens</li>
@@ -116,13 +116,23 @@ export default function FAQ() {
                 <li>1 token will be deducted from your balance</li>
                 <li>You\'ll see the seller\'s phone number and can contact them directly via WhatsApp or call</li>
               </ol>
-              <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Tip: You can unlock the same seller multiple times if needed, but we recommend saving their contact!</p>
+              <p className="mt-2 text-sm text-red-600 dark:text-red-400 font-semibold">⚠️ Important: You can unlock the same seller multiple times if needed, but we recommend saving their contact!</p>
             </div>
           ),
         },
         {
           question: 'How do I book an item?',
-          answer: 'After unlocking contact info, you can directly contact the seller via phone or WhatsApp to arrange pickup, payment, and other details. CampusZon facilitates the connection - the actual transaction happens between you and the seller.',
+          answer: (
+            <div>
+              <p className="mb-2">After unlocking the seller's contact information:</p>
+              <ol className="list-decimal ml-5 space-y-1">
+                <li>Click the "Book Now" button on the item page</li>
+                <li>Contact the seller via phone or WhatsApp</li>
+                <li>Arrange pickup, payment, and other details directly with the seller</li>
+              </ol>
+              <p className="mt-3 text-sm font-semibold text-red-600 dark:text-red-400">⚠️ IMPORTANT: You MUST click "Book Now" after unlocking contact info, otherwise the item won't be marked as booked and the seller won't be notified!</p>
+            </div>
+          ),
         },
         {
           question: 'What payment methods are accepted?',
@@ -137,15 +147,14 @@ export default function FAQ() {
           question: 'Can I get a refund?',
           answer: (
             <div>
-              <p className="mb-2"><strong>Tokens:</strong> No refunds on purchased tokens as they remain in your account for future use.</p>
-              <p><strong>Item Purchases:</strong> Refunds depend on the seller\'s policy. Always discuss return/refund terms with the seller before completing the transaction.</p>
+              <p className="mb-2"><strong>Tokens:</strong> No refunds on purchased tokens as they remain in your account for future use.</p>              <p className="mb-2"><strong>Booking Rejection:</strong> If a seller rejects your booking, you will receive 0.5 tokens back as a refund (50% of the unlock cost).</p>              <p><strong>Item Purchases:</strong> Refunds depend on the seller\'s policy. Always discuss return/refund terms with the seller before completing the transaction.</p>
             </div>
           ),
         },
       ],
     },
     selling: {
-      title: 'Selling Items',
+      title: 'Adding & Managing Items',
       icon: (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -153,11 +162,11 @@ export default function FAQ() {
       ),
       items: [
         {
-          question: 'How do I list an item for sale?',
+          question: 'How do I add/list an item?',
           answer: (
             <div>
               <ol className="list-decimal ml-5 space-y-1">
-                <li>Click "Sell Item" from the navigation menu</li>
+                <li>Click "Add Item" from the navigation menu</li>
                 <li>Fill in item details (name, description, price, category, condition)</li>
                 <li>Upload clear photos (up to 5 images)</li>
                 <li>Choose whether it\'s for Buy or Rent</li>
@@ -381,7 +390,7 @@ export default function FAQ() {
               </p>
               <div className="flex flex-wrap gap-3">
                 <a
-                  href="mailto:subhamsharma20040810@gmail.com"
+                  href="mailto:campuszon@gmail.com"
                   className="inline-flex items-center gap-2 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -390,7 +399,7 @@ export default function FAQ() {
                   Email Support
                 </a>
                 <a
-                  href="https://wa.me/919354729382"
+                  href="https://wa.me/919332425174"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
