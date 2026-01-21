@@ -10,12 +10,17 @@ import validator from 'validator';
  * Required environment variables with their validation rules
  */
 const envVarRules = {
-  // Database
+  // Database - Accept both MONGODB_URI and MONGO_URI
   MONGODB_URI: {
     required: true,
     validate: (value) => {
-      if (!value.startsWith('mongodb://') && !value.startsWith('mongodb+srv://')) {
-        return 'MONGODB_URI must start with mongodb:// or mongodb+srv://';
+      // Check if either MONGODB_URI or MONGO_URI is set
+      const mongoUri = value || process.env.MONGO_URI;
+      if (!mongoUri) {
+        return 'Either MONGODB_URI or MONGO_URI is required';
+      }
+      if (!mongoUri.startsWith('mongodb://') && !mongoUri.startsWith('mongodb+srv://')) {
+        return 'MongoDB URI must start with mongodb:// or mongodb+srv://';
       }
       return null;
     }
@@ -144,7 +149,15 @@ export const validateEnvironmentVariables = () => {
   
   // Check each environment variable
   for (const [varName, rules] of Object.entries(envVarRules)) {
-    const value = process.env[varName];
+    let value = process.env[varName];
+    
+    // Special handling for MONGODB_URI - also check MONGO_URI
+    if (varName === 'MONGODB_URI' && !value) {
+      value = process.env.MONGO_URI;
+      if (value) {
+        console.log(`ℹ️  Using MONGO_URI instead of MONGODB_URI`);
+      }
+    }
     
     // Check if required variable is missing
     if (rules.required && !value) {
