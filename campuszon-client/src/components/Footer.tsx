@@ -111,12 +111,12 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <button 
-                  onClick={() => alert('Privacy Policy coming soon!')}
+                <Link 
+                  to="/privacy-policy"
                   className="text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors"
                 >
                   Privacy Policy
-                </button>
+                </Link>
               </li>
               <li>
                 <button 
