@@ -414,24 +414,24 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="mt-12 text-center">
-            <div className="inline-flex flex-col sm:flex-row gap-4 items-center bg-indigo-50 dark:bg-indigo-900/20 p-6 rounded-xl">
-              <div className="flex items-center gap-2">
-                <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="inline-flex flex-col sm:flex-row gap-4 items-center bg-indigo-50 dark:bg-indigo-900/20 p-6 rounded-xl transition-all duration-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 hover:shadow-lg">
+              <div className="group flex items-center gap-2 cursor-pointer transition-all duration-300 hover:scale-110">
+                <svg className="w-6 h-6 text-green-600 dark:text-green-400 transition-all duration-300 group-hover:scale-125 group-hover:rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <span className="text-gray-900 dark:text-white font-semibold">Affordable prices</span>
+                <span className="text-gray-900 dark:text-white font-semibold group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300">Affordable prices</span>
               </div>
-              <div className="flex items-center gap-2">
-                <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="group flex items-center gap-2 cursor-pointer transition-all duration-300 hover:scale-110">
+                <svg className="w-6 h-6 text-green-600 dark:text-green-400 transition-all duration-300 group-hover:scale-125 group-hover:-rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <span className="text-gray-900 dark:text-white font-semibold">Zero delivery hassles</span>
+                <span className="text-gray-900 dark:text-white font-semibold group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300">Zero delivery hassles</span>
               </div>
-              <div className="flex items-center gap-2">
-                <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="group flex items-center gap-2 cursor-pointer transition-all duration-300 hover:scale-110">
+                <svg className="w-6 h-6 text-green-600 dark:text-green-400 transition-all duration-300 group-hover:scale-125 group-hover:rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <span className="text-gray-900 dark:text-white font-semibold">Same-campus pickup</span>
+                <span className="text-gray-900 dark:text-white font-semibold group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300">Same-campus pickup</span>
               </div>
             </div>
           </div>
