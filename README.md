@@ -18,8 +18,7 @@ A full-stack campus marketplace application for students to buy, sell, and rent 
 
 ## 🚀 Live Demo
 
-- **Website**: [Your Vercel URL]
-- **API**: [Your Render URL]
+- **Website**: campuszon.tech
 
 ## 🛠️ Tech Stack
 
