@@ -115,12 +115,12 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <button 
-                  onClick={() => alert('FAQ section coming soon!')}
+                <Link 
+                  to="/faq"
                   className="text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors"
                 >
                   FAQ
-                </button>
+                </Link>
               </li>
               <li>
                 <button 

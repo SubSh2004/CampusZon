@@ -20,6 +20,7 @@ import Payment from './pages/Payment'
 import PaymentSuccess from './pages/PaymentSuccess'
 import PaymentFailed from './pages/PaymentFailed'
 import PaymentHistory from './pages/PaymentHistory'
+import FAQ from './pages/FAQ'
 import Footer from './components/Footer'
 
 export default function App() {
@@ -124,6 +125,7 @@ export default function App() {
           <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/payment-failed" element={<PaymentFailed />} />
           <Route path="/payment-history" element={<PaymentHistory />} />
+          <Route path="/faq" element={<FAQ />} />
           <Route path="/oauth-callback" element={<OAuthCallback />} />
           <Route path="/admin/moderation" element={<ModerationDashboard />} />
         </Routes>
