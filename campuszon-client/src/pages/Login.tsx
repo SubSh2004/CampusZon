@@ -60,7 +60,7 @@ export default function Login() {
             {organizationName && email.includes('@') && (
               <div className="mt-4 p-3 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 border-2 border-indigo-200 dark:border-indigo-700 rounded-xl animate-fade-in">
                 <p className="text-sm font-bold text-indigo-700 dark:text-indigo-400">
-                  🎓 {organizationName}
+                  🎓 {organizationName} Marketplace
                 </p>
               </div>
             )}

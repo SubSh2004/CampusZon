@@ -183,7 +183,7 @@ export default function Signup() {
             {organizationName && email.includes('@') && (
               <div className="mt-4 p-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30 border-2 border-purple-200 dark:border-purple-700 rounded-xl animate-fade-in">
                 <p className="text-sm font-bold text-purple-700 dark:text-purple-400">
-                  🎓 Joining {organizationName}
+                  🎓 Joining {organizationName} Marketplace
                 </p>
               </div>
             )}
