@@ -66,7 +66,7 @@ export default function Profile() {
       setLoading(true);
       const emailDomain = user.email?.split('@')[1] || '';
       // Fetch all items with a large limit to get user's complete list
-      const response = await axios.get(`/api/items?emailDomain=${emailDomain}&limit=1000`);
+      const response = await axios.get(`/api/items?emailDomain=${emailDomain}&limit=10000`);
       
       if (response.data.success) {
         // Filter to show only current user's items
