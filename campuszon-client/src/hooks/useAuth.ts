@@ -73,6 +73,19 @@ export const useAuth = () => {
       
       return { success: false, message: response.data.message };
     } catch (error: any) {
+      // Handle validation errors
+      if (error.response?.data?.errors && Array.isArray(error.response.data.errors)) {
+        const validationErrors = error.response.data.errors
+          .map((e: any) => e.message)
+          .join('. ');
+        return { success: false, message: validationErrors };
+      }
+      
+      // Handle account not found errors
+      if (error.response?.status === 401) {
+        return { success: false, message: "Account not found. Please sign up first." };
+      }
+      
       const errorMessage = error.response?.data?.message || 'Login failed. Please try again.';
       return { success: false, message: errorMessage };
     }
