@@ -231,20 +231,19 @@ export default function ProductCard({ item }: ProductCardProps) {
 
             {/* Listing Type and Rental Period Badges */}
             <div className="flex flex-wrap gap-1.5 mb-3">
-              {item.listingType && (
-                <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${
-                  item.listingType === 'For Sale' 
-                    ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800'
-                    : item.listingType === 'For Rent'
-                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800'
-                    : 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800'
-                }`}>
-                  {item.listingType === 'For Sale' && '💰'}
-                  {item.listingType === 'For Rent' && '🏠'}
-                  {item.listingType === 'Both' && '🔄'}
-                  <span>{item.listingType}</span>
-                </span>
-              )}
+              {/* Show listing type - default to 'For Sale' if not set */}
+              <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${
+                (!item.listingType || item.listingType === 'For Sale')
+                  ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800'
+                  : item.listingType === 'For Rent'
+                  ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800'
+                  : 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800'
+              }`}>
+                {(!item.listingType || item.listingType === 'For Sale') && '💰'}
+                {item.listingType === 'For Rent' && '🏠'}
+                {item.listingType === 'Both' && '🔄'}
+                <span>{item.listingType || 'For Sale'}</span>
+              </span>
               {(item.listingType === 'For Rent' || item.listingType === 'Both') && item.rentalPeriod && (
                 <span className="inline-flex items-center gap-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 text-xs font-semibold px-2 py-1 rounded-full border border-indigo-200 dark:border-indigo-800">
                   {item.rentalPeriod === 'Per Day' && '📅'}
