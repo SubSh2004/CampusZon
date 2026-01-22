@@ -54,6 +54,9 @@ export default function Login() {
           <div className="text-center mb-6">
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">Welcome Back</h2>
             <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">Sign in to your campus marketplace</p>
+            <p className="text-sm sm:text-base text-indigo-600 dark:text-indigo-400 font-bold mt-3">
+              🏫 Please use your college email to make it work in your campus
+            </p>
             {organizationName && email.includes('@') && (
               <div className="mt-4 p-3 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 border-2 border-indigo-200 dark:border-indigo-700 rounded-xl animate-fade-in">
                 <p className="text-sm font-bold text-indigo-700 dark:text-indigo-400">
@@ -79,9 +82,6 @@ export default function Login() {
               <label htmlFor="email" className="block text-sm font-bold text-gray-700 dark:text-gray-300">
                 Email Address
               </label>
-              <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium mb-1">
-                🏫 Please use your college email to make it work in your campus
-              </p>
               <div className="relative group">
                 <input
                   id="email"

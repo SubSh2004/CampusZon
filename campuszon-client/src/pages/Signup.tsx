@@ -175,6 +175,11 @@ export default function Signup() {
               {step === 2 && '🔐 Enter Verification Code'}
               {step === 3 && '✨ Complete Your Profile'}
             </p>
+            {step === 1 && (
+              <p className="text-sm sm:text-base text-purple-600 dark:text-purple-400 font-bold mt-3">
+                🏫 Please use your college email to make it work in your campus
+              </p>
+            )}
             {organizationName && email.includes('@') && (
               <div className="mt-4 p-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30 border-2 border-purple-200 dark:border-purple-700 rounded-xl animate-fade-in">
                 <p className="text-sm font-bold text-purple-700 dark:text-purple-400">
@@ -202,9 +207,6 @@ export default function Signup() {
                 <label htmlFor="email" className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">
                   College Email Address
                 </label>
-                <p className="text-xs text-purple-600 dark:text-purple-400 font-medium mb-2">
-                  🏫 Please use your college email to make it work in your campus
-                </p>
                 <input
                   id="email"
                   type="email"
