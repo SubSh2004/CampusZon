@@ -21,7 +21,7 @@ import Notifications from './pages/Notifications'
 import Payment from './pages/Payment'
 import PaymentSuccess from './pages/PaymentSuccess'
 import PaymentFailed from './pages/PaymentFailed'
-import PaymentHistory from './pages/PaymentHistory'
+import PaymentHistory from './pages/PaymentHistory'; // Payment history with PDF receipts
 import FAQ from './pages/FAQ'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import TermsOfService from './pages/TermsOfService'
