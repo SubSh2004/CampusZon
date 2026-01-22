@@ -97,11 +97,9 @@ export default function AddItem() {
       data.append('title', formData.title);
       data.append('description', formData.description);
       data.append('price', formData.price);
-      // Combine listing type with category and rental period if applicable
-      const categoryString = listingType === 'For Rent' 
-        ? `${listingType} (${rentalPeriod}) - ${formData.category}`
-        : `${listingType} - ${formData.category}`;
-      data.append('category', categoryString);
+      // Send just the base category - backend validation expects exact category names
+      data.append('category', formData.category);
+      
       
       // Append all images
       images.forEach((img) => {
@@ -333,11 +331,14 @@ export default function AddItem() {
               className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
             >
               <option value="">Select a category</option>
-              <option value="Electronics">Electronics</option>
               <option value="Books">Books</option>
+              <option value="Electronics">Electronics</option>
               <option value="Clothing">Clothing</option>
               <option value="Furniture">Furniture</option>
-              <option value="Sports">Sports & Fitness</option>
+              <option value="Sports">Sports</option>
+              <option value="Stationery">Stationery</option>
+              <option value="Rent">Rent</option>
+              <option value="Services">Services</option>
               <option value="Other">Other</option>
             </select>
           </div>
