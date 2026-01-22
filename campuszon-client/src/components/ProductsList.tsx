@@ -204,24 +204,65 @@ export default function ProductsList({ searchQuery = '', selectedCategory = 'All
         })}
       </div>
       
-      {/* Loading more indicator with rolling logo */}
+      {/* Loading more indicator with enhanced rolling logo */}
       {loadingMore && (
-        <div className="flex flex-col items-center py-8">
-          <img
-            src="/logo-icon.jpg"
-            alt="CampusZon loading"
-            className="h-14 w-14 animate-bounce-slow drop-shadow-lg"
-            style={{ animation: 'rollDown 1.2s cubic-bezier(0.4,0,0.2,1) infinite' }}
-          />
+        <div className="flex flex-col items-center py-8 relative">
+          {/* Animated background glow */}
+          <div className="absolute inset-0 flex items-center justify-center opacity-30">
+            <div className="w-32 h-32 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full blur-3xl animate-pulse"></div>
+          </div>
+          
+          {/* Logo with enhanced animations */}
+          <div className="relative">
+            {/* Spinning ring around logo */}
+            <div className="absolute inset-0 -m-2">
+              <div className="w-20 h-20 border-4 border-transparent border-t-indigo-500 border-r-purple-500 rounded-full animate-spin"></div>
+            </div>
+            
+            {/* Main logo */}
+            <img
+              src="/logo-icon.jpg"
+              alt="CampusZon loading"
+              className="h-16 w-16 relative z-10"
+              style={{ animation: 'rollAndGlow 2s cubic-bezier(0.4,0,0.2,1) infinite' }}
+            />
+          </div>
+          
+          {/* Loading dots */}
+          <div className="flex gap-1.5 mt-4 mb-2">
+            <div className="w-2 h-2 bg-indigo-600 dark:bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+            <div className="w-2 h-2 bg-purple-600 dark:bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+            <div className="w-2 h-2 bg-pink-600 dark:bg-pink-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+          </div>
+          
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 font-bold text-sm tracking-wide animate-pulse">
+            Loading more items...
+          </span>
+          
           <style>{`
-            @keyframes rollDown {
-              0% { transform: translateY(-20px) rotate(-20deg); opacity: 0.7; }
-              30% { transform: translateY(0) rotate(0deg); opacity: 1; }
-              60% { transform: translateY(10px) rotate(10deg); opacity: 1; }
-              100% { transform: translateY(-20px) rotate(-20deg); opacity: 0.7; }
+            @keyframes rollAndGlow {
+              0% { 
+                transform: translateY(-15px) rotate(0deg) scale(0.9);
+                filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.4));
+              }
+              25% { 
+                transform: translateY(0) rotate(90deg) scale(1);
+                filter: drop-shadow(0 0 12px rgba(168, 85, 247, 0.6));
+              }
+              50% { 
+                transform: translateY(15px) rotate(180deg) scale(1.05);
+                filter: drop-shadow(0 0 16px rgba(236, 72, 153, 0.8));
+              }
+              75% { 
+                transform: translateY(0) rotate(270deg) scale(1);
+                filter: drop-shadow(0 0 12px rgba(168, 85, 247, 0.6));
+              }
+              100% { 
+                transform: translateY(-15px) rotate(360deg) scale(0.9);
+                filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.4));
+              }
             }
           `}</style>
-          <span className="mt-2 text-indigo-600 dark:text-indigo-400 font-medium text-sm tracking-wide">Loading more items...</span>
         </div>
       )}
       
