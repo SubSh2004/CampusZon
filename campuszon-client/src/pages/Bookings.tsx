@@ -219,11 +219,11 @@ export default function Bookings() {
               ) : (
                 <div className="grid gap-4">
                   {itemsBooked.map((booking) => {
-                    const itemId = typeof booking.itemId === 'object' ? booking.itemId._id : booking.itemId;
-                    const itemTitle = typeof booking.itemId === 'object' ? booking.itemId.title : booking.itemTitle || 'Item';
-                    const itemPrice = typeof booking.itemId === 'object' ? booking.itemId.price : booking.itemPrice || 0;
-                    const itemCategory = typeof booking.itemId === 'object' ? booking.itemId.category : 'General';
-                    const itemImage = typeof booking.itemId === 'object' 
+                    const itemId = typeof booking.itemId === 'object' && booking.itemId ? booking.itemId._id : booking.itemId;
+                    const itemTitle = typeof booking.itemId === 'object' && booking.itemId ? booking.itemId.title : booking.itemTitle || 'Item';
+                    const itemPrice = typeof booking.itemId === 'object' && booking.itemId ? booking.itemId.price : booking.itemPrice || 0;
+                    const itemCategory = typeof booking.itemId === 'object' && booking.itemId ? booking.itemId.category : 'General';
+                    const itemImage = typeof booking.itemId === 'object' && booking.itemId
                       ? ((booking.itemId.imageUrls && booking.itemId.imageUrls[0]) || booking.itemId.imageUrl)
                       : '/placeholder.png';
 
@@ -323,17 +323,17 @@ export default function Bookings() {
               ) : (
                 <div className="grid gap-4">
                   {bookingRequests.map((booking) => {
-                    const itemId = typeof booking.itemId === 'object' ? booking.itemId._id : booking.itemId;
-                    const itemTitle = typeof booking.itemId === 'object' ? booking.itemId.title : booking.itemTitle || 'Item';
-                    const itemCategory = typeof booking.itemId === 'object' ? booking.itemId.category : 'General';
-                    const itemImage = typeof booking.itemId === 'object' 
+                    const itemId = typeof booking.itemId === 'object' && booking.itemId ? booking.itemId._id : booking.itemId;
+                    const itemTitle = typeof booking.itemId === 'object' && booking.itemId ? booking.itemId.title : booking.itemTitle || 'Item';
+                    const itemCategory = typeof booking.itemId === 'object' && booking.itemId ? booking.itemId.category : 'General';
+                    const itemImage = typeof booking.itemId === 'object' && booking.itemId
                       ? ((booking.itemId.imageUrls && booking.itemId.imageUrls[0]) || booking.itemId.imageUrl)
                       : '/placeholder.png';
                     
-                    const buyerUsername = typeof booking.buyerId === 'object' ? booking.buyerId.username : booking.buyerName || 'Unknown';
-                    const buyerEmail = typeof booking.buyerId === 'object' ? booking.buyerId.email : booking.buyerEmail || 'N/A';
-                    const buyerPhone = typeof booking.buyerId === 'object' ? booking.buyerId.phoneNumber : booking.buyerPhone || 'N/A';
-                    const buyerHostel = typeof booking.buyerId === 'object' ? booking.buyerId.hostelName : 'N/A';
+                    const buyerUsername = typeof booking.buyerId === 'object' && booking.buyerId ? booking.buyerId.username : booking.buyerName || 'Unknown';
+                    const buyerEmail = typeof booking.buyerId === 'object' && booking.buyerId ? booking.buyerId.email : booking.buyerEmail || 'N/A';
+                    const buyerPhone = typeof booking.buyerId === 'object' && booking.buyerId ? booking.buyerId.phoneNumber : booking.buyerPhone || 'N/A';
+                    const buyerHostel = typeof booking.buyerId === 'object' && booking.buyerId ? booking.buyerId.hostelName : 'N/A';
 
                     return (
                     <div key={booking._id} className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow hover:shadow-lg transition-shadow">
