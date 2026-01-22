@@ -13,6 +13,10 @@ interface Item {
   imageUrl: string;
   available: boolean;
   createdAt: string;
+  salePrice?: number;
+  rentPrice?: number;
+  listingType?: 'For Sale' | 'For Rent' | 'Both';
+  rentalPeriod?: 'Per Day' | 'Per Week' | 'Per Month';
 }
 
 export default function Profile() {
@@ -29,11 +33,13 @@ export default function Profile() {
   const [editForm, setEditForm] = useState({
     title: '',
     description: '',
-    price: '',
+    salePrice: '',
+    rentPrice: '',
     category: '',
     available: true,
   });
-  const [editListingType, setEditListingType] = useState<'For Sale' | 'For Rent' | ''>('');
+  const [editListingType, setEditListingType] = useState<'For Sale' | 'For Rent' | 'Both' | ''>('');
+  const [editRentalPeriod, setEditRentalPeriod] = useState<'Per Day' | 'Per Week' | 'Per Month'>('Per Day');
 
   // Form state for editing profile
   const [profileForm, setProfileForm] = useState({
@@ -90,24 +96,21 @@ export default function Profile() {
   const handleEditClick = (item: Item) => {
     setEditingItem(item);
     
-    // Parse category to extract listing type and actual category
-    let listingType: 'For Sale' | 'For Rent' | '' = '';
-    let category = item.category;
+    // Set listing type from item, default to 'For Sale' if not set
+    const listingType = item.listingType || 'For Sale';
+    setEditListingType(listingType);
     
-    if (item.category.includes('For Sale')) {
-      listingType = 'For Sale';
-      category = item.category.replace('For Sale - ', '');
-    } else if (item.category.includes('For Rent')) {
-      listingType = 'For Rent';
-      category = item.category.replace('For Rent - ', '');
+    // Set rental period if available
+    if (item.rentalPeriod) {
+      setEditRentalPeriod(item.rentalPeriod);
     }
     
-    setEditListingType(listingType);
     setEditForm({
       title: item.title,
       description: item.description,
-      price: item.price.toString(),
-      category: category,
+      salePrice: item.salePrice?.toString() || item.price.toString(),
+      rentPrice: item.rentPrice?.toString() || '',
+      category: item.category,
       available: item.available,
     });
     setShowEditModal(true);
@@ -123,13 +126,31 @@ export default function Profile() {
       setUpdateError('');
       setUpdateMessage('');
 
-      const response = await axios.put(`/api/items/${editingItem.id}`, {
+      // Prepare update data with listing type fields
+      const updateData: any = {
         title: editForm.title,
         description: editForm.description,
-        price: parseFloat(editForm.price),
-        category: editListingType ? `${editListingType} - ${editForm.category}` : editForm.category,
+        category: editForm.category,
         available: editForm.available,
-      });
+        listingType: editListingType || 'For Sale',
+      };
+
+      // Add pricing based on listing type
+      if (editListingType === 'For Sale') {
+        updateData.salePrice = parseFloat(editForm.salePrice);
+        updateData.price = parseFloat(editForm.salePrice);
+      } else if (editListingType === 'For Rent') {
+        updateData.rentPrice = parseFloat(editForm.rentPrice);
+        updateData.rentalPeriod = editRentalPeriod;
+        updateData.price = parseFloat(editForm.rentPrice);
+      } else if (editListingType === 'Both') {
+        updateData.salePrice = parseFloat(editForm.salePrice);
+        updateData.rentPrice = parseFloat(editForm.rentPrice);
+        updateData.rentalPeriod = editRentalPeriod;
+        updateData.price = parseFloat(editForm.salePrice); // Default to sale price
+      }
+
+      const response = await axios.put(`/api/items/${editingItem.id}`, updateData);
 
       if (response.data.success) {
         setUpdateMessage('Item updated successfully!');
@@ -460,28 +481,11 @@ export default function Profile() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Price (₹)
-                    </label>
-                    <input
-                      type="number"
-                      required
-                      min="0"
-                      step="0.01"
-                      value={editForm.price}
-                      onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
-                      className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                    />
-                  </div>
-                </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Listing Type
                   </label>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-3 gap-3">
                     <button
                       type="button"
                       onClick={() => setEditListingType('For Sale')}
@@ -510,8 +514,100 @@ export default function Profile() {
                         <span>For Rent</span>
                       </div>
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditListingType('Both')}
+                      className={`px-4 py-3 rounded-md font-semibold transition-all ${
+                        editListingType === 'Both'
+                          ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg transform scale-105'
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                      }`}
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="text-xl">🔄</span>
+                        <span>Both</span>
+                      </div>
+                    </button>
                   </div>
                 </div>
+
+                {/* Conditional Price Fields */}
+                {(editListingType === 'For Sale' || editListingType === 'Both') && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Sale Price (₹)
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min="0"
+                      step="0.01"
+                      value={editForm.salePrice}
+                      onChange={(e) => setEditForm({ ...editForm, salePrice: e.target.value })}
+                      className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    />
+                  </div>
+                )}
+
+                {(editListingType === 'For Rent' || editListingType === 'Both') && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Rent Price (₹)
+                      </label>
+                      <input
+                        type="number"
+                        required
+                        min="0"
+                        step="0.01"
+                        value={editForm.rentPrice}
+                        onChange={(e) => setEditForm({ ...editForm, rentPrice: e.target.value })}
+                        className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Rental Period
+                      </label>
+                      <div className="grid grid-cols-3 gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setEditRentalPeriod('Per Day')}
+                          className={`px-3 py-2 rounded-md font-medium transition-all text-sm ${
+                            editRentalPeriod === 'Per Day'
+                              ? 'bg-indigo-600 text-white shadow-md'
+                              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                          }`}
+                        >
+                          📅 Per Day
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditRentalPeriod('Per Week')}
+                          className={`px-3 py-2 rounded-md font-medium transition-all text-sm ${
+                            editRentalPeriod === 'Per Week'
+                              ? 'bg-indigo-600 text-white shadow-md'
+                              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                          }`}
+                        >
+                          📆 Per Week
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditRentalPeriod('Per Month')}
+                          className={`px-3 py-2 rounded-md font-medium transition-all text-sm ${
+                            editRentalPeriod === 'Per Month'
+                              ? 'bg-indigo-600 text-white shadow-md'
+                              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                          }`}
+                        >
+                          🗓️ Per Month
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
