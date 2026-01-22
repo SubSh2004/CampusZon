@@ -525,24 +525,26 @@ export default function ItemDetail() {
 
                 {/* Action Buttons */}
                 <div className="mt-6 space-y-3">
+                  {/* Add to Cart - Always visible */}
+                  <button
+                    onClick={handleAddToCart}
+                    disabled={isAddingToCart || !item.available}
+                    className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white py-3 px-6 rounded-md transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                  >
+                    {isAddingToCart ? '🔄 Adding...' : '🛒 Add to Cart'}
+                  </button>
+
                   {unlocked ? (
                     <>
                       <button
                         onClick={() => setShowBookingModal(true)}
-                        className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-3 px-6 rounded-md transition font-semibold"
+                        className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-3 px-6 rounded-md transition font-semibold shadow-lg"
                       >
                         ✅ Book This Item
                       </button>
-                      <button
-                        onClick={handleAddToCart}
-                        disabled={isAddingToCart}
-                        className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white py-3 px-6 rounded-md transition font-semibold disabled:opacity-50"
-                      >
-                        {isAddingToCart ? '🔄 Adding...' : '🛒 Add to Cart'}
-                      </button>
                       <a
                         href={`tel:${sellerInfo?.phone || item.userPhone}`}
-                        className="w-full block text-center bg-blue-600 dark:bg-blue-700 text-white py-3 px-6 rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 transition font-medium"
+                        className="w-full block text-center bg-indigo-600 dark:bg-indigo-700 text-white py-3 px-6 rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600 transition font-medium shadow-lg"
                       >
                         📞 Call Seller
                       </a>
