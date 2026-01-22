@@ -118,7 +118,7 @@ export default function LandingPage() {
                 <h1 className="text-3xl sm:text-4xl font-bold text-indigo-600 dark:text-indigo-400">Campuszon</h1>
               </div>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6 animate-fade-in">
-                Buy, Sell & Rent Within Your Campus ΓÇö <span className="text-indigo-600 dark:text-indigo-400 bg-clip-text">Safely.</span>
+                Buy, Sell & Rent Within Your Campus<span className="text-indigo-600 dark:text-indigo-400 bg-clip-text">Safely.</span>
               </h1>
               <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 mb-8">
                 A trusted student-to-student marketplace made exclusively for Indian campuses.
@@ -201,7 +201,7 @@ export default function LandingPage() {
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-12">
             Campuszon is an exclusive student marketplace where only verified students from your college can buy, sell, and rent items. 
-            No outsiders, no scams ΓÇö just trusted campus transactions.
+            No outsiders, no scams just trusted campus transactions.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="p-6 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl group cursor-pointer">
@@ -344,7 +344,7 @@ export default function LandingPage() {
             What You Can Find on Campuszon
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-300 text-center max-w-2xl mx-auto mb-12">
-            From textbooks to tech gadgets ΓÇö everything a student needs, all within your campus
+            From textbooks to tech gadgets everything a student needs, all within your campus
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Card 1: Books - Scale + Shadow */}
@@ -366,7 +366,7 @@ export default function LandingPage() {
                 </svg>
               </div>
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Cycles</h3>
-              <p className="text-gray-600 dark:text-gray-400">Bicycles for campus commute ΓÇö buy or rent from seniors</p>
+              <p className="text-gray-600 dark:text-gray-400">Bicycles for campus commute buy or rent from seniors</p>
             </div>
 
             {/* Card 3: Calculators - Tilt + Glow */}
@@ -492,7 +492,7 @@ export default function LandingPage() {
           </div>
           <div className="mt-16 text-center bg-white/10 backdrop-blur-sm rounded-2xl p-8 max-w-3xl mx-auto transition-all duration-500 hover:bg-white/20 hover:scale-105 hover:shadow-2xl">
             <p className="text-xl italic mb-4">
-              "Built for students, by students ΓÇö because we understand campus life."
+              "Built for students, by students because we understand campus life."
             </p>
             <div className="flex items-center justify-center gap-2 text-yellow-300">
               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
@@ -565,7 +565,7 @@ export default function LandingPage() {
               to="/faq"
               className="text-indigo-600 dark:text-indigo-400 hover:underline font-semibold"
             >
-              Visit our detailed FAQ page ΓåÆ
+              Visit our detailed FAQ page
             </Link>
           </div>
         </div>
