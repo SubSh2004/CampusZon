@@ -340,7 +340,7 @@ export default function Home() {
             </div>
             
             {/* Content */}
-            <TokenPurchase onSelectPackage={handlePurchaseToken} currentTokens={tokens} />
+            <TokenPurchase onSelectPackage={handlePurchaseToken} />
           </div>
         </div>
       )}

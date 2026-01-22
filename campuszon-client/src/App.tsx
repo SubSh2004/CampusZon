@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Routes, Route, useLocation } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import { useSetRecoilState } from 'recoil'
 import axios from 'axios'
 import { userAtom } from './store/user.atom'
@@ -32,7 +32,6 @@ export default function App() {
   const setUser = useSetRecoilState(userAtom);
   const setCart = useSetRecoilState(cartAtom);
   const [isInitialized, setIsInitialized] = useState(false);
-  const location = useLocation();
 
   useEffect(() => {
     // Check for stored token on app load and validate it with backend
@@ -147,8 +146,8 @@ export default function App() {
           <Route path="/contact-us" element={<ContactUs />} />
         </Routes>
       </div>
-      {/* Hide footer on landing page */}
-      {location.pathname !== '/' && <Footer />}
+      {/* Global footer appears on all pages */}
+      <Footer />
     </div>
   )
 }
