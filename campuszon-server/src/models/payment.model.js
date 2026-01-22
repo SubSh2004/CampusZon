@@ -47,6 +47,7 @@ const paymentSchema = new mongoose.Schema({
     sellerName: String,
     itemTitle: String,
     tokens: Number,
+    packageId: String,
     packageName: String
   }
 }, {
