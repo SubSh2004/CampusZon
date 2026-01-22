@@ -64,28 +64,16 @@ export default function Profile() {
   const fetchMyItems = async () => {
     try {
       setLoading(true);
-      const emailDomain = user.email?.split('@')[1] || '';
-      // Fetch all items with a large limit to get user's complete list
-      const response = await axios.get(`/api/items?emailDomain=${emailDomain}&limit=10000`);
+      const token = localStorage.getItem('token');
+      
+      // Use the new /my endpoint to fetch all user's items regardless of moderation status
+      const response = await axios.get('/api/items/my', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       
       if (response.data.success) {
-        // Filter to show only current user's items
-        // Compare using email since userId might not always be available
-        const userItems = response.data.items.filter(
-          (item: any) => {
-            // Try userId first, fallback to email comparison
-            if (item.userId && user.userId) {
-              return item.userId === user.userId;
-            }
-            // Fallback to email comparison
-            return item.userEmail === user.email;
-          }
-        );
-        console.log('Total items fetched:', response.data.items.length);
-        console.log('User items filtered:', userItems.length);
-        console.log('User ID:', user.userId);
-        console.log('User email:', user.email);
-        setMyItems(userItems);
+        console.log('User items fetched:', response.data.items.length);
+        setMyItems(response.data.items);
       }
     } catch (error) {
       console.error('Error fetching items:', error);

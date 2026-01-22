@@ -261,6 +261,42 @@ export const getAllItems = async (req, res) => {
   }
 };
 
+// Get user's own items (all statuses, no moderation filter)
+export const getMyItems = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { limit = 10000 } = req.query;
+
+    const limitNum = parseInt(limit);
+
+    // Fetch all items created by this user, regardless of moderation status
+    const items = await Item.find({ userId })
+      .sort({ createdAt: -1 })
+      .limit(limitNum)
+      .lean();
+
+    // Convert _id to id for frontend compatibility
+    const itemsWithId = items.map(item => ({
+      ...item,
+      id: item._id.toString(),
+      _id: undefined
+    }));
+
+    res.status(200).json({
+      success: true,
+      count: itemsWithId.length,
+      items: itemsWithId
+    });
+  } catch (error) {
+    console.error('Get my items error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching your items',
+      error: error.message,
+    });
+  }
+};
+
 // Get item by ID
 export const getItemById = async (req, res) => {
   try {

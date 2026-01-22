@@ -2,6 +2,7 @@ import express from 'express';
 import { 
   createItem, 
   getAllItems, 
+  getMyItems,
   getItemById, 
   updateItem, 
   deleteItem,
@@ -51,6 +52,10 @@ router.post('/add', authenticateToken, itemCreationLimiter, upload.array('images
 // GET /api/items - Get all items
 // VALIDATED: Search query, pagination, email domain
 router.get('/', validateSearchQuery, validateEmailDomain, getAllItems);
+
+// GET /api/items/my - Get user's own items (all statuses)
+// REQUIRES AUTHENTICATION
+router.get('/my', authenticateToken, getMyItems);
 
 // GET /api/items/reported - Get reported items (Admin only)
 router.get('/reported', authenticateToken, requireAdmin, getReportedItems);
