@@ -316,7 +316,10 @@ export const getItemById = async (req, res) => {
 export const updateItem = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, description, price, category, available } = req.body;
+    const { 
+      title, description, price, salePrice, rentPrice, 
+      category, listingType, rentalPeriod, available 
+    } = req.body;
     
     // Validate ObjectId format
     if (!id || id === 'undefined' || !id.match(/^[0-9a-fA-F]{24}$/)) {
@@ -348,7 +351,11 @@ export const updateItem = async (req, res) => {
     if (title !== undefined) updates.title = title;
     if (description !== undefined) updates.description = description;
     if (price !== undefined) updates.price = parseFloat(price);
+    if (salePrice !== undefined) updates.salePrice = parseFloat(salePrice);
+    if (rentPrice !== undefined) updates.rentPrice = parseFloat(rentPrice);
     if (category !== undefined) updates.category = category;
+    if (listingType !== undefined) updates.listingType = listingType;
+    if (rentalPeriod !== undefined) updates.rentalPeriod = rentalPeriod;
     if (available !== undefined) updates.available = available;
 
   Object.assign(item, updates);

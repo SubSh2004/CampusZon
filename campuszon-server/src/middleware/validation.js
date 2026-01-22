@@ -202,6 +202,16 @@ export const validateItemUpdate = [
     .isNumeric().withMessage('Price must be a number')
     .isFloat({ min: 0, max: 1000000 }).withMessage('Price must be between 0 and 1,000,000'),
   
+  body('salePrice')
+    .optional()
+    .isNumeric().withMessage('Sale price must be a number')
+    .isFloat({ min: 0, max: 1000000 }).withMessage('Sale price must be between 0 and 1,000,000'),
+  
+  body('rentPrice')
+    .optional()
+    .isNumeric().withMessage('Rent price must be a number')
+    .isFloat({ min: 0, max: 1000000 }).withMessage('Rent price must be between 0 and 1,000,000'),
+  
   body('category')
     .optional()
     .trim()
@@ -209,6 +219,14 @@ export const validateItemUpdate = [
       'Books', 'Electronics', 'Clothing', 'Furniture', 
       'Sports', 'Stationery', 'Rent', 'Services', 'Other'
     ]).withMessage('Invalid category'),
+  
+  body('listingType')
+    .optional()
+    .isIn(['For Sale', 'For Rent', 'Both']).withMessage('Invalid listing type'),
+  
+  body('rentalPeriod')
+    .optional()
+    .isIn(['Per Day', 'Per Week', 'Per Month']).withMessage('Invalid rental period'),
   
   body('available')
     .optional()
