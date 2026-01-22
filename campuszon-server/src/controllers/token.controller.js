@@ -216,7 +216,7 @@ export const verifyTokenPurchase = async (req, res) => {
       paymentId: payment._id,
       userId,
       amount: payment.amount,
-      tokensAdded
+      tokensAdded: tokensToAdd
     });
 
     res.json({
