@@ -112,6 +112,20 @@ export default function AddItem() {
       data.append('userHostel', user.hostelName || '');
       data.append('userEmail', user.email || '');
 
+      // Debug logging
+      console.log('📤 Sending item data:', {
+        title: formData.title,
+        description: formData.description,
+        price: formData.price,
+        category: formData.category,
+        userId: user.userId,
+        userName: user.username,
+        userPhone: user.phoneNumber,
+        userHostel: user.hostelName,
+        userEmail: user.email,
+        imageCount: images.length
+      });
+
       // Send POST request
       const response = await axios.post('/api/items/add', data, {
         headers: {
@@ -134,8 +148,19 @@ export default function AddItem() {
         }
       }
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'Failed to add item. Please try again.';
-      setError(errorMessage);
+      console.error('Full error:', err);
+      console.error('Error response:', err.response);
+      
+      // Show detailed validation errors if available
+      if (err.response?.data?.errors) {
+        const validationErrors = err.response.data.errors
+          .map((e: any) => `${e.field}: ${e.message}`)
+          .join(', ');
+        setError(`Validation failed: ${validationErrors}`);
+      } else {
+        const errorMessage = err.response?.data?.message || 'Failed to add item. Please try again.';
+        setError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
