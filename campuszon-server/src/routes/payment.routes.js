@@ -1,5 +1,5 @@
 import express from 'express';
-import { authenticateToken } from '../middleware/auth.middleware.js';
+import { authenticateToken } from '../middleware/auth.js';
 import { getPaymentHistory, downloadPaymentSlip } from '../controllers/payment.controller.js';
 
 const router = express.Router();
