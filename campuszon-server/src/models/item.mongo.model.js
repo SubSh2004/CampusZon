@@ -3,8 +3,19 @@ import mongoose from 'mongoose';
 const itemSchema = new mongoose.Schema({
   title: { type: String, required: true, trim: true },
   description: { type: String, required: true },
-  price: { type: Number, required: true },
+  price: { type: Number, required: true }, // Primary price (for backward compatibility)
+  salePrice: { type: Number }, // Price for sale
+  rentPrice: { type: Number }, // Price for rent
   category: { type: String, required: true },
+  listingType: { 
+    type: String, 
+    enum: ['For Sale', 'For Rent', 'Both'], 
+    default: 'For Sale' 
+  },
+  rentalPeriod: { 
+    type: String, 
+    enum: ['Per Day', 'Per Week', 'Per Month'], 
+  },
   imageUrl: { type: String, default: null }, // Keep for backward compatibility
   imageUrls: { type: [String], default: [] }, // Support multiple images (up to 5)
   available: { type: Boolean, default: true },

@@ -12,7 +12,11 @@ import { emitNotification } from '../index.js';
 // Create a new item
 export const createItem = async (req, res) => {
   try {
-    const { title, description, price, category, userId, userName, userPhone, userHostel, userEmail } = req.body;
+    const { 
+      title, description, price, salePrice, rentPrice, 
+      category, listingType, rentalPeriod,
+      userId, userName, userPhone, userHostel, userEmail 
+    } = req.body;
 
     // Ensure MongoDB connection is available
     if (!mongoose.connection || mongoose.connection.readyState !== 1) {
@@ -26,15 +30,48 @@ export const createItem = async (req, res) => {
     if (!title || !description || !price || !category || !userId || !userName || !userPhone || !userHostel || !userEmail) {
       return res.status(400).json({
         success: false,
-        message: 'All fields are required',
+        message: 'All required fields must be provided',
       });
     }
 
-    // Validate price is a number
+    // Validate listing type specific fields
+    if (listingType === 'For Sale' || listingType === 'Both') {
+      if (!salePrice) {
+        return res.status(400).json({
+          success: false,
+          message: 'Sale price is required for sale listings',
+        });
+      }
+    }
+
+    if (listingType === 'For Rent' || listingType === 'Both') {
+      if (!rentPrice || !rentalPeriod) {
+        return res.status(400).json({
+          success: false,
+          message: 'Rent price and rental period are required for rent listings',
+        });
+      }
+    }
+
+    // Validate prices are numbers
     if (isNaN(price) || parseFloat(price) < 0) {
       return res.status(400).json({
         success: false,
         message: 'Price cannot be negative',
+      });
+    }
+
+    if (salePrice && (isNaN(salePrice) || parseFloat(salePrice) < 0)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Sale price cannot be negative',
+      });
+    }
+
+    if (rentPrice && (isNaN(rentPrice) || parseFloat(rentPrice) < 0)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Rent price cannot be negative',
       });
     }
 
@@ -80,7 +117,7 @@ export const createItem = async (req, res) => {
     }
 
     // Create new item with images immediately available
-    const newItem = await Item.create({
+    const itemData = {
       title,
       description,
       price: parseFloat(price),
@@ -95,7 +132,23 @@ export const createItem = async (req, res) => {
       userEmail,
       emailDomain,
       moderationStatus: 'active', // All items start as active
-    });
+    };
+
+    // Add listing type fields if provided
+    if (listingType) {
+      itemData.listingType = listingType;
+    }
+    if (salePrice) {
+      itemData.salePrice = parseFloat(salePrice);
+    }
+    if (rentPrice) {
+      itemData.rentPrice = parseFloat(rentPrice);
+    }
+    if (rentalPeriod) {
+      itemData.rentalPeriod = rentalPeriod;
+    }
+
+    const newItem = await Item.create(itemData);
 
     // Invalidate cache for this domain (new item added)
     await invalidateDomainCache(emailDomain);
