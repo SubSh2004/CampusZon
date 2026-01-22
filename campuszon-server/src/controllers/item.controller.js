@@ -264,16 +264,20 @@ export const getAllItems = async (req, res) => {
 // Get user's own items (all statuses, no moderation filter)
 export const getMyItems = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user._id || req.user.id;
     const { limit = 10000 } = req.query;
 
     const limitNum = parseInt(limit);
+
+    console.log('🔍 Fetching items for user ID:', userId);
 
     // Fetch all items created by this user, regardless of moderation status
     const items = await Item.find({ userId })
       .sort({ createdAt: -1 })
       .limit(limitNum)
       .lean();
+
+    console.log(`✅ Found ${items.length} items for user ${userId}`);
 
     // Convert _id to id for frontend compatibility
     const itemsWithId = items.map(item => ({
