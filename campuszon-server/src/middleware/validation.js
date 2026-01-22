@@ -72,8 +72,8 @@ export const validateUserSignup = [
   body('phoneNumber')
     .trim()
     .notEmpty().withMessage('Phone number is required')
-    .matches(/^[0-9]{10}$/).withMessage('Phone number must be 10 digits')
-    .customSanitizer(value => value.replace(/\D/g, '')),
+    .matches(/^(\+\d{1,4}\s?)?\d{10}$/).withMessage('Phone number must be 10 digits (with optional country code)')
+    .customSanitizer(value => value.trim()),
   
   body('hostelName')
     .trim()

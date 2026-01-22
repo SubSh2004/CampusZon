@@ -105,9 +105,9 @@ export default function Signup() {
       return;
     }
 
-    // Validate password length
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+    // Validate password length (must match backend requirement)
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters');
       return;
     }
 
@@ -336,6 +336,9 @@ export default function Signup() {
                 <label htmlFor="password" className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">
                   Password
                 </label>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                  Must be at least 8 characters long
+                </p>
                 <div className="relative">
                   <input
                     id="password"
@@ -345,7 +348,7 @@ export default function Signup() {
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full px-4 py-3 pr-12 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 dark:focus:border-purple-400 outline-none transition-all duration-300 font-medium"
                     placeholder="••••••••"
-                    minLength={6}
+                    minLength={8}
                   />
                   <button
                     type="button"

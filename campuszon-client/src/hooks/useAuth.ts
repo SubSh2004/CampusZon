@@ -130,6 +130,20 @@ export const useAuth = () => {
       
       return { success: false, message: response.data.message };
     } catch (error: any) {
+      // Handle validation errors from express-validator
+      if (error.response?.data?.errors && Array.isArray(error.response.data.errors)) {
+        const validationErrors = error.response.data.errors
+          .map((e: any) => e.msg || e.message)
+          .join('. ');
+        return { success: false, message: validationErrors };
+      }
+      
+      // Handle password policy errors
+      if (error.response?.data?.errors && error.response?.data?.requirements) {
+        const passwordErrors = error.response.data.errors.join('. ');
+        return { success: false, message: `${error.response.data.message}: ${passwordErrors}` };
+      }
+      
       const errorMessage = error.response?.data?.message || 'Signup failed. Please try again.';
       return { success: false, message: errorMessage };
     }
