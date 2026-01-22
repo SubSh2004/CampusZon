@@ -11,10 +11,13 @@ export default function AddItem() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    price: '',
+    salePrice: '',
+    rentPrice: '',
     category: '',
   });
-  const [listingType, setListingType] = useState<'For Sale' | 'For Rent' | ''>('');  const [rentalPeriod, setRentalPeriod] = useState<'Per Day' | 'Per Week' | 'Per Month'>('Per Day');  const [images, setImages] = useState<File[]>([]);
+  const [listingType, setListingType] = useState<'For Sale' | 'For Rent' | 'Both' | ''>('');
+  const [rentalPeriod, setRentalPeriod] = useState<'Per Day' | 'Per Week' | 'Per Month'>('Per Day');
+  const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -69,18 +72,33 @@ export default function AddItem() {
     }
 
     // Validation
-    if (!formData.title || !formData.description || !formData.price || !formData.category) {
-      setError('All fields are required');
+    if (!formData.title || !formData.description || !formData.category) {
+      setError('Title, description, and category are required');
       return;
     }
 
     if (!listingType) {
-      setError('Please select a listing type (For Sale or For Rent)');
+      setError('Please select a listing type (For Sale, For Rent, or Both)');
       return;
     }
 
-    if (parseFloat(formData.price) < 0) {
-      setError('Price cannot be negative');
+    if ((listingType === 'For Sale' || listingType === 'Both') && !formData.salePrice) {
+      setError('Sale price is required');
+      return;
+    }
+
+    if ((listingType === 'For Rent' || listingType === 'Both') && !formData.rentPrice) {
+      setError('Rent price is required');
+      return;
+    }
+
+    if (formData.salePrice && parseFloat(formData.salePrice) < 0) {
+      setError('Sale price cannot be negative');
+      return;
+    }
+
+    if (formData.rentPrice && parseFloat(formData.rentPrice) < 0) {
+      setError('Rent price cannot be negative');
       return;
     }
 
@@ -96,9 +114,21 @@ export default function AddItem() {
       const data = new FormData();
       data.append('title', formData.title);
       data.append('description', formData.description);
-      data.append('price', formData.price);
-      // Send just the base category - backend validation expects exact category names
       data.append('category', formData.category);
+      data.append('listingType', listingType);
+      
+      // Add prices based on listing type
+      if (listingType === 'For Sale' || listingType === 'Both') {
+        data.append('salePrice', formData.salePrice);
+      }
+      if (listingType === 'For Rent' || listingType === 'Both') {
+        data.append('rentPrice', formData.rentPrice);
+        data.append('rentalPeriod', rentalPeriod);
+      }
+      
+      // For backward compatibility with backend, send primary price
+      const primaryPrice = listingType === 'For Rent' ? formData.rentPrice : formData.salePrice;
+      data.append('price', primaryPrice);
       
       
       // Append all images
@@ -116,7 +146,10 @@ export default function AddItem() {
       console.log('📤 Sending item data:', {
         title: formData.title,
         description: formData.description,
-        price: formData.price,
+        listingType,
+        salePrice: formData.salePrice,
+        rentPrice: formData.rentPrice,
+        rentalPeriod,
         category: formData.category,
         userId: user.userId,
         userName: user.username,
@@ -237,7 +270,7 @@ export default function AddItem() {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Listing Type
             </label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <button
                 type="button"
                 onClick={() => setListingType('For Sale')}
@@ -247,9 +280,9 @@ export default function AddItem() {
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >
-                <div className="flex items-center justify-center gap-2">
+                <div className="flex flex-col items-center justify-center gap-1">
                   <span className="text-xl">💰</span>
-                  <span>For Sale</span>
+                  <span className="text-sm">For Sale</span>
                 </div>
               </button>
               <button
@@ -261,28 +294,42 @@ export default function AddItem() {
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >
-                <div className="flex items-center justify-center gap-2">
+                <div className="flex flex-col items-center justify-center gap-1">
                   <span className="text-xl">🏠</span>
-                  <span>For Rent</span>
+                  <span className="text-sm">For Rent</span>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setListingType('Both')}
+                className={`px-4 py-3 rounded-md font-semibold transition-all ${
+                  listingType === 'Both'
+                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg transform scale-105'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                <div className="flex flex-col items-center justify-center gap-1">
+                  <span className="text-xl">🔄</span>
+                  <span className="text-sm">Both</span>
                 </div>
               </button>
             </div>
           </div>
 
-          {/* Price Field - shown after listing type is selected */}
-          {listingType && (
+          {/* Sale Price Field - shown for 'For Sale' or 'Both' */}
+          {(listingType === 'For Sale' || listingType === 'Both') && (
             <div>
-              <label htmlFor="price" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {listingType === 'For Sale' ? 'Price (₹)' : 'Rent Amount (₹)'}
+              <label htmlFor="salePrice" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Sale Price (₹)
               </label>
               <input
-                id="price"
-                name="price"
+                id="salePrice"
+                name="salePrice"
                 type="number"
                 required
                 min="0"
                 step="0.01"
-                value={formData.price}
+                value={formData.salePrice}
                 onChange={handleInputChange}
                 className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
                 placeholder="0.00"
@@ -290,8 +337,29 @@ export default function AddItem() {
             </div>
           )}
 
-          {/* Rental Period - only shown for rent listings */}
-          {listingType === 'For Rent' && (
+          {/* Rent Price Field - shown for 'For Rent' or 'Both' */}
+          {(listingType === 'For Rent' || listingType === 'Both') && (
+            <div>
+              <label htmlFor="rentPrice" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Rent Amount (₹)
+              </label>
+              <input
+                id="rentPrice"
+                name="rentPrice"
+                type="number"
+                required
+                min="0"
+                step="0.01"
+                value={formData.rentPrice}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
+                placeholder="0.00"
+              />
+            </div>
+          )}
+
+          {/* Rental Period - shown for 'For Rent' or 'Both' */}
+          {(listingType === 'For Rent' || listingType === 'Both') && (
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Rental Period
