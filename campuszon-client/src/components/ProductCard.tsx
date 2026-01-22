@@ -12,7 +12,11 @@ interface Item {
   title: string;
   description: string;
   price: number;
+  salePrice?: number;
+  rentPrice?: number;
   category: string;
+  listingType?: 'For Sale' | 'For Rent' | 'Both';
+  rentalPeriod?: 'Per Day' | 'Per Week' | 'Per Month';
   imageUrl: string;
   imageUrls?: string[]; // Multiple images support
   available: boolean;
@@ -205,7 +209,7 @@ export default function ProductCard({ item }: ProductCardProps) {
             </p>
             
             {/* Price with Gradient Background and Availability Badge */}
-            <div className="flex items-center justify-between mt-2 sm:mt-3 mb-3">
+            <div className="flex items-center justify-between mt-2 sm:mt-3 mb-2">
               <div className="relative">
                 <span className="relative text-xl sm:text-2xl font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
                   ₹{parseFloat(item.price.toString()).toFixed(2)}
@@ -223,6 +227,32 @@ export default function ProductCard({ item }: ProductCardProps) {
                 }`}></span>
                 <span>{item.available ? 'Available' : 'Sold'}</span>
               </div>
+            </div>
+
+            {/* Listing Type and Rental Period Badges */}
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {item.listingType && (
+                <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${
+                  item.listingType === 'For Sale' 
+                    ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800'
+                    : item.listingType === 'For Rent'
+                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800'
+                    : 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800'
+                }`}>
+                  {item.listingType === 'For Sale' && '💰'}
+                  {item.listingType === 'For Rent' && '🏠'}
+                  {item.listingType === 'Both' && '🔄'}
+                  <span>{item.listingType}</span>
+                </span>
+              )}
+              {(item.listingType === 'For Rent' || item.listingType === 'Both') && item.rentalPeriod && (
+                <span className="inline-flex items-center gap-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 text-xs font-semibold px-2 py-1 rounded-full border border-indigo-200 dark:border-indigo-800">
+                  {item.rentalPeriod === 'Per Day' && '📅'}
+                  {item.rentalPeriod === 'Per Week' && '📆'}
+                  {item.rentalPeriod === 'Per Month' && '🗓️'}
+                  <span>{item.rentalPeriod}</span>
+                </span>
+              )}
             </div>
 
             {/* Action Buttons with Gradients */}

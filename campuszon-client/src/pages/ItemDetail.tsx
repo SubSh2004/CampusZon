@@ -13,7 +13,11 @@ interface Item {
   title: string;
   description: string;
   price: number;
+  salePrice?: number;
+  rentPrice?: number;
   category: string;
+  listingType?: 'For Sale' | 'For Rent' | 'Both';
+  rentalPeriod?: 'Per Day' | 'Per Week' | 'Per Month';
   imageUrl: string;
   imageUrls?: string[]; // Multiple images support
   available: boolean;
@@ -368,6 +372,42 @@ export default function ItemDetail() {
                 <span className="text-4xl font-bold text-indigo-600 dark:text-indigo-400">
                   ₹{parseFloat(item.price.toString()).toFixed(2)}
                 </span>
+                
+                {/* Listing Type and Rental Period Badges */}
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {item.listingType && (
+                    <span className={`inline-flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-full ${
+                      item.listingType === 'For Sale' 
+                        ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800'
+                        : item.listingType === 'For Rent'
+                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800'
+                        : 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800'
+                    }`}>
+                      {item.listingType === 'For Sale' && '💰'}
+                      {item.listingType === 'For Rent' && '🏠'}
+                      {item.listingType === 'Both' && '🔄'}
+                      <span>{item.listingType}</span>
+                    </span>
+                  )}
+                  {(item.listingType === 'For Rent' || item.listingType === 'Both') && item.rentalPeriod && (
+                    <span className="inline-flex items-center gap-1.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 text-sm font-semibold px-3 py-1.5 rounded-full border border-indigo-200 dark:border-indigo-800">
+                      {item.rentalPeriod === 'Per Day' && '📅'}
+                      {item.rentalPeriod === 'Per Week' && '📆'}
+                      {item.rentalPeriod === 'Per Month' && '🗓️'}
+                      <span>{item.rentalPeriod}</span>
+                    </span>
+                  )}
+                  {item.listingType === 'Both' && item.salePrice && (
+                    <span className="inline-flex items-center gap-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-sm font-semibold px-3 py-1.5 rounded-full border border-green-200 dark:border-green-800">
+                      💰 Sale: ₹{parseFloat(item.salePrice.toString()).toFixed(2)}
+                    </span>
+                  )}
+                  {item.listingType === 'Both' && item.rentPrice && (
+                    <span className="inline-flex items-center gap-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-sm font-semibold px-3 py-1.5 rounded-full border border-blue-200 dark:border-blue-800">
+                      🏠 Rent: ₹{parseFloat(item.rentPrice.toString()).toFixed(2)}
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Description */}
