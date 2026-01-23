@@ -74,7 +74,7 @@ const Payment: React.FC = () => {
       console.log('📤 Sending booking request with payload:', bookingPayload);
       
       const response = await axios.post(
-        '/api/bookings',
+        '/api/booking/create',
         bookingPayload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
