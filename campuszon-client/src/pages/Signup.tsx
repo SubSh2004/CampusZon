@@ -214,7 +214,7 @@ export default function Signup() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-4 py-3 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 dark:focus:border-purple-400 outline-none transition-all duration-300 font-medium placeholder:text-gray-400"
-                  placeholder="your.email@college.edu"
+                  placeholder="college.mail@iitism.ac.in"
                 />
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Use your official college email</p>
               </div>
