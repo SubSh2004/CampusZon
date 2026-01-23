@@ -236,7 +236,7 @@ export default function Bookings() {
                   </Link>
                 </div>
               ) : (
-                <div className="grid gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {itemsBooked.map((booking) => {
                     const itemId = typeof booking.itemId === 'object' && booking.itemId ? booking.itemId._id : booking.itemId;
                     const itemTitle = typeof booking.itemId === 'object' && booking.itemId ? booking.itemId.title : booking.itemTitle || 'Item';
@@ -340,7 +340,7 @@ export default function Bookings() {
                   </Link>
                 </div>
               ) : (
-                <div className="grid gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {bookingRequests.map((booking) => {
                     const itemId = typeof booking.itemId === 'object' && booking.itemId ? booking.itemId._id : booking.itemId;
                     const itemTitle = typeof booking.itemId === 'object' && booking.itemId ? booking.itemId.title : booking.itemTitle || 'Item';
