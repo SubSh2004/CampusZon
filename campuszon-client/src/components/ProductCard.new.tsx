@@ -77,9 +77,14 @@ export default function ProductCard({ item }: ProductCardProps) {
       }
 
       await axios.post(
-        `${import.meta.env.VITE_API_URL}/bookings`,
+        `${import.meta.env.VITE_API_URL}/booking/create`,
         {
           itemId: item.id,
+          itemTitle: item.title,
+          itemPrice: item.price,
+          itemCategory: item.category,
+          sellerId: item.userId,
+          sellerName: item.userName,
           message: bookingMessage
         },
         { headers: { Authorization: `Bearer ${token}` } }

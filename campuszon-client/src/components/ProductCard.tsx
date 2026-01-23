@@ -112,7 +112,7 @@ export default function ProductCard({ item }: ProductCardProps) {
     try {
       setIsBooking(true);
       const response = await axios.post(
-        `${API_URL}/api/bookings`,
+        `${API_URL}/api/booking/create`,
         {
           itemId: item.id,
           itemTitle: item.title,
