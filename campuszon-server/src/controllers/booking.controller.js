@@ -197,6 +197,25 @@ export const updateBookingStatus = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Unauthorized' });
     }
 
+    // 🔒 IDEMPOTENCY CHECK: Prevent duplicate processing
+    if (booking.status !== 'pending') {
+      console.log(`⚠️ Booking ${bookingId} already processed. Current status: ${booking.status}`);
+      return res.status(400).json({ 
+        success: false, 
+        message: `This booking has already been ${booking.status}. Cannot process again.`,
+        currentStatus: booking.status
+      });
+    }
+
+    // Validate status transition
+    if (status !== 'accepted' && status !== 'rejected') {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid status. Must be "accepted" or "rejected".' 
+      });
+    }
+
+    // Update status BEFORE any side effects
     booking.status = status;
     
     // Find or create chat between buyer and seller

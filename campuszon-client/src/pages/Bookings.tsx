@@ -91,9 +91,17 @@ export default function Bookings() {
       // Refresh bookings
       await fetchBookings();
       alert('Booking accepted! Item marked as unavailable.');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error accepting booking:', error);
-      alert('Failed to accept booking. Please try again.');
+      
+      // Handle idempotency error gracefully
+      if (error.response?.status === 400 && error.response?.data?.currentStatus) {
+        alert(`This booking has already been ${error.response.data.currentStatus}.`);
+        // Refresh to show current state
+        await fetchBookings();
+      } else {
+        alert('Failed to accept booking. Please try again.');
+      }
     } finally {
       setProcessingBookingId(null);
     }
@@ -123,9 +131,20 @@ export default function Bookings() {
       setRejectionNote('');
       setSelectedBooking(null);
       alert('Booking rejected and buyer notified.');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error rejecting booking:', error);
-      alert('Failed to reject booking. Please try again.');
+      
+      // Handle idempotency error gracefully
+      if (error.response?.status === 400 && error.response?.data?.currentStatus) {
+        alert(`This booking has already been ${error.response.data.currentStatus}.`);
+        setRejectModalOpen(false);
+        setRejectionNote('');
+        setSelectedBooking(null);
+        // Refresh to show current state
+        await fetchBookings();
+      } else {
+        alert('Failed to reject booking. Please try again.');
+      }
     } finally {
       setProcessingBookingId(null);
     }
@@ -423,10 +442,10 @@ export default function Bookings() {
               <div className="flex gap-3 mt-4">
                 <button
                   onClick={confirmRejectBooking}
-                  disabled={!rejectionNote.trim()}
+                  disabled={!rejectionNote.trim() || processingBookingId === selectedBooking?._id}
                   className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Confirm Rejection
+                  {processingBookingId === selectedBooking?._id ? '⏳ Processing...' : 'Confirm Rejection'}
                 </button>
                 <button
                   onClick={() => {
@@ -434,7 +453,8 @@ export default function Bookings() {
                     setRejectionNote('');
                     setSelectedBooking(null);
                   }}
-                  className="flex-1 px-4 py-2 bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-900 dark:text-white font-semibold rounded-lg transition-colors"
+                  disabled={processingBookingId === selectedBooking?._id}
+                  className="flex-1 px-4 py-2 bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-900 dark:text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>
