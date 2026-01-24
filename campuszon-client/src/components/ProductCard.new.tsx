@@ -119,7 +119,12 @@ export default function ProductCard({ item }: ProductCardProps) {
           <img
             src={imageUrl}
             alt={item.title}
+            loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x300?text=No+Image';
+            }}
           />
           
           {/* Image Count Indicator */}

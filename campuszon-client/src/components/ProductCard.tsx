@@ -153,6 +153,8 @@ export default function ProductCard({ item }: ProductCardProps) {
             <img
               src={imageUrl}
               alt={item.title}
+              loading="lazy"
+              decoding="async"
               className="w-full h-40 sm:h-48 object-cover group-hover:scale-105 transition-transform duration-300"
               onError={(e) => {
                 (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x300?text=No+Image';

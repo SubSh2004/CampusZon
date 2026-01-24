@@ -282,7 +282,12 @@ export default function ItemDetail() {
                     <img
                       src={images[currentImageIndex]}
                       alt={`${item.title} - Image ${currentImageIndex + 1}`}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-auto max-h-96 object-contain rounded-lg"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/800x600?text=Image+Not+Available';
+                      }}
                     />
                     
                     {/* Image Counter */}
@@ -332,7 +337,12 @@ export default function ItemDetail() {
                             <img
                               src={img}
                               alt={`Thumbnail ${index + 1}`}
+                              loading="lazy"
+                              decoding="async"
                               className="w-full h-full object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/80x80?text=N/A';
+                              }}
                             />
                           </button>
                         ))}

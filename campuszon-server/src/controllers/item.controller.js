@@ -93,13 +93,43 @@ export const createItem = async (req, res) => {
         // Limit to 5 images
         const filesToUpload = req.files.slice(0, 5);
         
-        // Upload all images to ImgBB
+        console.log(`[createItem] Optimizing ${filesToUpload.length} images before upload`);
+        
+        // Optimize and upload all images to ImgBB
         const uploadPromises = filesToUpload.map(async (file) => {
-          const base64Image = file.buffer.toString('base64');
+          // Validate and preprocess the image
+          const validation = await processImageUpload(file.buffer, file);
+          
+          if (!validation.success) {
+            throw new Error(validation.error || 'Image validation failed');
+          }
+          
+          // Log warnings if any
+          if (validation.warnings && validation.warnings.length > 0) {
+            console.log(`[createItem] Image warnings for ${file.originalname}:`, validation.warnings);
+          }
+          
+          // Use the preprocessed buffer from validation (already optimized)
+          const optimizedBuffer = validation.buffer;
+          
+          // Further optimize: resize to max 1200px and convert to WebP for better compression
+          const finalBuffer = await sharp(optimizedBuffer)
+            .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
+            .webp({ quality: 85, effort: 4 })
+            .toBuffer();
+          
+          const originalSize = file.size;
+          const optimizedSize = finalBuffer.length;
+          const reduction = ((1 - optimizedSize / originalSize) * 100).toFixed(1);
+          
+          console.log(`[createItem] Optimized ${file.originalname}: ${(originalSize / 1024).toFixed(0)}KB → ${(optimizedSize / 1024).toFixed(0)}KB (${reduction}% smaller)`);
+          
+          // Upload optimized image to ImgBB
+          const base64Image = finalBuffer.toString('base64');
           const response = await imgbbUploader({
             apiKey: process.env.IMGBB_API_KEY,
             base64string: base64Image,
-            name: `item-${Date.now()}-${file.originalname}`,
+            name: `item-${Date.now()}-${file.originalname.replace(/\.[^.]+$/, '.webp')}`,
           });
           return response.url;
         });
@@ -111,7 +141,7 @@ export const createItem = async (req, res) => {
         console.error('Image upload error:', uploadError);
         return res.status(500).json({
           success: false,
-          message: 'Failed to upload images',
+          message: uploadError.message || 'Failed to upload images',
         });
       }
     }
