@@ -215,6 +215,7 @@ export default function TermsOfService() {
                   <li>Tokens do not expire and can be used anytime</li>
                   <li>If a seller rejects your booking, you receive 0.5 tokens back (50% refund)</li>
                   <li>Tokens cannot be transferred to other users or converted back to currency</li>
+                  <li><strong>Payment receipts</strong> can be downloaded from the Payment History section in your Profile page</li>
                 </ul>
               </div>
 

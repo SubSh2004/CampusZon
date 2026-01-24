@@ -215,6 +215,7 @@ export default function PrivacyPolicy() {
               <p>You have the following rights regarding your data:</p>
               <ul className="list-disc ml-6 space-y-2">
                 <li><strong>Access:</strong> View and download your personal information from your Profile page</li>
+                <li><strong>Payment Receipts:</strong> Download payment receipts and transaction history from the Payment History section in your Profile page</li>
                 <li><strong>Correction:</strong> Update your profile information, contact details, and preferences anytime</li>
                 <li><strong>Deletion:</strong> Request account deletion by contacting support (some data retained for legal compliance)</li>
                 <li><strong>Data Portability:</strong> Request a copy of your data in a machine-readable format</li>
