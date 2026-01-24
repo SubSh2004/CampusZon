@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from '../config/axios';
 import TokenPurchase from './TokenPurchase';
 
@@ -6,10 +6,30 @@ const TokensSection: React.FC = () => {
   const [tokens, setTokens] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+  const [processingPayment, setProcessingPayment] = useState(false);
+  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
+  const paymentInProgress = useRef(false);
 
   useEffect(() => {
     fetchTokenBalance();
+    // Preload Razorpay script on component mount
+    loadRazorpayScript();
   }, []);
+
+  const loadRazorpayScript = () => {
+    // Check if already loaded
+    if ((window as any).Razorpay || document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]')) {
+      setRazorpayLoaded(true);
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    script.onload = () => setRazorpayLoaded(true);
+    script.onerror = () => console.error('Failed to load Razorpay script');
+    document.body.appendChild(script);
+  };
 
   const fetchTokenBalance = async () => {
     try {
@@ -32,12 +52,21 @@ const TokensSection: React.FC = () => {
   };
 
   const handlePurchaseToken = async (packageId: string) => {
+    // Prevent duplicate payment attempts
+    if (paymentInProgress.current || processingPayment) {
+      return;
+    }
+
     try {
       const token = localStorage.getItem('token');
       if (!token) {
         alert('Please login to purchase tokens');
         return;
       }
+
+      // Show loading state immediately
+      setProcessingPayment(true);
+      paymentInProgress.current = true;
 
       const response = await axios.post(
         '/api/tokens/purchase',
@@ -46,14 +75,15 @@ const TokensSection: React.FC = () => {
       );
 
       if (response.data.requiresPayment) {
-        // Load Razorpay
-        const script = document.createElement('script');
-        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-        script.async = true;
-        document.body.appendChild(script);
+        // Razorpay already preloaded - open immediately
+        if (!razorpayLoaded || !(window as any).Razorpay) {
+          alert('Payment system is loading. Please try again in a moment.');
+          setProcessingPayment(false);
+          paymentInProgress.current = false;
+          return;
+        }
 
-        script.onload = () => {
-          const options = {
+        const options = {
             key: import.meta.env.VITE_RAZORPAY_KEY_ID,
             amount: response.data.order.amount,
             currency: response.data.order.currency,
@@ -81,6 +111,15 @@ const TokensSection: React.FC = () => {
               } catch (error) {
                 console.error('Payment verification error:', error);
                 alert('Payment verification failed. Please contact support.');
+              } finally {
+                setProcessingPayment(false);
+                paymentInProgress.current = false;
+              }
+            },
+            modal: {
+              ondismiss: () => {
+                setProcessingPayment(false);
+                paymentInProgress.current = false;
               }
             },
             prefill: {
@@ -92,13 +131,14 @@ const TokensSection: React.FC = () => {
             }
           };
 
-          const razorpay = new (window as any).Razorpay(options);
-          razorpay.open();
-        };
+        const razorpay = new (window as any).Razorpay(options);
+        razorpay.open();
       }
     } catch (error: any) {
       console.error('Token purchase error:', error);
       alert(error.response?.data?.message || 'Failed to initiate purchase');
+      setProcessingPayment(false);
+      paymentInProgress.current = false;
     }
   };
 
@@ -126,7 +166,8 @@ const TokensSection: React.FC = () => {
           
           <button
             onClick={() => setShowPurchaseModal(true)}
-            className="bg-white text-indigo-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-all hover:scale-105 shadow flex items-center gap-2 text-sm"
+            disabled={processingPayment}
+            className="bg-white text-indigo-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-all hover:scale-105 shadow flex items-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -152,7 +193,15 @@ const TokensSection: React.FC = () => {
               </button>
             </div>
             <div className="overflow-y-auto max-h-[calc(90vh-80px)]">
-              <TokenPurchase onSelectPackage={handlePurchaseToken} />
+              {processingPayment && (
+                <div className="absolute inset-0 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm flex items-center justify-center z-10">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-3"></div>
+                    <p className="text-gray-700 dark:text-gray-300 font-medium">Opening payment...</p>
+                  </div>
+                </div>
+              )}
+              <TokenPurchase onSelectPackage={handlePurchaseToken} isProcessing={processingPayment} />
             </div>
           </div>
         </div>
