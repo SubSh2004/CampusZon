@@ -21,6 +21,15 @@ interface Review {
   createdAt: string;
 }
 
+interface Campus {
+  domain: string;
+  totalItems: number;
+  activeItems: number;
+  warnedItems: number;
+  removedItems: number;
+  reportedItems: number;
+}
+
 interface Item {
   id: string;
   title: string;
@@ -33,6 +42,7 @@ interface Item {
   userName: string;
   userEmail: string;
   userPhone: string;
+  emailDomain?: string;
   reports: Report[];
   reportCount: number;
   reviews: Review[];
@@ -49,6 +59,8 @@ const ModerationDashboard: React.FC = () => {
   const user = useRecoilValue(userAtom);
   const [activeTab, setActiveTab] = useState<'reported' | 'all'>('reported');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'warned' | 'removed'>('all');
+  const [selectedCampus, setSelectedCampus] = useState<string>('all');
+  const [campuses, setCampuses] = useState<Campus[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [filteredItems, setFilteredItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,14 +78,40 @@ const ModerationDashboard: React.FC = () => {
       return;
     }
     
-    fetchItems();
-  }, [activeTab, statusFilter, user.isLoggedIn, user.isAdmin, navigate]);
+    fetchCampuses();
+    
+    // Load last selected campus from localStorage
+    const savedCampus = localStorage.getItem('adminSelectedCampus');
+    if (savedCampus) {
+      setSelectedCampus(savedCampus);
+    }
+  }, [user.isLoggedIn, user.isAdmin, navigate]);
+
+  useEffect(() => {
+    if (user.isLoggedIn && user.isAdmin) {
+      fetchItems();
+    }
+  }, [activeTab, statusFilter, selectedCampus, user.isLoggedIn, user.isAdmin]);
+
+  const fetchCampuses = async () => {
+    try {
+      const response = await axios.get('/api/items/admin/campuses');
+      if (response.data.success) {
+        setCampuses(response.data.campuses || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch campuses:', error);
+    }
+  };
 
   const fetchItems = async () => {
     try {
       setLoading(true);
       const endpoint = activeTab === 'reported' ? '/api/items/reported' : '/api/items/admin/all';
-      const response = await axios.get(endpoint);
+      
+      // Add campus filter as query parameter
+      const params = selectedCampus !== 'all' ? { emailDomain: selectedCampus } : {};
+      const response = await axios.get(endpoint, { params });
       
       if (response.data.success) {
         let fetchedItems = response.data.items || [];
@@ -149,6 +187,7 @@ const ModerationDashboard: React.FC = () => {
         setSelectedItem(null);
         setActionNotes('');
         fetchItems(); // Refresh the list
+        fetchCampuses(); // Refresh campus stats
       }
     } catch (error: any) {
       console.error('Action failed:', error);
@@ -156,6 +195,26 @@ const ModerationDashboard: React.FC = () => {
     } finally {
       setProcessingAction(false);
     }
+  };
+
+  const handleCampusChange = (campus: string) => {
+    setSelectedCampus(campus);
+    // Save to localStorage for persistence
+    localStorage.setItem('adminSelectedCampus', campus);
+  };
+
+  const getSelectedCampusStats = () => {
+    if (selectedCampus === 'all') {
+      const totalStats = campuses.reduce((acc, campus) => ({
+        totalItems: acc.totalItems + campus.totalItems,
+        activeItems: acc.activeItems + campus.activeItems,
+        warnedItems: acc.warnedItems + campus.warnedItems,
+        removedItems: acc.removedItems + campus.removedItems,
+        reportedItems: acc.reportedItems + campus.reportedItems,
+      }), { totalItems: 0, activeItems: 0, warnedItems: 0, removedItems: 0, reportedItems: 0 });
+      return totalStats;
+    }
+    return campuses.find(c => c.domain === selectedCampus);
   };
 
   const openDetailsModal = (item: Item) => {
@@ -193,6 +252,54 @@ const ModerationDashboard: React.FC = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* Campus Selector */}
+        <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 border border-gray-200 dark:border-gray-700">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Select Campus
+              </label>
+              <select
+                value={selectedCampus}
+                onChange={(e) => handleCampusChange(e.target.value)}
+                className="w-full md:w-96 px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+              >
+                <option value="all">All Campuses ({campuses.reduce((sum, c) => sum + c.totalItems, 0)} items)</option>
+                {campuses.map((campus) => (
+                  <option key={campus.domain} value={campus.domain}>
+                    {campus.domain} ({campus.totalItems} items)
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            {/* Campus Stats */}
+            {(() => {
+              const stats = getSelectedCampusStats();
+              return stats ? (
+                <div className="flex flex-wrap gap-3 text-sm">
+                  <div className="bg-green-50 dark:bg-green-900/20 px-3 py-2 rounded-md">
+                    <span className="text-green-700 dark:text-green-400 font-semibold">{stats.activeItems}</span>
+                    <span className="text-gray-600 dark:text-gray-400 ml-1">Active</span>
+                  </div>
+                  <div className="bg-yellow-50 dark:bg-yellow-900/20 px-3 py-2 rounded-md">
+                    <span className="text-yellow-700 dark:text-yellow-400 font-semibold">{stats.warnedItems}</span>
+                    <span className="text-gray-600 dark:text-gray-400 ml-1">Warned</span>
+                  </div>
+                  <div className="bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-md">
+                    <span className="text-red-700 dark:text-red-400 font-semibold">{stats.removedItems}</span>
+                    <span className="text-gray-600 dark:text-gray-400 ml-1">Removed</span>
+                  </div>
+                  <div className="bg-orange-50 dark:bg-orange-900/20 px-3 py-2 rounded-md">
+                    <span className="text-orange-700 dark:text-orange-400 font-semibold">{stats.reportedItems}</span>
+                    <span className="text-gray-600 dark:text-gray-400 ml-1">Reported</span>
+                  </div>
+                </div>
+              ) : null;
+            })()}
+          </div>
+        </div>
+
         {/* Tabs */}
         <div className="flex gap-4 mb-6 border-b border-gray-200 dark:border-gray-700">
           <button

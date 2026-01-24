@@ -818,13 +818,66 @@ export const deleteReply = async (req, res) => {
   }
 };
 
+// Get list of all campuses (email domains) for admin
+export const getCampusList = async (req, res) => {
+  try {
+    // Get distinct email domains
+    const domains = await Item.distinct('emailDomain');
+    
+    // Get item count for each domain
+    const campusData = await Promise.all(
+      domains.filter(d => d).map(async (domain) => {
+        const totalCount = await Item.countDocuments({ emailDomain: domain });
+        const activeCount = await Item.countDocuments({ emailDomain: domain, moderationStatus: 'active' });
+        const warnedCount = await Item.countDocuments({ emailDomain: domain, moderationStatus: 'warned' });
+        const removedCount = await Item.countDocuments({ emailDomain: domain, moderationStatus: 'removed' });
+        const reportedCount = await Item.countDocuments({ emailDomain: domain, reportCount: { $gt: 0 }, moderationStatus: { $ne: 'removed' } });
+        
+        return {
+          domain,
+          totalItems: totalCount,
+          activeItems: activeCount,
+          warnedItems: warnedCount,
+          removedItems: removedCount,
+          reportedItems: reportedCount,
+        };
+      })
+    );
+    
+    // Sort by total items descending
+    campusData.sort((a, b) => b.totalItems - a.totalItems);
+    
+    res.status(200).json({
+      success: true,
+      count: campusData.length,
+      campuses: campusData,
+    });
+  } catch (error) {
+    console.error('Get campuses list error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching campuses',
+      error: error.message,
+    });
+  }
+};
+
 // Get reported items (Admin only)
 export const getReportedItems = async (req, res) => {
   try {
-    const items = await Item.find({ 
+    // Support campus filtering via query parameter
+    const { emailDomain } = req.query;
+    const filter = {
       reportCount: { $gt: 0 },
       moderationStatus: { $ne: 'removed' }
-    }).sort({ reportCount: -1, createdAt: -1 }).lean();
+    };
+    
+    // Add email domain filter if provided
+    if (emailDomain && emailDomain !== 'all') {
+      filter.emailDomain = emailDomain;
+    }
+    
+    const items = await Item.find(filter).sort({ reportCount: -1, createdAt: -1 }).lean();
 
     const itemsWithId = items.map(item => ({
       ...item,
@@ -850,7 +903,16 @@ export const getReportedItems = async (req, res) => {
 // Get all items for admin review
 export const getAllItemsForAdmin = async (req, res) => {
   try {
-    const items = await Item.find({}).sort({ createdAt: -1 }).lean();
+    // Support campus filtering via query parameter
+    const { emailDomain } = req.query;
+    const filter = {};
+    
+    // Add email domain filter if provided
+    if (emailDomain && emailDomain !== 'all') {
+      filter.emailDomain = emailDomain;
+    }
+    
+    const items = await Item.find(filter).sort({ createdAt: -1 }).lean();
 
     const itemsWithId = items.map(item => ({
       ...item,

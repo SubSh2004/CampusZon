@@ -13,7 +13,8 @@ import {
   deleteReply,
   getReportedItems,
   getAllItemsForAdmin,
-  moderateItem
+  moderateItem,
+  getCampusList
 } from '../controllers/item.controller.js';
 import upload from '../middleware/multer.js';
 import { authenticateToken } from '../middleware/auth.js';
@@ -62,6 +63,9 @@ router.get('/reported', authenticateToken, requireAdmin, getReportedItems);
 
 // GET /api/items/admin/all - Get all items for admin review (Admin only)
 router.get('/admin/all', authenticateToken, requireAdmin, getAllItemsForAdmin);
+
+// GET /api/items/admin/campuses - Get list of all campuses with stats (Admin only)
+router.get('/admin/campuses', authenticateToken, requireAdmin, getCampusList);
 
 // GET /api/items/:id - Get item by ID
 // VALIDATED: MongoDB ObjectID format
