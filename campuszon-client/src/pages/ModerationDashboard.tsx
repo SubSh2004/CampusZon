@@ -61,6 +61,8 @@ const ModerationDashboard: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'warned' | 'removed'>('all');
   const [selectedCampus, setSelectedCampus] = useState<string>('all');
   const [campuses, setCampuses] = useState<Campus[]>([]);
+  const [campusSearchQuery, setCampusSearchQuery] = useState('');
+  const [showCampusDropdown, setShowCampusDropdown] = useState(false);
   const [items, setItems] = useState<Item[]>([]);
   const [filteredItems, setFilteredItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
@@ -199,8 +201,26 @@ const ModerationDashboard: React.FC = () => {
 
   const handleCampusChange = (campus: string) => {
     setSelectedCampus(campus);
+    setCampusSearchQuery('');
+    setShowCampusDropdown(false);
     // Save to localStorage for persistence
     localStorage.setItem('adminSelectedCampus', campus);
+  };
+
+  const getFilteredCampuses = () => {
+    if (!campusSearchQuery.trim()) {
+      return campuses;
+    }
+    const query = campusSearchQuery.toLowerCase();
+    return campuses.filter(c => c.domain.toLowerCase().includes(query));
+  };
+
+  const getSelectedCampusDisplay = () => {
+    if (selectedCampus === 'all') {
+      return `All Campuses (${campuses.reduce((sum, c) => sum + c.totalItems, 0)} items)`;
+    }
+    const campus = campuses.find(c => c.domain === selectedCampus);
+    return campus ? `${campus.domain} (${campus.totalItems} items)` : selectedCampus;
   };
 
   const getSelectedCampusStats = () => {
@@ -257,20 +277,95 @@ const ModerationDashboard: React.FC = () => {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Select Campus
+                Select Campus {campuses.length > 0 && `(${campuses.length} campuses)`}
               </label>
-              <select
-                value={selectedCampus}
-                onChange={(e) => handleCampusChange(e.target.value)}
-                className="w-full md:w-96 px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-              >
-                <option value="all">All Campuses ({campuses.reduce((sum, c) => sum + c.totalItems, 0)} items)</option>
-                {campuses.map((campus) => (
-                  <option key={campus.domain} value={campus.domain}>
-                    {campus.domain} ({campus.totalItems} items)
-                  </option>
-                ))}
-              </select>
+              
+              {/* Searchable Campus Selector */}
+              <div className="relative w-full md:w-96">
+                {/* Search Input */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={showCampusDropdown ? campusSearchQuery : getSelectedCampusDisplay()}
+                    onChange={(e) => {
+                      setCampusSearchQuery(e.target.value);
+                      setShowCampusDropdown(true);
+                    }}
+                    onFocus={() => setShowCampusDropdown(true)}
+                    placeholder="Search or select campus..."
+                    className="w-full px-4 py-2.5 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                  />
+                  <button
+                    onClick={() => setShowCampusDropdown(!showCampusDropdown)}
+                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Dropdown List */}
+                {showCampusDropdown && (
+                  <>
+                    {/* Backdrop to close dropdown */}
+                    <div 
+                      className="fixed inset-0 z-10" 
+                      onClick={() => {
+                        setShowCampusDropdown(false);
+                        setCampusSearchQuery('');
+                      }}
+                    />
+                    
+                    {/* Dropdown menu */}
+                    <div className="absolute z-20 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-80 overflow-y-auto">
+                      {/* All Campuses Option */}
+                      <button
+                        onClick={() => handleCampusChange('all')}
+                        className={`w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-600 transition ${
+                          selectedCampus === 'all' ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-gray-900 dark:text-white'
+                        }`}
+                      >
+                        <div className="flex justify-between items-center">
+                          <span>All Campuses</span>
+                          <span className="text-sm text-gray-500 dark:text-gray-400">
+                            {campuses.reduce((sum, c) => sum + c.totalItems, 0)} items
+                          </span>
+                        </div>
+                      </button>
+
+                      {/* Filtered Campus List */}
+                      {getFilteredCampuses().length > 0 ? (
+                        getFilteredCampuses().map((campus) => (
+                          <button
+                            key={campus.domain}
+                            onClick={() => handleCampusChange(campus.domain)}
+                            className={`w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-600 transition border-t border-gray-200 dark:border-gray-600 ${
+                              selectedCampus === campus.domain ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-gray-900 dark:text-white'
+                            }`}
+                          >
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <div className="font-medium">{campus.domain}</div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                  Active: {campus.activeItems} • Warned: {campus.warnedItems} • Removed: {campus.removedItems}
+                                </div>
+                              </div>
+                              <span className="text-sm text-gray-500 dark:text-gray-400">
+                                {campus.totalItems} items
+                              </span>
+                            </div>
+                          </button>
+                        ))
+                      ) : (
+                        <div className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                          No campuses found matching "{campusSearchQuery}"
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
             
             {/* Campus Stats */}
