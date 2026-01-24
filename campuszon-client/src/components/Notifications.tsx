@@ -51,16 +51,28 @@ export default function Notifications() {
 
     socketRef.current.on('connect', () => {
       console.log('🔗 Socket.IO connected for notifications');
+      socketRef.current?.emit('userJoin', userId); // Re-join on reconnect
     });
 
     socketRef.current.on('disconnect', () => {
       console.log('🔌 Socket.IO disconnected');
     });
 
+    socketRef.current.on('connect_error', (error) => {
+      console.error('❌ Socket connection error:', error);
+    });
+
+    // Polling fallback - check every 30 seconds
+    const pollInterval = setInterval(() => {
+      console.log('🔄 Polling for notifications...');
+      fetchNotifications();
+    }, 30000); // 30 seconds
+
     return () => {
       if (socketRef.current) {
         socketRef.current.disconnect();
       }
+      clearInterval(pollInterval);
     };
   }, []);
 

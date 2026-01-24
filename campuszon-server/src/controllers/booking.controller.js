@@ -124,6 +124,26 @@ export const createBooking = async (req, res) => {
       $inc: { [`unreadCount.${sellerId}`]: 1 }
     });
 
+    // Send real-time notification to seller about new booking
+    try {
+      const Notification = (await import('../models/notification.model.js')).default;
+      const notification = await Notification.create({
+        userId: sellerId,
+        type: 'BOOKING',
+        title: '📦 New Booking Request!',
+        message: `You have a new booking request for "${itemTitle}" from ${buyerName}.`,
+        itemId: itemId,
+        read: false
+      });
+
+      console.log(`✅ Notification created for seller ${sellerId}:`, notification._id);
+
+      // Send real-time notification update
+      emitNotification(sellerId, notification);
+    } catch (err) {
+      console.error('❌ Error creating booking notification for seller:', err);
+    }
+
     // Return booking with chat info. Frontend no longer needs to emit sendPrivateMessage when autoMessage present.
     res.json({ 
       success: true, 

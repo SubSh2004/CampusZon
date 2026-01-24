@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
+import { io, Socket } from 'socket.io-client';
 import { useTheme } from '../context/ThemeContext';
 import { API_URL } from '../config/api';
 
@@ -35,6 +36,7 @@ type BookingSubTab = 'incoming' | 'updates';
 export default function Notifications() {
   const navigate = useNavigate();
   const { theme } = useTheme();
+  const socketRef = useRef<Socket | null>(null);
   const [activeTab, setActiveTab] = useState<NotificationTab>('booking');
   const [bookingSubTab, setBookingSubTab] = useState<BookingSubTab>('incoming');
   const [loading, setLoading] = useState(true);
@@ -47,6 +49,63 @@ export default function Notifications() {
   // Moderation notifications
   const [moderationNotifications, setModerationNotifications] = useState<ModerationNotification[]>([]);
   const [unreadModerationCount, setUnreadModerationCount] = useState(0);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
+
+    if (!token || !userId) {
+      navigate('/login');
+      return;
+    }
+
+    // Set axios auth header
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+    // Initial fetch
+    fetchNotifications();
+
+    // Setup Socket.IO for real-time notifications
+    socketRef.current = io(API_URL, {
+      auth: { token },
+      transports: ['websocket', 'polling']
+    });
+
+    // Join with userId to receive notifications
+    socketRef.current.emit('userJoin', userId);
+
+    // Listen for real-time notifications
+    socketRef.current.on('new-notification', () => {
+      console.log('📬 Real-time notification received on Notifications page!');
+      fetchNotifications(); // Refresh notifications instantly
+    });
+
+    socketRef.current.on('connect', () => {
+      console.log('🔗 Socket.IO connected on Notifications page');
+      socketRef.current?.emit('userJoin', userId); // Re-join on reconnect
+    });
+
+    socketRef.current.on('disconnect', () => {
+      console.log('🔌 Socket.IO disconnected');
+    });
+
+    socketRef.current.on('connect_error', (error) => {
+      console.error('❌ Socket connection error:', error);
+    });
+
+    // Polling fallback - refresh every 30 seconds
+    const pollInterval = setInterval(() => {
+      console.log('🔄 Polling for new notifications...');
+      fetchNotifications();
+    }, 30000); // 30 seconds
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
+      clearInterval(pollInterval);
+    };
+  }, [navigate]);
 
   useEffect(() => {
     fetchNotifications();
