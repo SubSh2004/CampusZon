@@ -265,14 +265,28 @@ export const getAllItems = async (req, res) => {
 export const getMyItems = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
+    const userEmail = req.user.email;
     const { limit = 10000 } = req.query;
 
     const limitNum = parseInt(limit);
 
     console.log('🔍 Fetching items for user ID:', userId);
 
-    // Fetch all items created by this user, regardless of moderation status
-    const items = await Item.find({ userId })
+    // Extract email domain for campus isolation (security)
+    const emailDomain = userEmail.split('@')[1] || '';
+    
+    if (!emailDomain) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid user email format',
+      });
+    }
+
+    // Fetch all items created by this user within their campus, regardless of moderation status
+    const items = await Item.find({ 
+      emailDomain,  // Campus isolation (security + performance)
+      userId 
+    })
       .sort({ createdAt: -1 })
       .limit(limitNum)
       .lean();

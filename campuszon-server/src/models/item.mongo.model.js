@@ -80,8 +80,52 @@ const itemSchema = new mongoose.Schema({
   timestamps: true,
 });
 
-// Index for faster queries by emailDomain and createdAt
+// ============================================
+// INDEXES (Performance Optimization)
+// ============================================
+// Note: "Campus" = emailDomain field
+
+// Original index (kept for backward compatibility)
 itemSchema.index({ emailDomain: 1, createdAt: -1 });
+
+// Priority 1: Home page load optimization (most frequent query)
+// Supports: emailDomain + moderationStatus filter + date sort
+itemSchema.index({ emailDomain: 1, moderationStatus: 1, createdAt: -1 });
+
+// Priority 1: Category filtering (high frequency)
+// Supports: emailDomain + category filter + date sort
+itemSchema.index({ emailDomain: 1, category: 1, createdAt: -1 });
+
+// Priority 2: User's own items (Profile page + security)
+// Supports: emailDomain + userId lookup + date sort
+itemSchema.index({ emailDomain: 1, userId: 1, createdAt: -1 });
+
+// Priority 2: Available items filter (buyer UX)
+// Supports: emailDomain + available filter + date sort
+itemSchema.index({ emailDomain: 1, available: 1, createdAt: -1 });
+
+// ============================================
+// QUERY MIDDLEWARE (Security & Safety)
+// ============================================
+
+// Warning mode: Log queries missing emailDomain filter (except by _id)
+itemSchema.pre(/^find/, function(next) {
+  const query = this.getQuery();
+  
+  // Skip check for findById (uses _id which is always safe)
+  if (query._id) {
+    return next();
+  }
+  
+  // Check if emailDomain filter exists
+  if (!query.emailDomain) {
+    console.warn('⚠️  SECURITY WARNING: Query missing emailDomain filter!');
+    console.warn('   Query:', JSON.stringify(query));
+    console.warn('   Stack:', new Error().stack.split('\n')[2].trim());
+  }
+  
+  next();
+});
 
 const Item = mongoose.models.Item || mongoose.model('Item', itemSchema);
 
