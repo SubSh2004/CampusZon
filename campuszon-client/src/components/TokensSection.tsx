@@ -52,8 +52,9 @@ const TokensSection: React.FC = () => {
   };
 
   const handlePurchaseToken = async (packageId: string) => {
-    // Prevent duplicate payment attempts
+    // Prevent duplicate payment attempts - check immediately
     if (paymentInProgress.current || processingPayment) {
+      console.log('Payment already in progress, ignoring click');
       return;
     }
 
@@ -64,9 +65,9 @@ const TokensSection: React.FC = () => {
         return;
       }
 
-      // Show loading state immediately
-      setProcessingPayment(true);
+      // Set both flags immediately to prevent race conditions
       paymentInProgress.current = true;
+      setProcessingPayment(true);
 
       const response = await axios.post(
         '/api/tokens/purchase',

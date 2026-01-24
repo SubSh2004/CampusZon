@@ -62,11 +62,34 @@ interface TokenCardProps {
 }
 
 const TokenCard: React.FC<TokenCardProps> = memo(({ pkg, onSelect, isDisabled }) => {
+  const [isClicking, setIsClicking] = React.useState(false);
+  const clickTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
   const handleClick = () => {
-    if (!isDisabled) {
-      onSelect(pkg.id);
+    // Prevent rapid clicks and duplicate calls
+    if (isDisabled || isClicking) {
+      return;
     }
+
+    setIsClicking(true);
+    onSelect(pkg.id);
+
+    // Reset click state after 2 seconds (enough time for Razorpay to open)
+    if (clickTimeoutRef.current) {
+      clearTimeout(clickTimeoutRef.current);
+    }
+    clickTimeoutRef.current = setTimeout(() => {
+      setIsClicking(false);
+    }, 2000);
   };
+
+  React.useEffect(() => {
+    return () => {
+      if (clickTimeoutRef.current) {
+        clearTimeout(clickTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div
@@ -138,14 +161,14 @@ const TokenCard: React.FC<TokenCardProps> = memo(({ pkg, onSelect, isDisabled })
             pkg.popular
               ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-md hover:shadow-lg'
               : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white'
-          } active:scale-95 disabled:opacity-50`}
+          } active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed`}
           onClick={(e) => {
             e.stopPropagation();
             handleClick();
           }}
-          disabled={isDisabled}
+          disabled={isDisabled || isClicking}
         >
-          Buy Now
+          {isClicking ? 'Processing...' : 'Buy Now'}
         </button>
       </div>
     </div>
