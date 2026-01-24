@@ -63,7 +63,7 @@ interface TokenCardProps {
 
 const TokenCard: React.FC<TokenCardProps> = memo(({ pkg, onSelect, isDisabled }) => {
   const [isClicking, setIsClicking] = React.useState(false);
-  const clickTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const clickTimeoutRef = React.useRef<number | null>(null);
 
   const handleClick = () => {
     // Prevent rapid clicks and duplicate calls

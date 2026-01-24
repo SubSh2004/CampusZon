@@ -20,7 +20,6 @@ This migration script optimizes all existing images in the database that were up
 cd campuszon-server
 npm install axios
 ```
-
 ### 2. Verify Environment
 Check that `.env` contains:
 - ✅ `MONGODB_URI` - MongoDB connection string
