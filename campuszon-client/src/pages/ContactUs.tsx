@@ -150,7 +150,7 @@ export default function ContactUs() {
               </h2>
               <div className="flex gap-4">
                 <a
-                  href="https://www.linkedin.com/in/subham-venkateshwar-sharma-061b37320/"
+                  href="https://www.linkedin.com/company/campuszon/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-800/50 transition-colors"
