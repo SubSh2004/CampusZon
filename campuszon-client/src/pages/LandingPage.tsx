@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useRecoilValue } from 'recoil';
 import { userAtom } from '../store/user.atom';
+import BrandName from '../components/BrandName';
 
 export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -83,7 +84,7 @@ export default function LandingPage() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-2">
               <img src="/logo-icon.jpg" alt="Campuszon" className="w-8 h-8 rounded-full object-cover logo-nav" />
-              <span className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">Campuszon</span>
+              <span className="text-2xl font-bold text-indigo-600 dark:text-indigo-400"><BrandName /></span>
             </div>
             <div className="flex gap-4">
               <Link
@@ -115,7 +116,7 @@ export default function LandingPage() {
             <div className="text-center lg:text-left">
               <div className="flex items-center justify-center lg:justify-start gap-3 mb-6">
                 <img src="/logo-icon.jpg" alt="Campuszon" className="w-12 h-12 rounded-full object-cover logo-hero" />
-                <h1 className="text-3xl sm:text-4xl font-bold text-indigo-600 dark:text-indigo-400">Campuszon</h1>
+                <h1 className="text-3xl sm:text-4xl font-bold text-indigo-600 dark:text-indigo-400"><BrandName /></h1>
               </div>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6 animate-fade-in">
                 Buy, Sell & Rent Within Your Campus<span className="text-indigo-600 dark:text-indigo-400 bg-clip-text">Safely.</span>

@@ -156,7 +156,7 @@ const Payment: React.FC = () => {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID || '',
         amount: order.amount,
         currency: order.currency,
-        name: 'CampusZon',
+        name: 'Campus Zon',
         description: `Unlock: ${paymentDetails.itemTitle}`,
         image: '/logo.png', // Add your logo
         order_id: order.id,

@@ -10,6 +10,7 @@ import ProductsList from '../components/ProductsList';
 import Notifications from '../components/Notifications';
 import SearchWithAutoComplete from '../components/SearchWithAutoComplete';
 import TokenPurchase from '../components/TokenPurchase';
+import BrandName from '../components/BrandName';
 import { generateSuggestions } from '../utils/searchUtils';
 import axios from '../config/axios';
 
@@ -136,7 +137,7 @@ export default function Home() {
             key: import.meta.env.VITE_RAZORPAY_KEY_ID,
             amount: response.data.order.amount,
             currency: response.data.order.currency,
-            name: 'CampusZon',
+            name: 'Campus Zon',
             description: `${response.data.packageDetails.tokens} Unlock Tokens`,
             order_id: response.data.order.id,
             handler: async (razorpayResponse: any) => {
@@ -323,7 +324,7 @@ export default function Home() {
           {/* Panel Footer */}
           <div className="p-4 border-t border-gray-200 dark:border-slate-800">
             <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-              CampusZon © 2026
+              <BrandName /> © 2026
             </p>
           </div>
         </div>
@@ -371,7 +372,9 @@ export default function Home() {
                   className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 rounded-full object-cover"
                 />
                 <div className="flex-1 min-w-0">
-                  <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white truncate">CampusZon</h1>
+                  <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white truncate">
+                    <BrandName />
+                  </h1>
                 </div>
               </div>
 
@@ -741,7 +744,7 @@ export default function Home() {
       {/* Clean Footer */}
       <footer className="bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-800 mt-8 sm:mt-12">
         <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 text-center text-xs sm:text-sm text-gray-600 dark:text-slate-400">
-          <p>&copy; 2025 CampusZon. All rights reserved.</p>
+          <p>&copy; 2025 <BrandName />. All rights reserved.</p>
         </div>
       </footer>
     </div>

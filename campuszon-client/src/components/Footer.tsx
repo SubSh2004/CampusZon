@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import BrandName from './BrandName';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -10,7 +11,7 @@ export default function Footer() {
           {/* About Section */}
           <div className="col-span-1 md:col-span-2">
             <h3 className="text-2xl font-bold text-indigo-600 dark:text-indigo-400 mb-4">
-              CampusZon
+              <BrandName />
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4 max-w-md">
               Your trusted campus marketplace for buying, selling, and renting items. 
@@ -137,7 +138,7 @@ export default function Footer() {
         <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-600 dark:text-gray-400 text-sm">
-              © {currentYear} CampusZon. Made with ❤️ for students by students.
+              © {currentYear} <BrandName />. Made with ❤️ for students by students.
             </p>
             <div className="mt-4 md:mt-0">
               <p className="text-sm text-gray-600 dark:text-gray-400">

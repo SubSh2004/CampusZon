@@ -88,7 +88,7 @@ const TokensSection: React.FC = () => {
             key: import.meta.env.VITE_RAZORPAY_KEY_ID,
             amount: response.data.order.amount,
             currency: response.data.order.currency,
-            name: 'CampusZon',
+            name: 'Campus Zon',
             description: `${response.data.packageDetails.tokens} Unlock Tokens`,
             order_id: response.data.order.id,
             handler: async (razorpayResponse: any) => {

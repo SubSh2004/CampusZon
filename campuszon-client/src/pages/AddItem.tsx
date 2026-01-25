@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRecoilValue } from 'recoil';
-import axios from 'axios';
+import axios from '../config/axios';
 import { userAtom } from '../store/user.atom';
+import BrandName from '../components/BrandName';
 
 export default function AddItem() {
   const navigate = useNavigate();
@@ -207,7 +208,7 @@ export default function AddItem() {
             <img src="/logo-icon.jpg" alt="CampusZon" className="w-12 h-12 flex-shrink-0 rounded-full object-cover shadow-md" />
             <div>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Add New Item</h1>
-              <p className="mt-2 text-gray-600 dark:text-gray-300">List your item for sale on CampusZon</p>
+              <p className="mt-2 text-gray-600 dark:text-gray-300">List your item for sale on <BrandName className="font-semibold" /></p>
             </div>
           </div>
           <button
