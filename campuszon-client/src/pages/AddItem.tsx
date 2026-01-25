@@ -439,7 +439,7 @@ export default function AddItem() {
 
           <div>
             <label htmlFor="image" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Images (Maximum 3)
+              Images (Maximum 3, each up to 5MB)
             </label>
             <input
               id="image"

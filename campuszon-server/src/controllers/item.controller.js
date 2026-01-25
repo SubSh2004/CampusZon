@@ -92,8 +92,8 @@ export const createItem = async (req, res) => {
     
     if (req.files && req.files.length > 0) {
       try {
-        // Limit to 3 images to reduce memory usage
-        const filesToUpload = req.files.slice(0, 3);
+        // Limit to 5 images
+        const filesToUpload = req.files.slice(0, 5);
         
         console.log(`[createItem] Processing ${filesToUpload.length} images sequentially`);
         
