@@ -4,9 +4,11 @@ import ImageModeration from '../models/imageModeration.model.js';
 import UserViolation from '../models/userViolation.model.js';
 import Notification from '../models/notification.model.js';
 import imgbbUploader from 'imgbb-uploader';
+import sharp from 'sharp';
 import { queueImageModeration } from '../utils/moderationQueue.js';
 import { checkUserCanUpload } from '../utils/enforcementSystem.js';
 import { getCache, setCache, generateItemsCacheKey, invalidateDomainCache } from '../utils/cache.js';
+import { processImageUpload } from '../utils/imageValidator.js';
 import { emitNotification } from '../index.js';
 
 // Create a new item
