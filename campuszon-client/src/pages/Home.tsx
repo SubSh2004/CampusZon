@@ -34,6 +34,7 @@ export default function Home() {
   const filterRef = useRef<HTMLDivElement>(null);
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [tokens, setTokens] = useState<number>(0);
+  const [isMobilePanelOpen, setIsMobilePanelOpen] = useState(false);
   
   const organizationName = user.email ? getOrganizationName(user.email) : '';
 
@@ -57,6 +58,29 @@ export default function Home() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Close mobile panel on Escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isMobilePanelOpen) {
+        setIsMobilePanelOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isMobilePanelOpen]);
+
+  // Prevent body scroll when panel is open
+  useEffect(() => {
+    if (isMobilePanelOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isMobilePanelOpen]);
 
   useEffect(() => {
     if (!searchQuery.trim()) {
@@ -165,6 +189,105 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-950 transition-colors duration-200">
+      {/* Mobile Side Panel Backdrop */}
+      {isMobilePanelOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden transition-opacity duration-300"
+          onClick={() => setIsMobilePanelOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Mobile Side Panel - Only visible on mobile */}
+      <aside
+        className={`fixed top-0 left-0 h-full w-72 bg-white dark:bg-slate-900 shadow-2xl z-50 transform transition-transform duration-300 ease-in-out md:hidden ${
+          isMobilePanelOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Navigation menu"
+      >
+        <div className="flex flex-col h-full">
+          {/* Panel Header */}
+          <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-800">
+            <div className="flex items-center gap-3">
+              <img src="/logo-icon.jpg" alt="CampusZon" className="w-10 h-10 rounded-full object-cover" />
+              <div>
+                <h2 className="font-bold text-gray-900 dark:text-white">Menu</h2>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Hi, {user.username}!</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setIsMobilePanelOpen(false)}
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+              aria-label="Close menu"
+            >
+              <svg className="w-6 h-6 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Panel Navigation Items */}
+          <nav className="flex-1 overflow-y-auto p-4">
+            <div className="space-y-2">
+              <Link
+                to="/profile"
+                onClick={() => setIsMobilePanelOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors text-gray-700 dark:text-gray-300 group"
+              >
+                <svg className="w-6 h-6 text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span className="font-medium">Profile</span>
+              </Link>
+
+              <Link
+                to="/add-item"
+                onClick={() => setIsMobilePanelOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors text-indigo-700 dark:text-indigo-400 group"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                <span className="font-medium">Add Item</span>
+              </Link>
+
+              <Link
+                to="/bookings"
+                onClick={() => setIsMobilePanelOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors text-gray-700 dark:text-gray-300 group"
+              >
+                <svg className="w-6 h-6 text-gray-500 dark:text-gray-400 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                <span className="font-medium">My Bookings</span>
+              </Link>
+
+              <button
+                onClick={() => {
+                  setIsMobilePanelOpen(false);
+                  logout();
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-red-600 dark:text-red-400 group"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                <span className="font-medium">Logout</span>
+              </button>
+            </div>
+          </nav>
+
+          {/* Panel Footer */}
+          <div className="p-4 border-t border-gray-200 dark:border-slate-800">
+            <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+              CampusZon © 2026
+            </p>
+          </div>
+        </div>
+      </aside>
+
       {/* Professional Welcome Banner */}
       {user.isLoggedIn && organizationName && (
         <div className="bg-gradient-to-r from-slate-900 to-slate-800 dark:from-slate-950 dark:to-slate-900 border-b border-slate-700">
@@ -182,13 +305,25 @@ export default function Home() {
       )}
 
       {/* Clean Professional Header */}
-      <header className="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 sticky top-0 z-50 shadow-sm">
+      <header className="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 sticky top-0 z-30 shadow-sm">
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
-          {/* Mobile: Stack everything vertically */}
           <div className="flex flex-col gap-3 sm:gap-4">
-            {/* Top Row: Logo and Quick Actions */}
+            {/* Top Row */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                {/* Hamburger Menu - Mobile Only */}
+                {user.isLoggedIn && (
+                  <button
+                    onClick={() => setIsMobilePanelOpen(true)}
+                    className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors md:hidden"
+                    aria-label="Open menu"
+                  >
+                    <svg className="w-6 h-6 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                  </button>
+                )}
+
                 <img 
                   src="/logo-icon.jpg" 
                   alt="CampusZon Logo" 
@@ -203,25 +338,24 @@ export default function Home() {
                   </p>
                 </div>
               </div>
+
+              {/* Right Side Icons - Always Visible */}
               <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-                {/* Theme Toggle Button */}
-                <button
-                  onClick={toggleTheme}
-                  className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                  aria-label="Toggle theme"
-                >
-                  {theme === 'light' ? (
-                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                    </svg>
-                  ) : (
-                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                    </svg>
-                  )}
-                </button>
-                
-                {/* Cart Icon - Only show when logged in */}
+                {/* Tokens - Mobile & Desktop */}
+                {user.isLoggedIn && (
+                  <button
+                    onClick={() => setShowTokenModal(true)}
+                    className="flex items-center gap-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-500 dark:to-purple-500 text-white px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:from-indigo-700 hover:to-purple-700 dark:hover:from-indigo-600 dark:hover:to-purple-600 transition font-medium text-sm shadow-sm"
+                  >
+                    <span className="text-base">🎫</span>
+                    <span className="font-bold">{tokens}</span>
+                  </button>
+                )}
+
+                {/* Notifications */}
+                {user.isLoggedIn && <Notifications />}
+
+                {/* Cart */}
                 {user.isLoggedIn && (
                   <Link
                     to="/cart"
@@ -238,16 +372,30 @@ export default function Home() {
                     )}
                   </Link>
                 )}
-                
-                {/* Notifications - Only show when logged in */}
-                {user.isLoggedIn && <Notifications />}
+
+                {/* Theme Toggle */}
+                <button
+                  onClick={toggleTheme}
+                  className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  aria-label="Toggle theme"
+                >
+                  {theme === 'light' ? (
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                  )}
+                </button>
               </div>
             </div>
             
-            {/* Bottom Row: Navigation (only when logged in) */}
+            {/* Desktop Navigation Row - Hidden on Mobile */}
             {user.isLoggedIn ? (
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-3 px-3 sm:mx-0 sm:px-0 scrollbar-hide">
-                <span className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap hidden sm:block">Welcome, {user.username}!</span>
+              <div className="hidden md:flex items-center gap-2">
+                <span className="text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">Welcome, {user.username}!</span>
                 <Link
                   to="/profile"
                   className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-gray-700 dark:text-gray-300 text-sm font-medium whitespace-nowrap"
@@ -255,11 +403,11 @@ export default function Home() {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
-                  <span className="hidden sm:inline">Profile</span>
+                  Profile
                 </Link>
                 <Link
                   to="/add-item"
-                  className="flex items-center gap-1 bg-indigo-600 dark:bg-indigo-500 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition font-medium text-sm whitespace-nowrap"
+                  className="flex items-center gap-1 bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition font-medium text-sm whitespace-nowrap"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -268,7 +416,7 @@ export default function Home() {
                 </Link>
                 <Link
                   to="/bookings"
-                  className="flex items-center gap-1 bg-green-600 dark:bg-green-500 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-green-700 dark:hover:bg-green-600 transition font-medium text-sm whitespace-nowrap"
+                  className="flex items-center gap-1 bg-green-600 dark:bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-700 dark:hover:bg-green-600 transition font-medium text-sm whitespace-nowrap"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -276,21 +424,13 @@ export default function Home() {
                   Bookings
                 </Link>
                 <button
-                  onClick={() => setShowTokenModal(true)}
-                  className="flex items-center gap-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-500 dark:to-purple-500 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:from-indigo-700 hover:to-purple-700 dark:hover:from-indigo-600 dark:hover:to-purple-600 transition font-medium text-sm whitespace-nowrap shadow-sm"
-                >
-                  <span className="text-base">🎫</span>
-                  <span className="font-bold">{tokens}</span>
-                  <span className="hidden sm:inline">Tokens</span>
-                </button>
-                <button
                   onClick={logout}
                   className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors text-red-700 dark:text-red-400 text-sm font-medium whitespace-nowrap ml-auto"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                   </svg>
-                  <span className="hidden sm:inline">Logout</span>
+                  Logout
                 </button>
               </div>
             ) : (
