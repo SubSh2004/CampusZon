@@ -291,7 +291,7 @@ export default function Signup() {
 
               <div>
                 <label htmlFor="phoneNumber" className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">
-                  Phone Number
+                  Phone Number (Don't give spaces or leading zeros)
                 </label>
                 <div className="flex gap-2">
                   <select

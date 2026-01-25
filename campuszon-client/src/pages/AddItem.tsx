@@ -321,7 +321,7 @@ export default function AddItem() {
           {(listingType === 'For Sale' || listingType === 'Both') && (
             <div>
               <label htmlFor="salePrice" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Sale Price (₹)
+                Sale Price (₹) (Cannot be 0)
               </label>
               <input
                 id="salePrice"
@@ -342,7 +342,7 @@ export default function AddItem() {
           {(listingType === 'For Rent' || listingType === 'Both') && (
             <div>
               <label htmlFor="rentPrice" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Rent Amount (₹)
+                Rent Amount (₹) (Cannot be 0)
               </label>
               <input
                 id="rentPrice"

@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import validator from 'validator';
 import User from '../models/user.model.js';
+import Item from '../models/item.mongo.model.js';
 import OTP from '../models/otp.model.js';
 import { generateOTP, sendOTPEmail, sendWelcomeEmail } from '../utils/emailService.js';
 import { validatePassword } from '../utils/passwordPolicy.js';
@@ -315,6 +316,20 @@ export const updateProfile = async (req, res) => {
         message: 'User not found',
       });
     }
+
+    // Update all items owned by this user with new hostel name
+    await Item.updateMany(
+      { userId: req.user._id.toString() },
+      { 
+        $set: { 
+          userHostel: hostelName,
+          userName: username,
+          userPhone: phoneNumber
+        } 
+      }
+    );
+
+    console.log(`[updateProfile] Updated profile and ${await Item.countDocuments({ userId: req.user._id.toString() })} items for user ${username}`);
 
     res.status(200).json({
       success: true,
