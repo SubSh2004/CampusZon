@@ -406,6 +406,53 @@ export default function Signup() {
                 </div>
               </div>
 
+              {/* Agree to Signup Section */}
+              <div className="mt-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-700/50 rounded-xl">
+                <ul className="space-y-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300">
+                  <li className="flex items-start gap-2">
+                    <span className="flex-shrink-0">⏳</span>
+                    <span>Return rented items on time — need more time? Ask the seller first</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="flex-shrink-0">⚠️</span>
+                    <span>No response or misuse may lead to account action or legal notice</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="flex-shrink-0">👀</span>
+                    <span>Buyer & seller must check items properly before collecting</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="flex-shrink-0">🏫</span>
+                    <span>Meet only at safe campus locations</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="flex-shrink-0">🤝</span>
+                    <span>CampusZon is a platform — users deal responsibly</span>
+                  </li>
+                </ul>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-3 text-center">
+                  By signing up, you agree to our{' '}
+                  <Link
+                    to="/terms"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-bold text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 underline transition-colors"
+                  >
+                    Terms of Service
+                  </Link>
+                  {' '}and{' '}
+                  <Link
+                    to="/privacy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-bold text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 underline transition-colors"
+                  >
+                    Privacy Policy
+                  </Link>
+                  .
+                </p>
+              </div>
+
               <button
                 type="submit"
                 disabled={loading}
