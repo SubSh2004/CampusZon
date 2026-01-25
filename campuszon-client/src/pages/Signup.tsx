@@ -99,6 +99,18 @@ export default function Signup() {
     e.preventDefault();
     setError('');
 
+    // Validate all required fields
+    if (!username || !password || !confirmPassword || !phoneNumber || !hostelName) {
+      setError('All fields are required');
+      return;
+    }
+
+    // Validate username length
+    if (username.length < 3 || username.length > 50) {
+      setError('Username must be 3-50 characters');
+      return;
+    }
+
     // Validate password match
     if (password !== confirmPassword) {
       setError('Passwords do not match');
@@ -111,18 +123,48 @@ export default function Signup() {
       return;
     }
 
-    setLoading(true);
-
-    // Combine country code with phone number
-    const fullPhoneNumber = `${countryCode} ${phoneNumber}`;
-
-    const result = await signup({ username, email, password, phoneNumber: fullPhoneNumber, hostelName });
-
-    if (!result.success) {
-      setError(result.message);
+    // Validate password complexity
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasLowercase = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    
+    if (!hasUppercase || !hasLowercase || !hasNumber) {
+      setError('Password must contain at least one uppercase letter, one lowercase letter, and one number');
+      return;
     }
 
-    setLoading(false);
+    // Sanitize phone number (remove spaces, dashes, parentheses)
+    const cleanPhoneNumber = phoneNumber.replace(/[\s\-\(\)]/g, '');
+    
+    // Validate phone number is exactly 10 digits
+    if (!/^\d{10}$/.test(cleanPhoneNumber)) {
+      setError('Phone number must be exactly 10 digits');
+      return;
+    }
+
+    // Validate hostel name length
+    if (hostelName.length < 2 || hostelName.length > 100) {
+      setError('Hostel name must be 2-100 characters');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Combine country code with cleaned phone number
+      const fullPhoneNumber = `${countryCode} ${cleanPhoneNumber}`;
+
+      const result = await signup({ username, email, password, phoneNumber: fullPhoneNumber, hostelName });
+
+      if (!result.success) {
+        setError(result.message);
+        setLoading(false);
+      }
+      // If successful, signup hook handles navigation and loading state
+    } catch (err: any) {
+      setError(err.message || 'Signup failed. Please try again.');
+      setLoading(false);
+    }
   };
 
   return (
@@ -291,8 +333,11 @@ export default function Signup() {
 
               <div>
                 <label htmlFor="phoneNumber" className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">
-                  Phone Number (Don't give spaces or leading zeros)
+                  Phone Number
                 </label>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                  Enter 10-digit phone number (without country code)
+                </p>
                 <div className="flex gap-2">
                   <select
                     value={countryCode}
@@ -310,11 +355,19 @@ export default function Signup() {
                     type="tel"
                     required
                     value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    onChange={(e) => {
+                      // Only allow digits, automatically remove spaces/dashes
+                      const cleaned = e.target.value.replace(/\D/g, '');
+                      setPhoneNumber(cleaned);
+                    }}
+                    maxLength={10}
                     className="flex-1 px-4 py-3 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 dark:focus:border-purple-400 outline-none transition-all duration-300 font-medium"
                     placeholder="1234567890"
                   />
                 </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {phoneNumber.length}/10 digits
+                </p>
               </div>
 
               <div>
@@ -337,7 +390,7 @@ export default function Signup() {
                   Password
                 </label>
                 <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
-                  Must be at least 8 characters long
+                  Must be at least 8 characters with uppercase, lowercase, and number
                 </p>
                 <div className="relative">
                   <input
