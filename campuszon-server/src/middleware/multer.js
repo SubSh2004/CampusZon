@@ -18,12 +18,12 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// Configure multer with enhanced security
+// Configure multer with enhanced security and memory optimization
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit per file (reduced from 20MB for better performance)
-    files: 5 // Maximum 5 files per upload
+    fileSize: 3 * 1024 * 1024, // 3MB limit per file (reduced for 512MB server)
+    files: 3 // Maximum 3 files per upload (reduced to save memory)
   },
   fileFilter: fileFilter,
 });

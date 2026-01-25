@@ -92,51 +92,50 @@ export const createItem = async (req, res) => {
     
     if (req.files && req.files.length > 0) {
       try {
-        // Limit to 5 images
-        const filesToUpload = req.files.slice(0, 5);
+        // Limit to 3 images to reduce memory usage
+        const filesToUpload = req.files.slice(0, 3);
         
-        console.log(`[createItem] Optimizing ${filesToUpload.length} images before upload`);
+        console.log(`[createItem] Processing ${filesToUpload.length} images sequentially`);
         
-        // Optimize and upload all images to ImgBB
-        const uploadPromises = filesToUpload.map(async (file) => {
-          // Validate and preprocess the image
-          const validation = await processImageUpload(file.buffer, file);
-          
-          if (!validation.success) {
-            throw new Error(validation.error || 'Image validation failed');
+        // Process images SEQUENTIALLY to avoid memory overflow (not in parallel)
+        const uploadedUrls = [];
+        for (const file of filesToUpload) {
+          try {
+            // Optimize: resize to 800px and use lower quality to save memory
+            const optimizedBuffer = await sharp(file.buffer)
+              .resize(800, 800, { 
+                fit: 'inside', 
+                withoutEnlargement: true,
+                kernel: sharp.kernel.nearest // Faster, less memory
+              })
+              .jpeg({ quality: 75, progressive: true }) // JPEG uses less memory than WebP
+              .toBuffer({ resolveWithObject: false }); // Reduce memory footprint
+            
+            // Upload to ImgBB
+            const base64Image = optimizedBuffer.toString('base64');
+            const response = await imgbbUploader({
+              apiKey: process.env.IMGBB_API_KEY,
+              base64string: base64Image,
+              name: `item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.jpg`,
+            });
+            
+            uploadedUrls.push(response.url);
+            console.log(`[createItem] Uploaded ${uploadedUrls.length}/${filesToUpload.length}`);
+            
+            // Force garbage collection hint
+            if (global.gc) global.gc();
+            
+          } catch (imgError) {
+            console.error(`[createItem] Failed to process image:`, imgError.message);
+            // Continue with other images
           }
-          
-          // Log warnings if any
-          if (validation.warnings && validation.warnings.length > 0) {
-            console.log(`[createItem] Image warnings for ${file.originalname}:`, validation.warnings);
-          }
-          
-          // Use the preprocessed buffer from validation (already optimized)
-          const optimizedBuffer = validation.buffer;
-          
-          // Further optimize: resize to max 1200px and convert to WebP for better compression
-          const finalBuffer = await sharp(optimizedBuffer)
-            .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
-            .webp({ quality: 85, effort: 4 })
-            .toBuffer();
-          
-          const originalSize = file.size;
-          const optimizedSize = finalBuffer.length;
-          const reduction = ((1 - optimizedSize / originalSize) * 100).toFixed(1);
-          
-          console.log(`[createItem] Optimized ${file.originalname}: ${(originalSize / 1024).toFixed(0)}KB → ${(optimizedSize / 1024).toFixed(0)}KB (${reduction}% smaller)`);
-          
-          // Upload optimized image to ImgBB
-          const base64Image = finalBuffer.toString('base64');
-          const response = await imgbbUploader({
-            apiKey: process.env.IMGBB_API_KEY,
-            base64string: base64Image,
-            name: `item-${Date.now()}-${file.originalname.replace(/\.[^.]+$/, '.webp')}`,
-          });
-          return response.url;
-        });
+        }
         
-        imageUrls = await Promise.all(uploadPromises);
+        if (uploadedUrls.length === 0) {
+          throw new Error('No images were successfully uploaded');
+        }
+        
+        imageUrls = uploadedUrls;
         imageUrl = imageUrls[0]; // First image is the main image
         
       } catch (uploadError) {
