@@ -372,11 +372,6 @@ export default function Home() {
                 />
                 <div className="flex-1 min-w-0">
                   <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white truncate">CampusZon</h1>
-                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mt-0.5 truncate">
-                    {user.isLoggedIn && organizationName 
-                      ? `Marketplace for ${organizationName}` 
-                      : 'Campus Marketplace'}
-                  </p>
                 </div>
               </div>
 
