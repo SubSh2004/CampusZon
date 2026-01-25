@@ -206,10 +206,6 @@ export default function ProductCard({ item }: ProductCardProps) {
               </span>
             </div>
             
-            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
-              {item.description}
-            </p>
-            
             {/* Price with Gradient Background and Availability Badge */}
             <div className="flex items-center justify-between mt-2 sm:mt-3 mb-2">
               <div className="relative">
