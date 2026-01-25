@@ -264,6 +264,47 @@ export default function Home() {
                 <span className="font-medium">My Bookings</span>
               </Link>
 
+              <Link
+                to="/cart"
+                onClick={() => setIsMobilePanelOpen(false)}
+                className="flex items-center justify-between gap-3 px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors text-gray-700 dark:text-gray-300 group"
+              >
+                <div className="flex items-center gap-3">
+                  <svg className="w-6 h-6 text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  <span className="font-medium">Cart</span>
+                </div>
+                {cart.count > 0 && (
+                  <span className="bg-indigo-600 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold">
+                    {cart.count > 9 ? '9+' : cart.count}
+                  </span>
+                )}
+              </Link>
+
+              <button
+                onClick={() => {
+                  toggleTheme();
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors text-gray-700 dark:text-gray-300 group"
+              >
+                {theme === 'light' ? (
+                  <>
+                    <svg className="w-6 h-6 text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                    <span className="font-medium">Dark Mode</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-6 h-6 text-gray-500 dark:text-gray-400 group-hover:text-yellow-500 dark:group-hover:text-yellow-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <span className="font-medium">Light Mode</span>
+                  </>
+                )}
+              </button>
+
               <button
                 onClick={() => {
                   setIsMobilePanelOpen(false);
@@ -355,11 +396,11 @@ export default function Home() {
                 {/* Notifications */}
                 {user.isLoggedIn && <Notifications />}
 
-                {/* Cart */}
+                {/* Cart - Desktop Only */}
                 {user.isLoggedIn && (
                   <Link
                     to="/cart"
-                    className="relative p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                    className="hidden md:flex relative p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                     aria-label="Shopping cart"
                   >
                     <svg className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -373,10 +414,10 @@ export default function Home() {
                   </Link>
                 )}
 
-                {/* Theme Toggle */}
+                {/* Theme Toggle - Desktop Only */}
                 <button
                   onClick={toggleTheme}
-                  className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  className="hidden md:flex p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                   aria-label="Toggle theme"
                 >
                   {theme === 'light' ? (
