@@ -35,14 +35,14 @@ export default function AddItem() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      const fileArray = Array.from(files).slice(0, 5); // Limit to 5 images
+      const fileArray = Array.from(files).slice(0, 3); // Limit to 3 images
       
-      if (fileArray.length + images.length > 5) {
-        setError('Maximum 5 images allowed');
+      if (fileArray.length + images.length > 3) {
+        setError('Maximum 3 images allowed');
         return;
       }
       
-      setImages(prev => [...prev, ...fileArray].slice(0, 5));
+      setImages(prev => [...prev, ...fileArray].slice(0, 3));
       
       // Create preview URLs
       fileArray.forEach(file => {
@@ -439,7 +439,7 @@ export default function AddItem() {
 
           <div>
             <label htmlFor="image" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Images (Maximum 5)
+              Images (Maximum 3)
             </label>
             <input
               id="image"
@@ -452,7 +452,7 @@ export default function AddItem() {
               className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-50 dark:file:bg-green-900/30 file:text-green-700 dark:file:text-green-400 hover:file:bg-green-100 dark:hover:file:bg-green-900/50 disabled:opacity-50 disabled:cursor-not-allowed"
             />
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              {images.length}/5 images selected
+              {images.length}/3 images selected
             </p>
             {imagePreviews.length > 0 && (
               <div className="mt-4">
