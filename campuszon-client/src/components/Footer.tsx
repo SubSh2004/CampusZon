@@ -48,85 +48,88 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div>
-            <h4 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">
-              Quick Links
-            </h4>
-            <ul className="space-y-3">
-              <li>
-                <Link to="/home" className="text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors">
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link to="/add-item" className="text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors">
-                  Sell Item
-                </Link>
-              </li>
-              <li>
-                <Link to="/bookings" className="text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors">
-                  My Bookings
-                </Link>
-              </li>
-              <li>
-                <Link to="/profile" className="text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors">
-                  Profile
-                </Link>
-              </li>
-            </ul>
-          </div>
+          {/* Quick Links & Support - Two Column Layout on Mobile */}
+          <div className="col-span-1 md:col-span-2 grid grid-cols-2 gap-6 md:gap-8">
+            {/* Quick Links */}
+            <div>
+              <h4 className="text-xs md:text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-3 md:mb-4">
+                Quick Links
+              </h4>
+              <ul className="space-y-2 md:space-y-3">
+                <li>
+                  <Link to="/home" className="text-sm md:text-base text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors">
+                    Home
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/add-item" className="text-sm md:text-base text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors">
+                    Sell Item
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/bookings" className="text-sm md:text-base text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors">
+                    My Bookings
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/profile" className="text-sm md:text-base text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors">
+                    Profile
+                  </Link>
+                </li>
+              </ul>
+            </div>
 
-          {/* Support & Legal */}
-          <div>
-            <h4 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">
-              Support
-            </h4>
-            <ul className="space-y-3">
-              <li>
-                <Link 
-                  to="/contact-us" 
-                  className="text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors"
-                >
-                  Contact Us
-                </Link>
-              </li>
-              <li>
-                <a 
-                  href="tel:+919332425174" 
-                  className="text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors flex items-center gap-2"
-                >
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                  </svg>
-                  Call Us
-                </a>
-              </li>
-              <li>
-                <Link 
-                  to="/faq"
-                  className="text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors"
-                >
-                  FAQ
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/privacy-policy"
-                  className="text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors"
-                >
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/terms-of-service"
-                  className="text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors"
-                >
-                  Terms of Service
-                </Link>
-              </li>
-            </ul>
+            {/* Support & Legal */}
+            <div>
+              <h4 className="text-xs md:text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-3 md:mb-4">
+                Support
+              </h4>
+              <ul className="space-y-2 md:space-y-3">
+                <li>
+                  <Link 
+                    to="/contact-us" 
+                    className="text-sm md:text-base text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors"
+                  >
+                    Contact Us
+                  </Link>
+                </li>
+                <li>
+                  <a 
+                    href="tel:+919332425174" 
+                    className="text-sm md:text-base text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors flex items-center gap-2"
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                    Call Us
+                  </a>
+                </li>
+                <li>
+                  <Link 
+                    to="/faq"
+                    className="text-sm md:text-base text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors"
+                  >
+                    FAQ
+                  </Link>
+                </li>
+                <li>
+                  <Link 
+                    to="/privacy-policy"
+                    className="text-sm md:text-base text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors"
+                  >
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link 
+                    to="/terms-of-service"
+                    className="text-sm md:text-base text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors"
+                  >
+                    Terms of Service
+                  </Link>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
 
