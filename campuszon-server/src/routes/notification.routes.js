@@ -21,8 +21,6 @@ router.get('/', authenticate, async (req, res) => {
     if (cachedData) {
       return res.json(cachedData);
     }
-    
-    console.log(`🔔 Fetching notifications for userId: ${userId}`);
 
     const query = { userId };
     if (unreadOnly === 'true') {
@@ -34,8 +32,6 @@ router.get('/', authenticate, async (req, res) => {
       .limit(parseInt(limit));
 
     const unreadCount = await Notification.countDocuments({ userId, read: false });
-    
-    console.log(`🔔 Found ${notifications.length} notifications (${unreadCount} unread) for userId: ${userId}`);
 
     const responseData = {
       success: true,

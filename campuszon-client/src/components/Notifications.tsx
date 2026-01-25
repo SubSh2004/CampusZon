@@ -45,34 +45,18 @@ export default function Notifications() {
 
     // Listen for real-time notifications
     socketRef.current.on('new-notification', () => {
-      console.log('📬 Real-time notification received!');
-      fetchNotifications(); // Refresh count instantly
+      fetchNotifications(); // Refresh count instantly via Socket.IO only
     });
 
     socketRef.current.on('connect', () => {
-      console.log('🔗 Socket.IO connected for notifications');
       socketRef.current?.emit('userJoin', userId); // Re-join on reconnect
     });
 
-    socketRef.current.on('disconnect', () => {
-      console.log('🔌 Socket.IO disconnected');
-    });
-
-    socketRef.current.on('connect_error', (error) => {
-      console.error('❌ Socket connection error:', error);
-    });
-
-    // Polling fallback - check every 30 seconds
-    const pollInterval = setInterval(() => {
-      console.log('🔄 Polling for notifications...');
-      fetchNotifications();
-    }, 30000); // 30 seconds
-
+    // Cleanup on unmount
     return () => {
       if (socketRef.current) {
         socketRef.current.disconnect();
       }
-      clearInterval(pollInterval);
     };
   }, []);
 
