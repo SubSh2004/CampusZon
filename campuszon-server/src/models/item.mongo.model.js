@@ -108,7 +108,7 @@ itemSchema.index({ emailDomain: 1, available: 1, createdAt: -1 });
 // QUERY MIDDLEWARE (Security & Safety)
 // ============================================
 
-// Warning mode: Log queries missing emailDomain filter (except by _id)
+// PRODUCTION SAFEGUARD: Enforce emailDomain filter on all queries (except by _id)
 itemSchema.pre(/^find/, function(next) {
   const query = this.getQuery();
   
@@ -119,9 +119,19 @@ itemSchema.pre(/^find/, function(next) {
   
   // Check if emailDomain filter exists
   if (!query.emailDomain) {
-    console.warn('⚠️  SECURITY WARNING: Query missing emailDomain filter!');
-    console.warn('   Query:', JSON.stringify(query));
-    console.warn('   Stack:', new Error().stack.split('\n')[2].trim());
+    const error = new Error('SECURITY: Query missing emailDomain filter! Campus isolation breach detected.');
+    console.error('⚠️  SECURITY WARNING: Query missing emailDomain filter!');
+    console.error('   Query:', JSON.stringify(query));
+    console.error('   Stack:', new Error().stack.split('\n').slice(2, 5).join('\n'));
+    
+    // PRODUCTION: Throw error for sensitive operations
+    if (process.env.NODE_ENV === 'production') {
+      // Allow certain safe queries in production (aggregation pipelines handle it separately)
+      const operation = this.op;
+      if (operation === 'find' || operation === 'findOne' || operation === 'count' || operation === 'countDocuments') {
+        throw error;
+      }
+    }
   }
   
   next();

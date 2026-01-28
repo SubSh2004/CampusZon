@@ -158,16 +158,26 @@ const io = new Server(httpServer, {
 });
 
 // Track user socket connections for notifications
-const userSockets = new Map(); // userId -> socketId
+// FIX: Enforce ONE active socket per userId (prevent duplicates)
+const userSockets = new Map(); // userId -> { socketId, socket }
 
 io.on('connection', (socket) => {
   console.log('🔌 User connected:', socket.id);
 
   // User joins with their userId for notifications
   socket.on('userJoin', (userId) => {
-    userSockets.set(userId, socket.id);
+    // FIX: Disconnect old socket if user reconnects (prevent duplicates)
+    const existingConnection = userSockets.get(userId);
+    if (existingConnection) {
+      console.log(`🔄 User ${userId} reconnecting - disconnecting old socket ${existingConnection.socketId}`);
+      existingConnection.socket.disconnect(true);
+      userSockets.delete(userId);
+    }
+    
+    // Register new socket
+    userSockets.set(userId, { socketId: socket.id, socket: socket });
     socket.userId = userId;
-    console.log(`✅ User ${userId} connected for notifications`);
+    console.log(`✅ User ${userId} connected for notifications (socket: ${socket.id})`);
   });
 
   socket.on('disconnect', () => {
@@ -180,9 +190,9 @@ io.on('connection', (socket) => {
 
 // Export notification helper for controllers
 export const emitNotification = (userId, notification) => {
-  const socketId = userSockets.get(userId);
-  if (socketId) {
-    io.to(socketId).emit('new-notification', notification);
+  const connection = userSockets.get(userId);
+  if (connection) {
+    io.to(connection.socketId).emit('new-notification', notification);
     console.log(`📬 Notification sent to user ${userId}`);
     return true;
   }

@@ -896,17 +896,30 @@ export const getCampusList = async (req, res) => {
 // Get reported items (Admin only)
 export const getReportedItems = async (req, res) => {
   try {
-    // Support campus filtering via query parameter
+    // SECURITY: Get admin's emailDomain for mandatory campus scoping
+    const adminEmail = req.user?.email;
+    if (!adminEmail) {
+      return res.status(401).json({
+        success: false,
+        message: 'Admin authentication required'
+      });
+    }
+    
+    const adminDomain = adminEmail.split('@')[1];
+    if (!adminDomain) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid admin email format'
+      });
+    }
+    
+    // Support campus filtering via query parameter (defaults to admin's campus)
     const { emailDomain } = req.query;
     const filter = {
+      emailDomain: (emailDomain && emailDomain !== 'all') ? emailDomain : adminDomain,
       reportCount: { $gt: 0 },
       moderationStatus: { $ne: 'removed' }
     };
-    
-    // Add email domain filter if provided
-    if (emailDomain && emailDomain !== 'all') {
-      filter.emailDomain = emailDomain;
-    }
     
     const items = await Item.find(filter).sort({ reportCount: -1, createdAt: -1 }).lean();
 
@@ -934,14 +947,28 @@ export const getReportedItems = async (req, res) => {
 // Get all items for admin review
 export const getAllItemsForAdmin = async (req, res) => {
   try {
-    // Support campus filtering via query parameter
-    const { emailDomain } = req.query;
-    const filter = {};
-    
-    // Add email domain filter if provided
-    if (emailDomain && emailDomain !== 'all') {
-      filter.emailDomain = emailDomain;
+    // SECURITY: Get admin's emailDomain for mandatory campus scoping
+    const adminEmail = req.user?.email;
+    if (!adminEmail) {
+      return res.status(401).json({
+        success: false,
+        message: 'Admin authentication required'
+      });
     }
+    
+    const adminDomain = adminEmail.split('@')[1];
+    if (!adminDomain) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid admin email format'
+      });
+    }
+    
+    // Support campus filtering via query parameter (defaults to admin's campus)
+    const { emailDomain } = req.query;
+    const filter = {
+      emailDomain: (emailDomain && emailDomain !== 'all') ? emailDomain : adminDomain
+    };
     
     const items = await Item.find(filter).sort({ createdAt: -1 }).lean();
 

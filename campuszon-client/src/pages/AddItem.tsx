@@ -65,6 +65,12 @@ export default function AddItem() {
     setError('');
     setSuccess('');
 
+    // FIX: Prevent double-submit (idempotency guard)
+    if (loading) {
+      console.log('⚠️  Submit already in progress, ignoring duplicate');
+      return;
+    }
+
     // Check if user is logged in
     if (!user.isLoggedIn) {
       setError('You must be logged in to add an item');

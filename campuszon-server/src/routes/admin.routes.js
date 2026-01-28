@@ -11,9 +11,23 @@ const router = express.Router();
  */
 router.post('/migrate-moderation-status', authenticate, isAdmin, async (req, res) => {
   try {
-    // Find all items without moderationStatus field
+    // SECURITY: Get admin's emailDomain for campus scoping
+    const adminEmail = req.user.email;
+    const adminDomain = adminEmail.split('@')[1];
+    
+    if (!adminDomain) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid admin email format'
+      });
+    }
+    
+    // Find all items without moderationStatus field (scoped to admin's campus)
     const result = await Item.updateMany(
-      { moderationStatus: { $exists: false } },
+      { 
+        emailDomain: adminDomain,
+        moderationStatus: { $exists: false }
+      },
       { 
         $set: { 
           moderationStatus: 'active',
@@ -23,11 +37,11 @@ router.post('/migrate-moderation-status', authenticate, isAdmin, async (req, res
       }
     );
     
-    // Count items by moderation status
-    const activeCount = await Item.countDocuments({ moderationStatus: 'active' });
-    const warnedCount = await Item.countDocuments({ moderationStatus: 'warned' });
-    const removedCount = await Item.countDocuments({ moderationStatus: 'removed' });
-    const totalCount = await Item.countDocuments({});
+    // Count items by moderation status (scoped to admin's campus)
+    const activeCount = await Item.countDocuments({ emailDomain: adminDomain, moderationStatus: 'active' });
+    const warnedCount = await Item.countDocuments({ emailDomain: adminDomain, moderationStatus: 'warned' });
+    const removedCount = await Item.countDocuments({ emailDomain: adminDomain, moderationStatus: 'removed' });
+    const totalCount = await Item.countDocuments({ emailDomain: adminDomain });
     
     res.status(200).json({
       success: true,
