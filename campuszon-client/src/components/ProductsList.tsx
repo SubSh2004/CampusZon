@@ -82,7 +82,7 @@ export default function ProductsList({ searchQuery = '', selectedCategory = 'All
           return;
         }
         
-        // Build API URL with search parameter
+        // Build API URL with all filter parameters
         const params = new URLSearchParams({
           emailDomain,
           page: page.toString(),
@@ -91,6 +91,19 @@ export default function ProductsList({ searchQuery = '', selectedCategory = 'All
         
         if (searchQuery && searchQuery.trim()) {
           params.append('search', searchQuery.trim());
+        }
+        
+        // Add filter parameters (backend will handle filtering)
+        if (selectedCategory && selectedCategory !== 'All') {
+          params.append('category', selectedCategory);
+        }
+        
+        if (listingTypeFilter && listingTypeFilter !== 'All') {
+          params.append('listingType', listingTypeFilter);
+        }
+        
+        if (availabilityFilter && availabilityFilter !== 'All') {
+          params.append('availability', availabilityFilter);
         }
         
         const response = await axios.get(`/api/items?${params.toString()}`);
@@ -113,7 +126,7 @@ export default function ProductsList({ searchQuery = '', selectedCategory = 'All
     };
 
     fetchItems();
-  }, [user.email, page, searchQuery, onItemsFetched]);
+  }, [user.email, page, searchQuery, selectedCategory, listingTypeFilter, availabilityFilter, onItemsFetched]);
 
   if (loading) {
     return (
@@ -133,30 +146,8 @@ export default function ProductsList({ searchQuery = '', selectedCategory = 'All
     );
   }
 
-  // Filter items based on category and availability (search is handled by backend)
-  let filteredItems = items;
-  
-  // Filter by category
-  filteredItems = filteredItems.filter((item) => {
-    let matchesCategory = true;
-    if (selectedCategory && selectedCategory !== 'All') {
-      matchesCategory = item.category.includes(selectedCategory);
-    }
-    
-    // Filter by listing type
-    let matchesListingType = true;
-    if (listingTypeFilter && listingTypeFilter !== 'All') {
-      matchesListingType = item.category.includes(listingTypeFilter);
-    }
-    
-    // Filter by availability
-    let matchesAvailability = true;
-    if (availabilityFilter && availabilityFilter !== 'All') {
-      matchesAvailability = availabilityFilter === 'Available' ? item.available : !item.available;
-    }
-    
-    return matchesCategory && matchesListingType && matchesAvailability;
-  });
+  // All filtering is now handled by backend - no client-side filtering needed
+  const filteredItems = items;
 
   if (filteredItems.length === 0) {
     return (

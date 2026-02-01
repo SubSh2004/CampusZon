@@ -208,7 +208,15 @@ export const createItem = async (req, res) => {
 // Get all items (filtered by email domain) with pagination
 export const getAllItems = async (req, res) => {
   try {
-    const { emailDomain, page = 1, limit = 8, search = '' } = req.query;
+    const { 
+      emailDomain, 
+      page = 1, 
+      limit = 8, 
+      search = '',
+      category = 'All',
+      listingType = 'All',
+      availability = 'All'
+    } = req.query;
     
     if (!emailDomain) {
       return res.status(400).json({
@@ -223,7 +231,7 @@ export const getAllItems = async (req, res) => {
     const skip = (pageNum - 1) * limitNum;
 
     // Try to get from cache first
-    const cacheKey = generateItemsCacheKey(emailDomain, pageNum, search);
+    const cacheKey = generateItemsCacheKey(emailDomain, pageNum, search, category, listingType, availability);
     const cachedData = await getCache(cacheKey);
     
     if (cachedData) {
@@ -238,6 +246,21 @@ export const getAllItems = async (req, res) => {
       emailDomain,
       moderationStatus: { $in: ['active', 'warned'] }
     };
+
+    // Add category filter (exact match, case-insensitive)
+    if (category && category !== 'All') {
+      query.category = new RegExp(`^${category}`, 'i');
+    }
+
+    // Add listing type filter (For Sale or For Rent)
+    if (listingType && listingType !== 'All') {
+      query.category = new RegExp(listingType, 'i');
+    }
+
+    // Add availability filter
+    if (availability && availability !== 'All') {
+      query.available = availability === 'Available';
+    }
 
     // Add search filter if search query exists
     if (search && search.trim()) {

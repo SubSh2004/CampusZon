@@ -96,11 +96,17 @@ export async function clearCache() {
  * @param {string} emailDomain 
  * @param {number} page 
  * @param {string} search 
+ * @param {string} category
+ * @param {string} listingType
+ * @param {string} availability
  * @returns {string}
  */
-export function generateItemsCacheKey(emailDomain, page, search = '') {
+export function generateItemsCacheKey(emailDomain, page, search = '', category = 'All', listingType = 'All', availability = 'All') {
   const searchPart = search ? `:search:${search}` : '';
-  return `items:${emailDomain}:page:${page}${searchPart}`;
+  const categoryPart = category !== 'All' ? `:cat:${category}` : '';
+  const listingPart = listingType !== 'All' ? `:type:${listingType}` : '';
+  const availPart = availability !== 'All' ? `:avail:${availability}` : '';
+  return `items:${emailDomain}:page:${page}${searchPart}${categoryPart}${listingPart}${availPart}`;
 }
 
 /**
