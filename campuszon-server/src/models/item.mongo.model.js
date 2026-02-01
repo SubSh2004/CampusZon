@@ -104,6 +104,16 @@ itemSchema.index({ emailDomain: 1, userId: 1, createdAt: -1 });
 // Supports: emailDomain + available filter + date sort
 itemSchema.index({ emailDomain: 1, available: 1, createdAt: -1 });
 
+// Priority 3: Multi-filter optimization (NEW - for homepage filters)
+// Supports: emailDomain + category + listingType + available + date sort
+// USE CASE: When users select multiple filters (Books + For Sale + Available)
+itemSchema.index({ 
+  emailDomain: 1, 
+  category: 1, 
+  available: 1, 
+  createdAt: -1 
+});
+
 // ============================================
 // QUERY MIDDLEWARE (Security & Safety)
 // ============================================
