@@ -437,7 +437,6 @@ export default function AddItem() {
               <option value="Furniture">Furniture</option>
               <option value="Sports">Sports</option>
               <option value="Stationery">Stationery</option>
-              <option value="Rent">Rent</option>
               <option value="Services">Services</option>
               <option value="Other">Other</option>
             </select>

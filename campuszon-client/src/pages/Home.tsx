@@ -41,11 +41,13 @@ export default function Home() {
 
   const categories = [
     'All',
-    'Electronics',
     'Books',
-    'Furniture',
+    'Electronics',
     'Clothing',
+    'Furniture',
     'Sports',
+    'Stationery',
+    'Services',
     'Other'
   ];
 

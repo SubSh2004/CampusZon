@@ -139,7 +139,7 @@ export const validateItemCreation = [
     .notEmpty().withMessage('Category is required')
     .isIn([
       'Books', 'Electronics', 'Clothing', 'Furniture', 
-      'Sports', 'Stationery', 'Rent', 'Services', 'Other'
+      'Sports', 'Stationery', 'Services', 'Other'
     ]).withMessage('Invalid category'),
   
   body('listingType')
