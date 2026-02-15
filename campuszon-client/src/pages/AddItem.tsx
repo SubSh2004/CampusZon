@@ -4,6 +4,7 @@ import { useRecoilValue } from 'recoil';
 import axios from '../config/axios';
 import { userAtom } from '../store/user.atom';
 import BrandName from '../components/BrandName';
+import { ITEM_CATEGORIES } from '../constants/categories';
 
 export default function AddItem() {
   const navigate = useNavigate();
@@ -431,14 +432,11 @@ export default function AddItem() {
               className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
             >
               <option value="">Select a category</option>
-              <option value="Books">Books</option>
-              <option value="Electronics">Electronics</option>
-              <option value="Clothing">Clothing</option>
-              <option value="Furniture">Furniture</option>
-              <option value="Sports">Sports</option>
-              <option value="Stationery">Stationery</option>
-              <option value="Services">Services</option>
-              <option value="Other">Other</option>
+              {ITEM_CATEGORIES.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
             </select>
           </div>
 

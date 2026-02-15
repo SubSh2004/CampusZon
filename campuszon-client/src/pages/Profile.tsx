@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import axios from 'axios';
 import { userAtom } from '../store/user.atom';
+import { ITEM_CATEGORIES } from '../constants/categories';
 
 interface Item {
   id: string; // Changed from number to string for MongoDB ObjectId compatibility
@@ -609,12 +610,11 @@ export default function Profile() {
                     className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   >
                     <option value="">Select category</option>
-                    <option value="Electronics">Electronics</option>
-                    <option value="Books">Books</option>
-                    <option value="Furniture">Furniture</option>
-                    <option value="Clothing">Clothing</option>
-                    <option value="Sports">Sports</option>
-                    <option value="Other">Other</option>
+                    {ITEM_CATEGORIES.map((category) => (
+                      <option key={category} value={category}>
+                        {category}
+                      </option>
+                    ))}
                   </select>
                 </div>
 

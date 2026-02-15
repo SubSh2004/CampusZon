@@ -8,6 +8,7 @@ import { useTheme } from '../context/ThemeContext';
 import { getOrganizationName } from '../utils/domainMapper';
 import ProductsList from '../components/ProductsList';
 import Notifications from '../components/Notifications';
+import { FILTER_CATEGORIES } from '../constants/categories';
 import SearchWithAutoComplete from '../components/SearchWithAutoComplete';
 import TokenPurchase from '../components/TokenPurchase';
 import BrandName from '../components/BrandName';
@@ -39,17 +40,7 @@ export default function Home() {
   
   const organizationName = user.email ? getOrganizationName(user.email) : '';
 
-  const categories = [
-    'All',
-    'Books',
-    'Electronics',
-    'Clothing',
-    'Furniture',
-    'Sports',
-    'Stationery',
-    'Services',
-    'Other'
-  ];
+  const categories = FILTER_CATEGORIES;
 
   // Close dropdown when clicking outside
   useEffect(() => {
