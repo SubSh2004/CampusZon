@@ -8,6 +8,8 @@ import {
   deleteItem,
   reportItem,
   addReview,
+  updateReview,
+  deleteReview,
   addReplyToReview,
   updateReply,
   deleteReply,
@@ -90,6 +92,15 @@ router.post('/:id/report', authenticateToken, reportLimiter, reportItem);
 // REQUIRES AUTHENTICATION - only logged-in users can review items
 // VALIDATED: Rating (1-5), review text, user info
 router.post('/:id/review', authenticateToken, validateObjectId('id'), validateReview, addReview);
+
+// PUT /api/items/:id/review/:reviewIndex - Update a review
+// REQUIRES AUTHENTICATION - only review owner can update
+// VALIDATED: Rating (1-5), review text, user info
+router.put('/:id/review/:reviewIndex', authenticateToken, validateObjectId('id'), validateReview, updateReview);
+
+// DELETE /api/items/:id/review/:reviewIndex - Delete a review
+// REQUIRES AUTHENTICATION - only review owner can delete
+router.delete('/:id/review/:reviewIndex', authenticateToken, validateObjectId('id'), deleteReview);
 
 // POST /api/items/:id/review/:reviewIndex/reply - Add reply to a review
 // REQUIRES AUTHENTICATION - only logged-in users can reply

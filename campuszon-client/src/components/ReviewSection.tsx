@@ -50,6 +50,11 @@ export default function ReviewSection({ itemId, itemOwnerId }: ReviewSectionProp
   const [editReplyText, setEditReplyText] = useState('');
   const [expandedReplies, setExpandedReplies] = useState<{[key: number]: boolean}>({});
 
+  // Review edit state
+  const [editingReviewIndex, setEditingReviewIndex] = useState<number | null>(null);
+  const [editReviewRating, setEditReviewRating] = useState(0);
+  const [editReviewText, setEditReviewText] = useState('');
+
   useEffect(() => {
     fetchReviews();
     fetchCurrentUser();
@@ -160,6 +165,91 @@ export default function ReviewSection({ itemId, itemOwnerId }: ReviewSectionProp
       }
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleEditReview = (reviewIndex: number, currentRating: number, currentComment: string) => {
+    setEditingReviewIndex(reviewIndex);
+    setEditReviewRating(currentRating);
+    setEditReviewText(currentComment);
+  };
+
+  const handleUpdateReview = async () => {
+    if (!editReviewRating || editReviewRating < 1 || editReviewRating > 5) {
+      setError('Please select a valid rating (1-5)');
+      return;
+    }
+
+    if (!editReviewText.trim()) {
+      setError('Review text cannot be empty');
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      setError('');
+      
+      await axios.put(
+        `/api/items/${itemId}/review/${editingReviewIndex}`,
+        {
+          userId: currentUserId,
+          rating: editReviewRating,
+          comment: editReviewText
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      setEditingReviewIndex(null);
+      setEditReviewRating(0);
+      setEditReviewText('');
+      setSuccess('Review updated successfully!');
+      
+      // Refresh reviews
+      await fetchReviews();
+      
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to update review');
+    }
+  };
+
+  const handleDeleteReview = async (reviewIndex: number) => {
+    if (!confirm('Are you sure you want to delete this review? This action cannot be undone.')) {
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      setError('');
+      
+      await axios.delete(
+        `/api/items/${itemId}/review/${reviewIndex}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          data: { userId: currentUserId }
+        }
+      );
+
+      setSuccess('Review deleted successfully!');
+      
+      // Refresh reviews
+      await fetchReviews();
+      
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to delete review');
     }
   };
 
@@ -458,46 +548,129 @@ export default function ReviewSection({ itemId, itemOwnerId }: ReviewSectionProp
                   key={reviewIndex}
                   className="bg-white dark:bg-gray-700 p-5 rounded-lg border border-gray-200 dark:border-gray-600 hover:shadow-md transition-shadow duration-200"
                 >
-                  {/* Review Header */}
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      {/* User Avatar */}
-                      <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                        {review.userName?.charAt(0).toUpperCase() || 'U'}
-                      </div>
+                  {editingReviewIndex === reviewIndex ? (
+                    // Edit Mode for Review
+                    <div>
+                      <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Edit Your Review</h4>
                       
-                      <div>
-                        <p className="font-semibold text-gray-900 dark:text-white">
-                          {review.userName || 'Anonymous'}
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {formatDate(review.createdAt)}
-                        </p>
+                      {/* Star Rating */}
+                      <div className="mb-3">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Your Rating <span className="text-red-500">*</span>
+                        </label>
+                        <StarRating 
+                          rating={editReviewRating} 
+                          onRatingChange={setEditReviewRating} 
+                          interactive 
+                          size="md"
+                        />
+                      </div>
+
+                      {/* Review Text */}
+                      <textarea
+                        value={editReviewText}
+                        onChange={(e) => setEditReviewText(e.target.value)}
+                        rows={4}
+                        className={`w-full px-3 py-2 rounded-lg border ${
+                          theme === 'dark'
+                            ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400'
+                            : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                        } focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-2`}
+                        maxLength={500}
+                        placeholder="Update your review..."
+                      />
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                        {editReviewText.length}/500 characters
+                      </p>
+
+                      {/* Action Buttons */}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            setEditingReviewIndex(null);
+                            setEditReviewRating(0);
+                            setEditReviewText('');
+                          }}
+                          className="px-4 py-2 text-sm bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-800 dark:text-white rounded transition"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handleUpdateReview}
+                          className="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded transition"
+                        >
+                          Save Changes
+                        </button>
                       </div>
                     </div>
-                    
-                    {/* Rating */}
-                    <StarRating rating={review.rating} size="sm" />
-                  </div>
+                  ) : (
+                    // View Mode for Review
+                    <>
+                      {/* Review Header */}
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          {/* User Avatar */}
+                          <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                            {review.userName?.charAt(0).toUpperCase() || 'U'}
+                          </div>
+                          
+                          <div>
+                            <p className="font-semibold text-gray-900 dark:text-white">
+                              {review.userName || 'Anonymous'}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              {formatDate(review.createdAt)}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-3">
+                          {/* Rating */}
+                          <StarRating rating={review.rating} size="sm" />
+                          
+                          {/* Edit/Delete buttons for review owner */}
+                          {review.userId === currentUserId && (
+                            <div className="flex gap-2 ml-2">
+                              <button
+                                onClick={() => handleEditReview(reviewIndex, review.rating, review.comment)}
+                                className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium"
+                                title="Edit review"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteReview(reviewIndex)}
+                                className="text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium"
+                                title="Delete review"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
 
-                  {/* Review Text */}
-                  <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap mb-4">
-                    {review.comment}
-                  </p>
+                      {/* Review Text */}
+                      <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap mb-4">
+                        {review.comment}
+                      </p>
+                    </>
+                  )}
 
-                  {/* Reply Button and Count */}
-                  <div className="flex items-center gap-4 mb-3">
-                    <button
-                      onClick={() => {
-                        if (!localStorage.getItem('token')) {
-                          navigate('/login');
-                          return;
-                        }
-                        setActiveReplyIndex(activeReplyIndex === reviewIndex ? null : reviewIndex);
-                      }}
-                      className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium flex items-center gap-1"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  {/* Reply Button and Count - Only show when not editing review */}
+                  {editingReviewIndex !== reviewIndex && (
+                    <div className="flex items-center gap-4 mb-3">
+                      <button
+                        onClick={() => {
+                          if (!localStorage.getItem('token')) {
+                            navigate('/login');
+                            return;
+                          }
+                          setActiveReplyIndex(activeReplyIndex === reviewIndex ? null : reviewIndex);
+                        }}
+                        className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium flex items-center gap-1"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
                       </svg>
                       Reply
@@ -526,6 +699,7 @@ export default function ReviewSection({ itemId, itemOwnerId }: ReviewSectionProp
                       </button>
                     )}
                   </div>
+                  )}
 
                   {/* Reply Input Form */}
                   {activeReplyIndex === reviewIndex && (

@@ -704,6 +704,147 @@ export const addReview = async (req, res) => {
   }
 };
 
+// Update a review
+export const updateReview = async (req, res) => {
+  try {
+    const { id, reviewIndex } = req.params;
+    const { userId, rating, comment } = req.body;
+    
+    if (!rating) {
+      return res.status(400).json({
+        success: false,
+        message: 'Rating is required',
+      });
+    }
+
+    if (rating < 1 || rating > 5) {
+      return res.status(400).json({
+        success: false,
+        message: 'Rating must be between 1 and 5',
+      });
+    }
+    
+    const item = await Item.findById(id);
+    if (!item) {
+      return res.status(404).json({
+        success: false,
+        message: 'Item not found',
+      });
+    }
+
+    const reviewIdx = parseInt(reviewIndex);
+    if (isNaN(reviewIdx) || !item.reviews[reviewIdx]) {
+      return res.status(404).json({
+        success: false,
+        message: 'Review not found',
+      });
+    }
+
+    const review = item.reviews[reviewIdx];
+    
+    // Authorization: Check if user owns this review
+    if (review.userId !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'You can only edit your own reviews',
+      });
+    }
+
+    // Update review (preserve replies)
+    item.reviews[reviewIdx].rating = rating;
+    item.reviews[reviewIdx].comment = comment;
+    item.reviews[reviewIdx].updatedAt = new Date();
+    
+    // Recalculate average rating
+    const totalRating = item.reviews.reduce((sum, review) => sum + review.rating, 0);
+    item.averageRating = totalRating / item.reviews.length;
+    
+    await item.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Review updated successfully',
+      item: {
+        ...item.toObject(),
+        id: item._id.toString(),
+        _id: undefined
+      }
+    });
+  } catch (error) {
+    console.error('Update review error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while updating review',
+      error: error.message,
+    });
+  }
+};
+
+// Delete a review
+export const deleteReview = async (req, res) => {
+  try {
+    const { id, reviewIndex } = req.params;
+    const { userId } = req.body;
+    
+    const item = await Item.findById(id);
+    if (!item) {
+      return res.status(404).json({
+        success: false,
+        message: 'Item not found',
+      });
+    }
+
+    const reviewIdx = parseInt(reviewIndex);
+    if (isNaN(reviewIdx) || !item.reviews[reviewIdx]) {
+      return res.status(404).json({
+        success: false,
+        message: 'Review not found',
+      });
+    }
+
+    const review = item.reviews[reviewIdx];
+    
+    // Authorization: Check if user owns this review
+    if (review.userId !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'You can only delete your own reviews',
+      });
+    }
+
+    // Remove review
+    item.reviews.splice(reviewIdx, 1);
+    
+    // Recalculate average rating
+    if (item.reviews.length > 0) {
+      const totalRating = item.reviews.reduce((sum, review) => sum + review.rating, 0);
+      item.averageRating = totalRating / item.reviews.length;
+    } else {
+      item.averageRating = 0;
+    }
+    item.reviewCount = item.reviews.length;
+    
+    await item.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Review deleted successfully',
+      item: {
+        ...item.toObject(),
+        id: item._id.toString(),
+        _id: undefined
+      }
+    });
+  } catch (error) {
+    console.error('Delete review error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while deleting review',
+      error: error.message,
+    });
+  }
+};
+
 // Add reply to a review
 export const addReplyToReview = async (req, res) => {
   try {
