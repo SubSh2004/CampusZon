@@ -30,6 +30,16 @@ interface Campus {
   reportedItems: number;
 }
 
+interface InstituteStats {
+  emailDomain: string;
+  totalUsers: number;
+  totalItems: number;
+  activeItems: number;
+  warnedItems: number;
+  removedItems: number;
+  reportedItems: number;
+}
+
 interface Item {
   id: string;
   title: string;
@@ -71,6 +81,8 @@ const ModerationDashboard: React.FC = () => {
   const [actionNotes, setActionNotes] = useState('');
   const [processingAction, setProcessingAction] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [instituteStats, setInstituteStats] = useState<InstituteStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(false);
 
   useEffect(() => {
     // Check if user is admin
@@ -95,6 +107,15 @@ const ModerationDashboard: React.FC = () => {
     }
   }, [activeTab, statusFilter, selectedCampus, user.isLoggedIn, user.isAdmin]);
 
+  useEffect(() => {
+    // Fetch institute stats when a specific campus is selected
+    if (user.isLoggedIn && user.isAdmin && selectedCampus !== 'all') {
+      fetchInstituteStats(selectedCampus);
+    } else {
+      setInstituteStats(null); // Clear stats when 'all' is selected
+    }
+  }, [selectedCampus, user.isLoggedIn, user.isAdmin]);
+
   const fetchCampuses = async () => {
     try {
       const response = await axios.get('/api/items/admin/campuses');
@@ -103,6 +124,21 @@ const ModerationDashboard: React.FC = () => {
       }
     } catch (error) {
       console.error('Failed to fetch campuses:', error);
+    }
+  };
+
+  const fetchInstituteStats = async (emailDomain: string) => {
+    try {
+      setStatsLoading(true);
+      const response = await axios.get(`/api/admin/stats/${emailDomain}`);
+      if (response.data.success) {
+        setInstituteStats(response.data.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch institute stats:', error);
+      setInstituteStats(null);
+    } finally {
+      setStatsLoading(false);
     }
   };
 
@@ -367,6 +403,45 @@ const ModerationDashboard: React.FC = () => {
                 )}
               </div>
             </div>
+            
+            {/* Institute Stats (Users + Items) */}
+            {selectedCampus !== 'all' && instituteStats && (
+              <div className="flex flex-wrap gap-3 text-sm">
+                <div className="bg-indigo-50 dark:bg-indigo-900/20 px-4 py-2 rounded-lg border border-indigo-200 dark:border-indigo-800">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <div>
+                      <div className="text-indigo-700 dark:text-indigo-400 font-bold text-lg">{instituteStats.totalUsers}</div>
+                      <div className="text-gray-600 dark:text-gray-400 text-xs">Total Users</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-blue-50 dark:bg-blue-900/20 px-4 py-2 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <div>
+                      <div className="text-blue-700 dark:text-blue-400 font-bold text-lg">{instituteStats.totalItems}</div>
+                      <div className="text-gray-600 dark:text-gray-400 text-xs">Total Items</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Loading indicator for stats */}
+            {selectedCampus !== 'all' && statsLoading && (
+              <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
+                <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Loading stats...
+              </div>
+            )}
             
             {/* Campus Stats */}
             {(() => {
