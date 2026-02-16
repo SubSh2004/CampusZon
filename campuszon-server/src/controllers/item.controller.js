@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import Item from '../models/item.mongo.model.js';
+import User from '../models/user.model.js';
 import ImageModeration from '../models/imageModeration.model.js';
 import UserViolation from '../models/userViolation.model.js';
 import Notification from '../models/notification.model.js';
@@ -1016,12 +1017,23 @@ export const deleteReply = async (req, res) => {
 // Get list of all campuses (email domains) for admin
 export const getCampusList = async (req, res) => {
   try {
-    // Get distinct email domains
-    const domains = await Item.distinct('emailDomain');
+    // Get distinct email domains from BOTH users and items
+    const itemDomains = await Item.distinct('emailDomain');
+    
+    // Get all user emails and extract unique domains
+    const users = await User.find({}, { email: 1 }).lean();
+    const userDomains = [...new Set(
+      users
+        .map(u => u.email?.split('@')[1])
+        .filter(d => d) // Remove null/undefined
+    )];
+    
+    // Merge and deduplicate all domains
+    const allDomains = [...new Set([...itemDomains, ...userDomains])].filter(d => d);
     
     // Get item count for each domain
     const campusData = await Promise.all(
-      domains.filter(d => d).map(async (domain) => {
+      allDomains.map(async (domain) => {
         const totalCount = await Item.countDocuments({ emailDomain: domain });
         const activeCount = await Item.countDocuments({ emailDomain: domain, moderationStatus: 'active' });
         const warnedCount = await Item.countDocuments({ emailDomain: domain, moderationStatus: 'warned' });
