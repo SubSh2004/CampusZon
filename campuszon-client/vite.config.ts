@@ -13,4 +13,20 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    // Enable source maps for better debugging
+    sourcemap: true,
+    // Optimize chunk size
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        // Manual chunk splitting for better caching
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'state-vendor': ['recoil'],
+          'ui-vendor': ['framer-motion'],
+        },
+      },
+    },
+  },
 })
