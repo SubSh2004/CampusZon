@@ -34,15 +34,15 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://campuszon-server.onrender.com https://api.imgbb.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.vercel.live https://*.vercel.app; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://campuszon-server.onrender.com https://api.imgbb.com wss://campuszon-server.onrender.com wss://*.pusher.com https://*.pusher.com https://*.vercel.live wss://*.vercel.live; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:"
         },
         {
           "key": "Cross-Origin-Opener-Policy",
-          "value": "same-origin"
+          "value": "unsafe-none"
         },
         {
           "key": "Cross-Origin-Resource-Policy",
-          "value": "same-origin"
+          "value": "cross-origin"
         },
         {
           "key": "Strict-Transport-Security",
