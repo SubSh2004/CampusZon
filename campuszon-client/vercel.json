@@ -34,7 +34,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.vercel.live https://*.vercel.app; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://campuszon-server.onrender.com https://api.imgbb.com wss://campuszon-server.onrender.com wss://*.pusher.com https://*.pusher.com https://*.vercel.live wss://*.vercel.live; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.vercel.live https://*.vercel.app https://vercel.live; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https: blob:; font-src 'self' data: https:; connect-src 'self' https://campuszon-server.onrender.com https://campuskart-api.onrender.com https://*.onrender.com https://api.imgbb.com wss://campuszon-server.onrender.com wss://campuskart-api.onrender.com wss://*.onrender.com wss://*.pusher.com https://*.pusher.com https://*.vercel.live wss://*.vercel.live; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:; frame-src https://*.vercel.live;"
         },
         {
           "key": "Cross-Origin-Opener-Policy",
