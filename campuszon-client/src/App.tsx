@@ -114,7 +114,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <div className="flex-grow">
+      <main className="flex-grow">
         <Routes>
           {/* Public Routes - Landing Page Only */}
           <Route path="/" element={<LandingPage />} />
@@ -145,7 +145,7 @@ export default function App() {
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/contact-us" element={<ContactUs />} />
         </Routes>
-      </div>
+      </main>
       {/* Global footer appears on all pages */}
       <Footer />
     </div>
