@@ -205,7 +205,7 @@ export default function Home() {
           {/* Panel Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-800">
             <div className="flex items-center gap-3">
-              <img src="/logo-icon.jpg" alt="CampusZon" className="w-10 h-10 rounded-full object-cover" />
+              <img src="/logo-icon.jpg" alt="CampusZon" width="40" height="40" className="w-10 h-10 rounded-full object-cover" />
               <div>
                 <h2 className="font-bold text-gray-900 dark:text-white">Menu</h2>
                 <p className="text-xs text-gray-500 dark:text-gray-400">Hi, {user.username}!</p>
@@ -362,6 +362,8 @@ export default function Home() {
                 <img 
                   src="/logo-icon.jpg" 
                   alt="CampusZon Logo" 
+                  width="48"
+                  height="48"
                   className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 rounded-full object-cover"
                 />
                 <div className="flex-1 min-w-0">

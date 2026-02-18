@@ -243,7 +243,7 @@ export default function ItemDetail() {
             Back to Home
           </button>
           <div className="flex items-center gap-2">
-            <img src="/logo-icon.jpg" alt="CampusZon" className="w-8 h-8 rounded-full object-cover" />
+            <img src="/logo-icon.jpg" alt="CampusZon" width="32" height="32" className="w-8 h-8 rounded-full object-cover" />
             <span className="text-lg font-bold text-gray-900 dark:text-white">Item Details</span>
           </div>
           <div className="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2 rounded-lg shadow-lg">

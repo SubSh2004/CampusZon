@@ -214,6 +214,8 @@ export default function ProductsList({ searchQuery = '', selectedCategory = 'All
             <img
               src="/logo-icon.jpg"
               alt="CampusZon loading"
+              width="64"
+              height="64"
               className="h-16 w-16 relative z-10"
               style={{ animation: 'rollAndGlow 2s cubic-bezier(0.4,0,0.2,1) infinite' }}
             />

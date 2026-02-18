@@ -24,6 +24,21 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Optimize font loading to prevent layout shift */
+@font-face {
+  font-display: swap;
+}
+
+/* Reserve space for images to prevent CLS */
+img {
+  content-visibility: auto;
+}
+
+/* Prevent layout shift from lazy-loaded images */
+img[loading="lazy"] {
+  min-height: 1px;
+}
+
 /* Respect user's motion preferences */
 @media (prefers-reduced-motion: reduce) {
   *,

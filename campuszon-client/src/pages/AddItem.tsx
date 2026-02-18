@@ -212,7 +212,7 @@ export default function AddItem() {
       <div className="max-w-2xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8 dark:border dark:border-gray-700">
         <div className="mb-8 flex items-start justify-between">
           <div className="flex items-start gap-3">
-            <img src="/logo-icon.jpg" alt="CampusZon" className="w-12 h-12 flex-shrink-0 rounded-full object-cover shadow-md" />
+            <img src="/logo-icon.jpg" alt="CampusZon" width="48" height="48" className="w-12 h-12 flex-shrink-0 rounded-full object-cover shadow-md" />
             <div>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Add New Item</h1>
               <p className="mt-2 text-gray-600 dark:text-gray-300">List your item for sale on <BrandName className="font-semibold" /></p>
