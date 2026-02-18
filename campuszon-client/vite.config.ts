@@ -24,7 +24,7 @@ export default defineConfig({
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'state-vendor': ['recoil'],
-          'ui-vendor': ['framer-motion'],
+          'network-vendor': ['axios', 'socket.io-client'],
         },
       },
     },
